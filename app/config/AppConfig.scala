@@ -14,30 +14,25 @@
  * limitations under the License.
  */
 
-import play.core.PlayVersion
-import play.sbt.PlayImport._
-import sbt._
+package config
 
-object AppDependencies {
+import javax.inject.{Inject, Singleton}
+import play.api.Mode.Mode
+import play.api.{Configuration, Environment}
+import uk.gov.hmrc.play.config.ServicesConfig
 
-  val compile = Seq(
-    ws,
-    "uk.gov.hmrc" %% "bootstrap-play-25" % "1.6.0"
-  )
+trait AppConfig {
+  def businessDetailsBaseUrl(): String
+}
 
-  def test(scope: String = "test, it"): Seq[sbt.ModuleID] = Seq(
+@Singleton
+class AppConfigImpl @Inject()(environment: Environment,
+                              configuration: Configuration)
+  extends AppConfig with ServicesConfig {
 
-    "org.scalatest" %% "scalatest" % "3.0.4" % scope,
+  override protected def mode: Mode = environment.mode
 
-    "org.pegdown" % "pegdown" % "1.6.0" % scope,
+  override def runModeConfiguration: Configuration = configuration
 
-    "com.typesafe.play" %% "play-test" % PlayVersion.current % scope,
-
-    "org.scalatestplus.play" %% "scalatestplus-play" % "2.0.0" % scope,
-
-    "org.scalamock" %% "scalamock" % "4.1.0" % scope,
-
-    "com.github.tomakehurst" % "wiremock" % "2.6.0" % scope
-  )
-
+  override val businessDetailsBaseUrl: String = baseUrl("business-details")
 }

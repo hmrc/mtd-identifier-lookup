@@ -16,11 +16,27 @@
 
 package connectors
 
-import support.UnitSpec
+import mocks.{MockAppConfig, MockHttpClient}
 
-class BusinessDetailsConnectorSpec extends UnitSpec {
+import scala.concurrent.Future
+import scala.concurrent.ExecutionContext.Implicits.global
 
-//  "Calling .getMtdId with a valid NINO" should {
-//    "return a MTD ID"
-//  }
+class BusinessDetailsConnectorSpec extends ConnectorBaseSpec {
+
+  trait Test extends MockHttpClient with MockAppConfig {
+    lazy val target: BusinessDetailsConnector = {
+      new BusinessDetailsConnector(mockHttpClient, mockAppConfig)
+    }
+  }
+
+  "Calling .getMtdId with a NINO" should {
+    "call the business details microservice using the correct URL" in new Test {
+      val expectedId = "an expected Id"
+      mockBusinessDetailsBaseUrl().returns("http://business-details")
+      mockGet("http://business-details/registration/business-details/nino/AA123456A")
+        .returns(Future.successful(Right(expectedId)))
+
+      await(target.getMtdId("AA123456A"))
+    }
+  }
 }
