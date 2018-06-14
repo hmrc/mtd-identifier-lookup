@@ -43,7 +43,7 @@ class LookupControllerSpec extends ControllerBaseSpec {
     "return valid json" in new Test {
       authoriseUser()
 
-      private val expectedResponse = Json.obj("mtdbas" -> mtdId)
+      private val expectedResponse = Json.obj("mtdbsa" -> mtdId)
       MockedLookupService.getMtdId(nino).returns(Future.successful(Right(mtdId)))
       private val result = target.lookup(nino)(fakeRequest)
       contentAsJson(result) shouldBe expectedResponse

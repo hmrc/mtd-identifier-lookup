@@ -35,7 +35,7 @@ class MtdIdReadsHttpParserSpec extends UnitSpec {
     "the http response status is 200 OK with a valid body" should {
 
       "return a MTD ID" in new Test {
-        override val body = Some(Json.parse("""{"mtdbas": "1234567890"}"""))
+        override val body = Some(Json.parse("""{"mtdbsa": "1234567890"}"""))
         override val statusCode: Int = Status.OK
 
         result shouldBe Right("1234567890")
@@ -45,7 +45,7 @@ class MtdIdReadsHttpParserSpec extends UnitSpec {
     "the http response status is 200 OK with an invalid body" should {
 
       "return a MalformedPayloadError" in new Test {
-        override val body = Some(Json.parse("""{"mtdbas": 1234}"""))
+        override val body = Some(Json.parse("""{"mtdbsa": 1234}"""))
         override val statusCode: Int = Status.OK
 
         result shouldBe Left(MalformedPayloadError)

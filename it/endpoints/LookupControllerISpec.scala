@@ -43,7 +43,7 @@ class LookupControllerISpec extends IntegrationBaseSpec {
       "return 200" in new Test {
         override def setupStubs(): StubMapping = {
           AuthStub.authorised()
-          BusinessDetailsStub.getMtdId(Json.obj("mtdbas" -> "1234567890").toString(), nino, Status.OK)
+          BusinessDetailsStub.getMtdId(Json.obj("mtdbsa" -> "1234567890").toString(), nino, Status.OK)
         }
 
         val response: WSResponse = await(request(nino).get())

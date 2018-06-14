@@ -35,7 +35,7 @@ class LookupController @Inject()(val authService: EnrolmentsAuthService,
     implicit request =>
       if (Nino.isValid(nino)) {
         lookupService.getMtdId(nino).map {
-          case Right(mtdId) => Ok(Json.obj("mtdbas" -> mtdId))
+          case Right(mtdId) => Ok(Json.obj("mtdbsa" -> mtdId))
           case Left(ForbiddenError) => Forbidden
           case Left(_) => InternalServerError
         }

@@ -27,7 +27,7 @@ object MtdIdReadsHttpParser {
   implicit val reader: HttpReads[Either[ExternalServiceError, String]] = new HttpReads[Either[ExternalServiceError, String]] {
 
     private def extractId(json: JsValue): Either[ExternalServiceError, String] = {
-      (json \ "mtdbas").validate[String] match {
+      (json \ "mtdbsa").validate[String] match {
         case success: JsSuccess[String] => Right(success.value)
         case error: JsError =>
           Logger.warn(s"[MtdIdReadsHttpParser][read]: ${error.toString}")
