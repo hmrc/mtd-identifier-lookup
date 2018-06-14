@@ -41,7 +41,9 @@ trait IntegrationBaseSpec extends WordSpec
 
   def servicesConfig: Map[String, String] = Map(
     "microservice.services.auth.host" -> mockHost,
-    "microservice.services.auth.port" -> mockPort
+    "microservice.services.auth.port" -> mockPort,
+    "microservice.services.business-details.host" -> mockHost,
+    "microservice.services.business-details.port" -> mockPort
   )
 
   override implicit lazy val app: Application = new GuiceApplicationBuilder()
