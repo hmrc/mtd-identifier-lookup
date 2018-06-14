@@ -22,7 +22,8 @@ object AppDependencies {
 
   val compile = Seq(
     ws,
-    "uk.gov.hmrc" %% "bootstrap-play-25" % "1.6.0"
+    "uk.gov.hmrc" %% "bootstrap-play-25" % "1.6.0",
+    "uk.gov.hmrc" %% "domain" % "5.0.0"
   )
 
   def test(scope: String = "test, it"): Seq[sbt.ModuleID] = Seq(
