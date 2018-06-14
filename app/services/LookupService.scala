@@ -18,19 +18,20 @@ package services
 
 import com.google.inject.{Inject, Singleton}
 import connectors.BusinessDetailsConnector
-import models.errors.{ExternalServiceError, ForbiddenError, NotFoundError}
+import models.errors.{ExternalServiceError, ForbiddenError, InternalServerError, NotFoundError}
 import uk.gov.hmrc.http.HeaderCarrier
 
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
-class LookUpService @Inject()(connector: BusinessDetailsConnector) {
+class LookupService @Inject()(connector: BusinessDetailsConnector) {
 
   def getMtdId(nino: String)(implicit hc: HeaderCarrier,
                              ec: ExecutionContext): Future[Either[ExternalServiceError, String]] ={
     connector.getMtdId(nino).map{
+      case success@Right(_) => success
       case Left(NotFoundError) => Left(ForbiddenError)
-      case response => response
+      case Left(_) => Left(InternalServerError)
     }
   }
 }

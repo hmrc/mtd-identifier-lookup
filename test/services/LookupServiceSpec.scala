@@ -22,10 +22,10 @@ import models.errors._
 import scala.concurrent.Future
 import scala.concurrent.ExecutionContext.Implicits.global
 
-class LookUpServiceSpec extends ServiceBaseSpec {
+class LookupServiceSpec extends ServiceBaseSpec {
 
   trait Test extends MockBusinessDetailsConnector {
-    lazy val target = new LookUpService(mockBusinessDetailsConnector)
+    lazy val target = new LookupService(mockBusinessDetailsConnector)
   }
 
   "calling .getMtdId" when {
@@ -39,7 +39,7 @@ class LookUpServiceSpec extends ServiceBaseSpec {
 
         mockGetMtdId(nino).returns(Future.successful(connectorResponse))
 
-        val result = await(target.getMtdId(nino))
+        private val result = await(target.getMtdId(nino))
 
         result shouldBe connectorResponse
       }
@@ -52,7 +52,7 @@ class LookUpServiceSpec extends ServiceBaseSpec {
 
         mockGetMtdId(nino).returns(Future.successful(connectorResponse))
 
-        val result = await(target.getMtdId(nino))
+        private val result = await(target.getMtdId(nino))
 
         result shouldBe serviceResponse
       }
@@ -67,15 +67,16 @@ class LookUpServiceSpec extends ServiceBaseSpec {
     ).foreach {
       case (description, error) =>
       s"a $description is returned" should {
-        "pass on the same result" in new Test {
+        "transform the error into an internal server error" in new Test {
 
           val connectorResponse = Left(error)
+          val serviceResponse = Left(InternalServerError)
 
           mockGetMtdId(nino).returns(Future.successful(connectorResponse))
 
-          val result = await(target.getMtdId(nino))
+          private val result = await(target.getMtdId(nino))
 
-          result shouldBe connectorResponse
+          result shouldBe serviceResponse
         }
       }
     }
