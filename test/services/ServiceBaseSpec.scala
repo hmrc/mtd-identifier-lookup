@@ -14,13 +14,11 @@
  * limitations under the License.
  */
 
-package models.errors
+package services
 
-sealed trait ExternalServiceError
+import support.UnitSpec
+import uk.gov.hmrc.http.HeaderCarrier
 
-case object BadRequestError extends ExternalServiceError
-case object InternalServerError extends ExternalServiceError
-case object NotFoundError extends ExternalServiceError
-case object ServiceUnavailableError extends ExternalServiceError
-case object MalformedPayloadError extends ExternalServiceError
-case object ForbiddenError extends ExternalServiceError
+trait ServiceBaseSpec extends UnitSpec {
+  implicit val hc: HeaderCarrier = HeaderCarrier()
+}
