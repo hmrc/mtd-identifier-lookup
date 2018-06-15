@@ -14,40 +14,35 @@
  * limitations under the License.
  */
 
-package controllers
+package mocks
 
 import models.ServiceResponse
 import models.errors.AuthError
+import org.scalamock.scalatest.MockFactory
 import services.EnrolmentsAuthService
 import uk.gov.hmrc.auth.core.authorise.Predicate
 import uk.gov.hmrc.http.HeaderCarrier
 
 import scala.concurrent.{ExecutionContext, Future}
 
-class HelloWorldControllerSpec extends ControllerBaseSpec {
+trait MockAuthService extends MockFactory {
 
-  private trait Test {
+  val mockAuthService: EnrolmentsAuthService = mock[EnrolmentsAuthService]
+
+  def authoriseUser(): Any = {
     val authResult: ServiceResponse[AuthError, Boolean] = Future.successful(Right(true))
 
-    val mockAuthService: EnrolmentsAuthService = mock[EnrolmentsAuthService]
-
-    def setup(): Any = {
-      (mockAuthService.authorised(_: Predicate)(_: HeaderCarrier, _: ExecutionContext))
-        .expects(*, *, *)
-        .returning(authResult)
-    }
-
-    lazy val target: HelloWorldController = {
-      setup()
-      new HelloWorldController(mockAuthService)
-    }
+    (mockAuthService.authorised(_: Predicate)(_: HeaderCarrier, _: ExecutionContext))
+      .expects(*, *, *)
+      .returning(authResult)
   }
 
-  "GET /" should {
-    "return 200" in new Test {
-      private val result = target.hello()(fakeRequest)
-      status(result) shouldBe OK
-    }
+  def unauthorisedUser(): Any = {
+    val authResult: ServiceResponse[AuthError, Boolean] = Future.successful(Left(AuthError()))
+
+    (mockAuthService.authorised(_: Predicate)(_: HeaderCarrier, _: ExecutionContext))
+      .expects(*, *, *)
+      .returning(authResult)
   }
 
 }

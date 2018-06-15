@@ -14,24 +14,19 @@
  * limitations under the License.
  */
 
-package controllers
+package connectors
 
 import play.api.http.{HeaderNames, MimeTypes, Status}
-import play.api.mvc.AnyContentAsEmpty
-import play.api.test.{FakeRequest, ResultExtractors}
+import play.api.test.ResultExtractors
 import support.UnitSpec
+import uk.gov.hmrc.http.HeaderCarrier
 
-trait ControllerBaseSpec extends UnitSpec
+trait ConnectorBaseSpec extends UnitSpec
   with Status
   with MimeTypes
   with HeaderNames
   with ResultExtractors {
 
-  implicit lazy val fakeRequest: FakeRequest[AnyContentAsEmpty.type] = FakeRequest()
+  implicit val hc: HeaderCarrier = HeaderCarrier()
 
-  lazy val fakeGetRequest: FakeRequest[AnyContentAsEmpty.type] = fakeRequest.withHeaders(
-    HeaderNames.AUTHORIZATION -> "Bearer Token"
-  )
-
-  def fakePostRequest[T](body: T): FakeRequest[T] = fakeRequest.withBody(body)
 }

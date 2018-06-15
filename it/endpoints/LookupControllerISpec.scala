@@ -17,32 +17,36 @@
 package endpoints
 
 import com.github.tomakehurst.wiremock.stubbing.StubMapping
-import support.IntegrationBaseSpec
 import play.api.http.Status
+import play.api.libs.json.Json
 import play.api.libs.ws.{WSRequest, WSResponse}
-import stubs.AuthStub
+import stubs.{AuthStub, BusinessDetailsStub}
+import support.IntegrationBaseSpec
 
-class HelloWorldISpec extends IntegrationBaseSpec {
+class LookupControllerISpec extends IntegrationBaseSpec {
 
   private trait Test {
     def setupStubs(): StubMapping
 
-    def request(): WSRequest = {
+    def request(nino: String): WSRequest = {
       setupStubs()
-      buildRequest("/hello-world")
+      buildRequest(s"/nino/$nino")
     }
   }
 
-  "Calling the hello-world endpoint" when {
+  "Calling the mtd lookup endpoint" when {
+
+    val nino = "AA123456A"
 
     "the user is authorised" should {
 
       "return 200" in new Test {
         override def setupStubs(): StubMapping = {
           AuthStub.authorised()
+          BusinessDetailsStub.getMtdId(Json.obj("mtdbsa" -> "1234567890").toString(), nino, Status.OK)
         }
 
-        val response: WSResponse = await(request().get())
+        val response: WSResponse = await(request(nino).get())
         response.status shouldBe Status.OK
       }
     }
@@ -54,7 +58,7 @@ class HelloWorldISpec extends IntegrationBaseSpec {
           AuthStub.unauthorisedNotLoggedIn()
         }
 
-        val response: WSResponse = await(request().get())
+        val response: WSResponse = await(request(nino).get())
         response.status shouldBe Status.UNAUTHORIZED
       }
     }
@@ -67,10 +71,22 @@ class HelloWorldISpec extends IntegrationBaseSpec {
           AuthStub.unauthorisedOther()
         }
 
-        val response: WSResponse = await(request().get())
+        val response: WSResponse = await(request(nino).get())
         response.status shouldBe Status.FORBIDDEN
       }
     }
 
+    "the user is authorised but non-MTD nino" should {
+
+      "return 403" in new Test {
+        override def setupStubs(): StubMapping = {
+          AuthStub.authorised()
+          BusinessDetailsStub.getMtdId("", nino, Status.NOT_FOUND)
+        }
+
+        val response: WSResponse = await(request(nino).get())
+        response.status shouldBe Status.FORBIDDEN
+      }
+    }
   }
 }
