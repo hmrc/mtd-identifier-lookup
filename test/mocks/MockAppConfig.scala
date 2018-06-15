@@ -24,8 +24,20 @@ trait MockAppConfig extends MockFactory {
 
   val mockAppConfig: AppConfig = mock[AppConfig]
 
-  def mockBusinessDetailsBaseUrl(): CallHandler[String] = {
-    (mockAppConfig.businessDetailsBaseUrl: () => String)
-      .expects()
+  object MockedAppConfig {
+    def businessDetailsBaseUrl(): CallHandler[String] = {
+      (mockAppConfig.businessDetailsBaseUrl: () => String)
+        .expects()
+    }
+
+    def businessDetailsEnvironment(): CallHandler[String] = {
+      (mockAppConfig.businessDetailsEnvironment: () => String)
+        .expects()
+    }
+
+    def businessDetailsToken(): CallHandler[String] = {
+      (mockAppConfig.businessDetailsToken: () => String)
+        .expects()
+    }
   }
 }

@@ -19,8 +19,10 @@ package connectors
 import config.AppConfig
 import connectors.httpParsers.MtdIdReadsHttpParser.reader
 import javax.inject.{Inject, Singleton}
+
 import models.errors.ExternalServiceError
-import uk.gov.hmrc.http.HeaderCarrier
+import uk.gov.hmrc.http.{HeaderCarrier, HttpReads}
+import uk.gov.hmrc.http.logging.Authorization
 import uk.gov.hmrc.play.bootstrap.http.HttpClient
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -32,6 +34,17 @@ class BusinessDetailsConnector @Inject()(client: HttpClient,
   def getMtdId(nino: String)
               (implicit hc: HeaderCarrier,
                ec: ExecutionContext): Future[Either[ExternalServiceError, String]] = {
-    client.GET(appConfig.businessDetailsBaseUrl() + s"/registration/business-details/nino/$nino")
+
+    val hcWithDesHeaders = hc
+      .copy(authorization = Some(Authorization(s"Bearer ${appConfig.businessDetailsToken()}")))
+      .withExtraHeaders(
+        "Environment" -> appConfig.businessDetailsEnvironment(),
+        "Accept" -> "application/json",
+        "Originator-Id" -> "DA_SDI"
+      )
+
+    val url = appConfig.businessDetailsBaseUrl() + s"/registration/business-details/nino/$nino"
+
+    client.GET(url)(implicitly[HttpReads[Either[ExternalServiceError, String]]], hcWithDesHeaders, implicitly)
   }
 }

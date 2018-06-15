@@ -23,6 +23,8 @@ import uk.gov.hmrc.play.config.ServicesConfig
 
 trait AppConfig {
   def businessDetailsBaseUrl(): String
+  def businessDetailsEnvironment(): String
+  def businessDetailsToken(): String
 }
 
 @Singleton
@@ -35,4 +37,8 @@ class AppConfigImpl @Inject()(environment: Environment,
   override def runModeConfiguration: Configuration = configuration
 
   override val businessDetailsBaseUrl: String = baseUrl("business-details")
+
+  override val businessDetailsEnvironment: String = getString("microservice.services.business-details.env")
+
+  override val businessDetailsToken: String = getString("microservice.services.business-details.token")
 }
