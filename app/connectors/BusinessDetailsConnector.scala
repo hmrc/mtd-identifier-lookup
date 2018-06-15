@@ -17,7 +17,7 @@
 package connectors
 
 import config.AppConfig
-import connectors.httpParsers.MtdIdReadsHttpParser
+import connectors.httpParsers.MtdIdReadsHttpParser.reader
 import javax.inject.{Inject, Singleton}
 import models.errors.ExternalServiceError
 import uk.gov.hmrc.http.HeaderCarrier
@@ -26,14 +26,12 @@ import uk.gov.hmrc.play.bootstrap.http.HttpClient
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
-class BusinessDetailsConnector @Inject()(
-                                          client: HttpClient,
-                                          appConfig: AppConfig) {
+class BusinessDetailsConnector @Inject()(client: HttpClient,
+                                         appConfig: AppConfig) {
 
   def getMtdId(nino: String)
               (implicit hc: HeaderCarrier,
                ec: ExecutionContext): Future[Either[ExternalServiceError, String]] = {
-    val url = appConfig.businessDetailsBaseUrl() + s"/registration/business-details/nino/$nino"
-    client.GET(url)(MtdIdReadsHttpParser.reader, implicitly, implicitly)
+    client.GET(appConfig.businessDetailsBaseUrl() + s"/registration/business-details/nino/$nino")
   }
 }
