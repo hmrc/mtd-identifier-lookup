@@ -54,7 +54,6 @@ Requirements
 
 This service is written in [Scala](http://www.scala-lang.org/) and [Play](http://playframework.com/), so needs at least a [JRE] to run.
 
-
 ## Running the application
 
 ### Running from Nexus/Bintray
@@ -62,7 +61,6 @@ To update from Nexus and start all services from the RELEASE version instead of 
 ```
 sm --start MTD_ID_LOOKUP -f
 ```
-
 
 ### To manually run the application locally:
 
@@ -78,7 +76,6 @@ To test the application fully (Unit Tests, Component Tests *(integration)*, Scal
 sbt clean scalastyle coverage test it:test coverageOff coverageReport
 ```
 *(To run only a subset of the tests ommit the desired sbt options accordingly)*
-
 
 ---
 ### License
