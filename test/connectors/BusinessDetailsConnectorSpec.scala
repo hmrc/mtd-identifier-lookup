@@ -32,7 +32,9 @@ class BusinessDetailsConnectorSpec extends ConnectorBaseSpec {
   "Calling .getMtdId with a NINO" should {
     "call the business details microservice using the correct URL" in new Test {
       val expectedId = "an expected Id"
-      mockBusinessDetailsBaseUrl().returns("http://business-details")
+      MockedAppConfig.businessDetailsBaseUrl().returns("http://business-details")
+      MockedAppConfig.businessDetailsToken().returns("something")
+      MockedAppConfig.businessDetailsEnvironment().returns("something")
       mockGet("http://business-details/registration/business-details/nino/AA123456A")
         .returns(Future.successful(Right(expectedId)))
 

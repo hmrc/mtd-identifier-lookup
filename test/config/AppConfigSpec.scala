@@ -29,21 +29,43 @@ class AppConfigSpec extends UnitSpec {
     lazy val mockEnvironment: Environment = Environment(dummyFile, mock[ClassLoader], Mode.Prod)
     lazy val mockConfig: Configuration = mock[Configuration]
 
-    def addStringToMockConfig(key: String, value: String): CallHandler[Option[String]] = {
+    val env = "STUB"
+    val host = "business-details"
+    val port = 9000
+    val token = "Bearer STUB"
+
+    private def addStringToMockConfig(key: String, value: String): CallHandler[Option[String]] = {
       (mockConfig.getString(_: String, _: Option[Set[String]]))
-        .expects(key, *)
+        .stubs(key, *)
         .returns(Some(value))
     }
 
-    def addIntToMockConfig(key: String, value: Int): CallHandler[Option[Int]] = {
+    private def addIntToMockConfig(key: String, value: Int): CallHandler[Option[Int]] = {
       (mockConfig.getInt(_: String))
-        .expects(key)
+        .stubs(key)
         .returns(Some(value))
     }
+
+    def configStrings: Map[String, String] = Map[String, String](
+      "microservice.services.business-details.host" -> host,
+      "microservice.services.business-details.token" -> token,
+      "microservice.services.business-details.env" -> env
+    )
+
+    def configInts: Map[String, Int] = Map[String, Int](
+      "microservice.services.business-details.port" -> port
+    )
 
     def setupMocks(): Unit = {
+      configStrings.foreach {
+        case (k, v) => addStringToMockConfig(k, v)
+      }
+      configInts.foreach {
+        case (k, v) => addIntToMockConfig(k, v)
+      }
+
       (mockConfig.getString(_: String, _: Option[Set[String]]))
-        .expects(*, *)
+        .stubs(*, *)
         .returns(None)
         .anyNumberOfTimes()
     }
@@ -56,15 +78,51 @@ class AppConfigSpec extends UnitSpec {
 
   "calling businessDetailsBaseUrl" should {
     "build up the URL from configuration" in new Test {
-
-      val host = "business-details"
-      val port = 9000
-
-      addStringToMockConfig("microservice.services.business-details.host", host)
-      addIntToMockConfig("microservice.services.business-details.port", port)
-
       target.businessDetailsBaseUrl shouldBe s"http://$host:$port"
+    }
+  }
 
+  "calling desEnv" when {
+
+    "env is added to the configuration" should {
+      "return the business details env" in new Test {
+        target.businessDetailsEnvironment shouldBe env
+      }
+    }
+
+    "no env is added to the configuration" should {
+      "return the run time exception" in new Test {
+        override def configStrings: Map[String, String] = {
+          super.configStrings.filterNot {
+            case (k, _) => k == "microservice.services.business-details.env"
+          }
+        }
+        intercept[RuntimeException] {
+          target.businessDetailsEnvironment
+        }
+      }
+    }
+  }
+
+  "calling desToken" when {
+
+    "token is added to the configuration" should {
+      "return the business details token" in new Test {
+        target.businessDetailsToken shouldBe token
+      }
+    }
+
+    "no desToken is added to the configuration" should {
+      "return the run time exception" in new Test {
+        override def configStrings: Map[String, String] = {
+          super.configStrings.filterNot {
+            case (k, _) => k == "microservice.services.business-details.token"
+          }
+        }
+        intercept[RuntimeException] {
+          target.businessDetailsToken
+        }
+      }
     }
   }
 }
