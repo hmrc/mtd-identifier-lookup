@@ -18,7 +18,7 @@ package endpoints
 
 import com.github.tomakehurst.wiremock.stubbing.StubMapping
 import play.api.http.Status
-import play.api.libs.json.{JsValue, Json}
+import play.api.libs.json.Json
 import play.api.libs.ws.{WSRequest, WSResponse}
 import stubs.{AuthStub, BusinessDetailsStub}
 import support.IntegrationBaseSpec

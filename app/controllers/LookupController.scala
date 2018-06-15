@@ -17,6 +17,7 @@
 package controllers
 
 import javax.inject.{Inject, Singleton}
+
 import models.errors.ForbiddenError
 import play.api.libs.json.Json
 import play.api.mvc.{Action, AnyContent}
