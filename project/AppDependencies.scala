@@ -23,7 +23,8 @@ object AppDependencies {
   val compile = Seq(
     ws,
     "uk.gov.hmrc" %% "bootstrap-play-25" % "1.6.0",
-    "uk.gov.hmrc" %% "domain" % "5.0.0"
+    "uk.gov.hmrc" %% "domain" % "5.0.0",
+    "uk.gov.hmrc" %% "play-reactivemongo" % "6.2.0"
   )
 
   def test(scope: String = "test, it"): Seq[sbt.ModuleID] = Seq(
@@ -38,7 +39,13 @@ object AppDependencies {
 
     "org.scalamock" %% "scalamock" % "4.1.0" % scope,
 
-    "com.github.tomakehurst" % "wiremock" % "2.6.0" % scope
+    "com.github.tomakehurst" % "wiremock" % "2.6.0" % scope,
+
+    "de.flapdoodle.embed" % "de.flapdoodle.embed.mongo" % "2.0.0" % scope,
+
+    "uk.gov.hmrc" %% "reactivemongo-test" % "2.0.0" % scope,
+
+    "org.mongodb" %% "casbah" % "3.1.1" % scope
   )
 
 }
