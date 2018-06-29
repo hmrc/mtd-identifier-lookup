@@ -14,15 +14,12 @@
  * limitations under the License.
  */
 
-package config
+package models
 
-import com.google.inject.AbstractModule
-import repositories.{LookupRepository, LookupRepositoryImpl}
+import play.api.libs.json.{Json, OFormat}
 
-class DIModule extends AbstractModule {
+case class MtdIdReference(nino: String, mtdRef: String)
 
-  override def configure(): Unit = {
-    bind(classOf[AppConfig]).to(classOf[AppConfigImpl]).asEagerSingleton()
-    bind(classOf[LookupRepository]).to(classOf[LookupRepositoryImpl])
-  }
+object MtdIdReference {
+  implicit val format: OFormat[MtdIdReference] = Json.format[MtdIdReference]
 }

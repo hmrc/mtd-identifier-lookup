@@ -23,6 +23,9 @@ import play.api.libs.json.{JsValue, Json}
 import play.api.libs.ws.{WSClient, WSRequest, WSResponse}
 import play.api.test.{DefaultAwaitTimeout, FutureAwaits}
 import play.api.{Application, Environment, Mode}
+import repositories.LookupRepositoryImpl
+
+import scala.concurrent.ExecutionContext.Implicits.global
 
 trait IntegrationBaseSpec extends WordSpec
   with Matchers
@@ -38,6 +41,7 @@ trait IntegrationBaseSpec extends WordSpec
   val appRouteContext: String = "/mtd-identifier-lookup"
 
   lazy val client: WSClient = app.injector.instanceOf[WSClient]
+  lazy val repository = app.injector.instanceOf[LookupRepositoryImpl]
 
   def servicesConfig: Map[String, String] = Map(
     "microservice.services.auth.host" -> mockHost,
@@ -50,6 +54,11 @@ trait IntegrationBaseSpec extends WordSpec
     .in(Environment.simple(mode = Mode.Dev))
     .configure(servicesConfig)
     .build()
+
+  override def beforeEach(): Unit = {
+    super.beforeEach()
+    await(repository.drop)
+  }
 
   override def beforeAll(): Unit = {
     super.beforeAll()
