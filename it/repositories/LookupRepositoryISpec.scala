@@ -16,29 +16,23 @@
 
 package repositories
 
-import mocks.MongoEmbeddedDatabase
 import models.MtdIdReference
-import org.scalatest.BeforeAndAfterEach
+import support.IntegrationBaseSpec
 import uk.gov.hmrc.http.HeaderCarrier
 
 import scala.concurrent.ExecutionContext.Implicits.global
 
-class LookupRepositorySpec extends MongoEmbeddedDatabase with BeforeAndAfterEach {
+class LookupRepositoryISpec extends IntegrationBaseSpec {
 
-  lazy val repository = new LookupRepositoryImpl()(mongo)
-  implicit val hc: HeaderCarrier = HeaderCarrier()
-
-  override def beforeEach(): Unit = {
-    super.beforeEach()
-    repository.ensureIndexes
-  }
+  private implicit val hc: HeaderCarrier = HeaderCarrier()
+  val target: LookupRepositoryImpl = repository
 
   val nino: String = "AA123456A"
 
   "calling .save" when {
     "a valid nino and mtdId is passed" should {
       "return true" in {
-        val result = repository.save(nino, "id")
+        val result = target.save(nino, "id")
         await(result) shouldBe true
       }
     }
@@ -47,8 +41,8 @@ class LookupRepositorySpec extends MongoEmbeddedDatabase with BeforeAndAfterEach
   "calling .getMtdId" when {
     "a valid nino is passed " should {
       "return a mtdId if exists" in {
-        repository.save(nino, "id")
-        val result = repository.getMtdReference("AA123456A")
+        target.save(nino, "id")
+        val result = target.getMtdReference("AA123456A")
         await(result) shouldBe Some(MtdIdReference(nino, "id"))
       }
     }
@@ -57,7 +51,7 @@ class LookupRepositorySpec extends MongoEmbeddedDatabase with BeforeAndAfterEach
   "calling .getMtdId" when {
     "a valid nino is passed " should {
       "return a none if not exists" in {
-        val result = repository.getMtdReference("AA123456A")
+        val result = target.getMtdReference("AA123456A")
         await(result) shouldBe None
       }
     }

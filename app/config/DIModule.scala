@@ -17,10 +17,12 @@
 package config
 
 import com.google.inject.AbstractModule
+import repositories.{LookupRepository, LookupRepositoryImpl}
 
-class DIModule extends AbstractModule{
+class DIModule extends AbstractModule {
 
   override def configure(): Unit = {
     bind(classOf[AppConfig]).to(classOf[AppConfigImpl]).asEagerSingleton()
+    bind(classOf[LookupRepository]).to(classOf[LookupRepositoryImpl])
   }
 }

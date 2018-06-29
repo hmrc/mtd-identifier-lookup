@@ -39,13 +39,7 @@ object AppDependencies {
 
     "org.scalamock" %% "scalamock" % "4.1.0" % scope,
 
-    "com.github.tomakehurst" % "wiremock" % "2.6.0" % scope,
-
-    "de.flapdoodle.embed" % "de.flapdoodle.embed.mongo" % "2.0.0" % scope,
-
-    "uk.gov.hmrc" %% "reactivemongo-test" % "2.0.0" % scope,
-
-    "org.mongodb" %% "casbah" % "3.1.1" % scope
+    "com.github.tomakehurst" % "wiremock" % "2.6.0" % scope
   )
 
 }

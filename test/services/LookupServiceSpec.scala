@@ -56,7 +56,7 @@ class LookupServiceSpec extends ServiceBaseSpec {
         val lookupCacheResponse = Some(MtdIdReference(nino, mtdId))
         val serviceResponse = Right(mtdId)
 
-        mockGetMtdId(nino).returns(Future.successful(serviceResponse))
+        mockGetMtdId(nino).never()
         MockedLookupRepository.getMtdReference(nino).returns(Future.successful(lookupCacheResponse))
 
         private val result = await(target.getMtdId(nino))
@@ -102,42 +102,6 @@ class LookupServiceSpec extends ServiceBaseSpec {
 
           result shouldBe serviceResponse
         }
-      }
-    }
-  }
-
-  "calling .save function" when {
-
-    val nino: String = "AA123456A"
-    val mtdId = "some id"
-    "a valid MTD NINO and MTD ID is passed" should {
-      "return a success response" in new Test {
-
-        val response = true
-
-        MockedLookupRepository.save(nino, mtdId).returns(Future.successful(response))
-
-        private val result = await(target.save(nino, mtdId))
-
-        result shouldBe response
-      }
-    }
-  }
-
-  "calling .getMtdReference function" when {
-
-    val nino: String = "AA123456A"
-    val mtdId = "some id"
-    "a valid MTD NINO is passed" should {
-      "return a MtdIdReference object" in new Test {
-
-        val response = Some(MtdIdReference(nino, mtdId))
-
-        MockedLookupRepository.getMtdReference(nino).returns(Future.successful(response))
-
-        private val result = await(target.getMtdReference(nino))
-
-        result shouldBe response
       }
     }
   }

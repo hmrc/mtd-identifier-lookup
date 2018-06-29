@@ -16,11 +16,9 @@
 
 package repositories
 
-import javax.inject.Singleton
-
-import com.google.inject.ImplementedBy
+import javax.inject.{Inject, Singleton}
 import models.MtdIdReference
-import reactivemongo.api.DB
+import play.modules.reactivemongo.ReactiveMongoComponent
 import reactivemongo.api.indexes.Index
 import reactivemongo.api.indexes.IndexType.Ascending
 import reactivemongo.bson.BSONObjectID
@@ -30,7 +28,6 @@ import uk.gov.hmrc.mongo.json.ReactiveMongoFormats
 
 import scala.concurrent.{ExecutionContext, Future}
 
-@ImplementedBy(classOf[LookupRepositoryImpl])
 trait LookupRepository {
 
   def save(nino: String, mtdId: String)(implicit hc: HeaderCarrier,
@@ -42,11 +39,11 @@ trait LookupRepository {
 }
 
 @Singleton
-class LookupRepositoryImpl (implicit mongo: () => DB)
+class LookupRepositoryImpl @Inject()()(implicit mongo: ReactiveMongoComponent)
   extends ReactiveRepository[MtdIdReference, BSONObjectID]("mtdIdLookup",
-                                                            mongo,
-                                                            MtdIdReference.format,
-                                                            ReactiveMongoFormats.objectIdFormats) with LookupRepository{
+    mongo.mongoConnector.db,
+    MtdIdReference.format,
+    ReactiveMongoFormats.objectIdFormats) with LookupRepository {
 
   override def indexes: Seq[Index] = Seq(Index(Seq(("nino", Ascending)), name = Some("mtd-nino"), unique = true))
 
