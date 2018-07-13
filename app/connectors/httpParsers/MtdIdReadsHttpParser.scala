@@ -38,10 +38,18 @@ object MtdIdReadsHttpParser {
     override def read(method: String, url: String, response: HttpResponse): Either[ExternalServiceError, String] = {
       response.status match {
         case Status.OK => extractId(response.json)
-        case Status.BAD_REQUEST => Left(BadRequestError)
-        case Status.NOT_FOUND => Left(NotFoundError)
-        case Status.SERVICE_UNAVAILABLE => Left(ServiceUnavailableError)
-        case Status.INTERNAL_SERVER_ERROR => Left(InternalServerError)
+        case Status.BAD_REQUEST =>
+          Logger.warn(s"[MtdIdReadsHttpParser][read]: Bad Request from DES: \nBody - ${response.body}\nURl - $url")
+          Left(BadRequestError)
+        case Status.NOT_FOUND =>
+          Logger.warn(s"[MtdIdReadsHttpParser][read]: Not Found from DES: \nBody - ${response.body}\nURl - $url")
+          Left(NotFoundError)
+        case Status.SERVICE_UNAVAILABLE =>
+          Logger.warn(s"[MtdIdReadsHttpParser][read]: Service Unavailable from DES: \nBody - ${response.body}\nURl - $url")
+          Left(ServiceUnavailableError)
+        case Status.INTERNAL_SERVER_ERROR =>
+          Logger.warn(s"[MtdIdReadsHttpParser][read]: ISE from DES: \nBody - ${response.body}\nURl - $url")
+          Left(InternalServerError)
       }
     }
   }
