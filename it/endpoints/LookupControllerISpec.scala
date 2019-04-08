@@ -38,19 +38,6 @@ class LookupControllerISpec extends IntegrationBaseSpec {
 
     val nino = "AA123456A"
 
-    "the user is authorised but non-MTD nino" should {
-
-      "return 403" in new Test {
-        override def setupStubs(): StubMapping = {
-          AuthStub.authorised()
-          BusinessDetailsStub.getMtdId("", nino, Status.NOT_FOUND)
-        }
-
-        val response: WSResponse = await(request(nino).get())
-        response.status shouldBe Status.FORBIDDEN
-      }
-    }
-
     "the user is authorised" should {
 
       "return 200" in new Test {
@@ -76,6 +63,7 @@ class LookupControllerISpec extends IntegrationBaseSpec {
       }
     }
 
+
     "the user is NOT authorised" should {
 
       "return 403" in new Test {
@@ -88,5 +76,17 @@ class LookupControllerISpec extends IntegrationBaseSpec {
       }
     }
 
+    "the user is authorised but non-MTD nino" should {
+
+      "return 403" in new Test {
+        override def setupStubs(): StubMapping = {
+          AuthStub.authorised()
+          BusinessDetailsStub.getMtdId("", nino, Status.NOT_FOUND)
+        }
+
+        val response: WSResponse = await(request(nino).get())
+        response.status shouldBe Status.FORBIDDEN
+      }
+    }
   }
 }
