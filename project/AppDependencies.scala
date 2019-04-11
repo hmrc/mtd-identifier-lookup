@@ -24,7 +24,7 @@ object AppDependencies {
     ws,
     "uk.gov.hmrc" %% "bootstrap-play-25" % "4.10.0",
     "uk.gov.hmrc" %% "domain" % "5.6.0-play-25",
-    "uk.gov.hmrc" %% "play-reactivemongo" % "6.4.0"
+    "uk.gov.hmrc" %% "play-reactivemongo" % "6.5.0"
   )
 
   def test(scope: String = "test, it"): Seq[sbt.ModuleID] = Seq(
