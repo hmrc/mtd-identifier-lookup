@@ -5,6 +5,8 @@
 
 This protected micro-service processes authenticated requests to retrieve the MDT Income Tax identifier (**MTD IT ID**) for a NINO.
 
+sbt "~run 9769"
+
 # Endpoint Definitions (APIs)
 
 ## Lookup MTD IT ID using a related NINO
