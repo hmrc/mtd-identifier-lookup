@@ -23,10 +23,9 @@ import services.EnrolmentsAuthService
 import uk.gov.hmrc.auth.core.authorise.{EmptyPredicate, Predicate}
 import uk.gov.hmrc.play.bootstrap.controller.BaseController
 
-import scala.concurrent.ExecutionContext.Implicits.global
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContext, Future}
 
-abstract class AuthorisedController extends BaseController {
+abstract class AuthorisedController(implicit ec: ExecutionContext) extends BaseController {
 
   val authService: EnrolmentsAuthService
 

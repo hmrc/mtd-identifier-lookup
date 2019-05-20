@@ -17,19 +17,17 @@
 package controllers
 
 import javax.inject.{Inject, Singleton}
-
 import models.errors.ForbiddenError
 import play.api.libs.json.Json
 import play.api.mvc.{Action, AnyContent}
 import services.{EnrolmentsAuthService, LookupService}
 import uk.gov.hmrc.domain.Nino
 
-import scala.concurrent.ExecutionContext.Implicits.global
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
 class LookupController @Inject()(val authService: EnrolmentsAuthService,
-                                 lookupService: LookupService)
+                                 lookupService: LookupService)(implicit ec: ExecutionContext)
   extends AuthorisedController {
 
   def lookup(nino: String): Action[AnyContent] = authorisedAction() {

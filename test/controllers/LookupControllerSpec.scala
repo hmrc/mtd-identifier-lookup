@@ -20,6 +20,7 @@ import mocks.{MockAuthService, MockLookupService}
 import models.errors.{ForbiddenError, InternalServerError}
 import play.api.libs.json.Json
 
+import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
 class LookupControllerSpec extends ControllerBaseSpec {
