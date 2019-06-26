@@ -57,7 +57,7 @@ trait IntegrationBaseSpec extends WordSpec
 
   override def beforeEach(): Unit = {
     super.beforeEach()
-    await(repository.drop)
+    await(repository.removeAll())
   }
 
   override def beforeAll(): Unit = {
