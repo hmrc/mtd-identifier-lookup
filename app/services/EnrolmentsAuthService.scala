@@ -19,8 +19,8 @@ package services
 import javax.inject.{Inject, Singleton}
 import models.ServiceResponse
 import models.errors.AuthError
+import uk.gov.hmrc.auth.core._
 import uk.gov.hmrc.auth.core.authorise.Predicate
-import uk.gov.hmrc.auth.core.{AuthConnector, AuthorisationException, AuthorisedFunctions, MissingBearerToken}
 import uk.gov.hmrc.http.HeaderCarrier
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -34,9 +34,11 @@ class EnrolmentsAuthService @Inject()(val connector: AuthConnector) {
 
   def authorised(predicate: Predicate)(implicit hc: HeaderCarrier, ec: ExecutionContext): ServiceResponse[AuthError, Boolean] = {
     authFunction.authorised(predicate) {
+
       Future.successful(Right(true))
     } recoverWith {
       case _: MissingBearerToken => Future.successful(Left(AuthError()))
+      case _: InvalidBearerToken => Future.successful(Left(AuthError()))
       case _: AuthorisationException => Future.successful(Left(AuthError(authenticated = true)))
     }
   }
