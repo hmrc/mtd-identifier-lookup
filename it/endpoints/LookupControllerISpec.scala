@@ -66,13 +66,13 @@ class LookupControllerISpec extends IntegrationBaseSpec {
 
     "the user is NOT authorised" should {
 
-      "return 403" in new Test {
+      "return 401" in new Test {
         override def setupStubs(): StubMapping = {
           AuthStub.unauthorisedOther()
         }
 
         val response: WSResponse = await(request(nino).get())
-        response.status shouldBe Status.FORBIDDEN
+        response.status shouldBe Status.UNAUTHORIZED
       }
     }
 
