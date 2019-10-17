@@ -18,14 +18,14 @@ package controllers
 
 import models.errors.AuthError
 import play.api.libs.json.Json
-import play.api.mvc.{Action, AnyContent, Request, Result}
+import play.api.mvc._
 import services.EnrolmentsAuthService
 import uk.gov.hmrc.auth.core.authorise.{EmptyPredicate, Predicate}
-import uk.gov.hmrc.play.bootstrap.controller.BaseController
+import uk.gov.hmrc.play.bootstrap.controller.BackendController
 
 import scala.concurrent.{ExecutionContext, Future}
 
-abstract class AuthorisedController(implicit ec: ExecutionContext) extends BaseController {
+abstract class AuthorisedController(cc: ControllerComponents)(implicit ec: ExecutionContext) extends BackendController(cc) {
 
   val authService: EnrolmentsAuthService
 

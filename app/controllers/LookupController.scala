@@ -19,7 +19,7 @@ package controllers
 import javax.inject.{Inject, Singleton}
 import models.errors.ForbiddenError
 import play.api.libs.json.Json
-import play.api.mvc.{Action, AnyContent}
+import play.api.mvc.{Action, AnyContent, ControllerComponents}
 import services.{EnrolmentsAuthService, LookupService}
 import uk.gov.hmrc.domain.Nino
 
@@ -27,8 +27,9 @@ import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
 class LookupController @Inject()(val authService: EnrolmentsAuthService,
-                                 lookupService: LookupService)(implicit ec: ExecutionContext)
-  extends AuthorisedController {
+                                 lookupService: LookupService,
+                                 cc: ControllerComponents)(implicit ec: ExecutionContext)
+  extends AuthorisedController(cc) {
 
   def lookup(nino: String): Action[AnyContent] = authorisedAction() {
     implicit request =>

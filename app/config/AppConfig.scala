@@ -17,9 +17,7 @@
 package config
 
 import javax.inject.{Inject, Singleton}
-import play.api.Mode.Mode
-import play.api.{Configuration, Environment}
-import uk.gov.hmrc.play.config.ServicesConfig
+import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
 
 trait AppConfig {
   def businessDetailsBaseUrl(): String
@@ -28,17 +26,12 @@ trait AppConfig {
 }
 
 @Singleton
-class AppConfigImpl @Inject()(environment: Environment,
-                              configuration: Configuration)
-  extends AppConfig with ServicesConfig {
+class AppConfigImpl @Inject()(servicesConfig: ServicesConfig)
+  extends AppConfig {
 
-  override protected def mode: Mode = environment.mode
+  override val businessDetailsBaseUrl: String = servicesConfig.baseUrl("business-details")
 
-  override def runModeConfiguration: Configuration = configuration
+  override val businessDetailsEnvironment: String = servicesConfig.getString("microservice.services.business-details.env")
 
-  override val businessDetailsBaseUrl: String = baseUrl("business-details")
-
-  override val businessDetailsEnvironment: String = getString("microservice.services.business-details.env")
-
-  override val businessDetailsToken: String = getString("microservice.services.business-details.token")
+  override val businessDetailsToken: String = servicesConfig.getString("microservice.services.business-details.token")
 }
