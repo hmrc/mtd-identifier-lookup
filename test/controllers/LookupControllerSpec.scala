@@ -26,7 +26,7 @@ import scala.concurrent.Future
 class LookupControllerSpec extends ControllerBaseSpec {
 
   private trait Test extends MockAuthService with MockLookupService {
-    lazy val target: LookupController = new LookupController(mockAuthService, mockLookupService)
+    lazy val target: LookupController = new LookupController(mockAuthService, mockLookupService, cc)
   }
 
   val nino: String = "AA123456A"
