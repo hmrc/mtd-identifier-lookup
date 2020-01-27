@@ -16,7 +16,9 @@
 
 package support
 
-import org.scalatest.{BeforeAndAfterAll, BeforeAndAfterEach, Matchers, WordSpec}
+import org.scalatest.{BeforeAndAfterAll, BeforeAndAfterEach}
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.wordspec.AnyWordSpec
 import org.scalatestplus.play.guice.GuiceOneServerPerSuite
 import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.libs.json.{JsValue, Json}
@@ -27,7 +29,7 @@ import repositories.LookupRepositoryImpl
 
 import scala.concurrent.ExecutionContext.Implicits.global
 
-trait IntegrationBaseSpec extends WordSpec
+trait IntegrationBaseSpec extends AnyWordSpec
   with Matchers
   with FutureAwaits
   with DefaultAwaitTimeout
