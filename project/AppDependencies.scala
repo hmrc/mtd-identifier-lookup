@@ -24,7 +24,7 @@ object AppDependencies {
     ws,
     "uk.gov.hmrc" %% "bootstrap-backend-play-26" % "3.2.0",
     "uk.gov.hmrc"   %% "domain"            % "5.10.0-play-26",
-    "uk.gov.hmrc" %% "simple-reactivemongo" % "7.27.0-play-26",
+    "uk.gov.hmrc" %% "simple-reactivemongo" % "7.31.0-play-26",
     compilerPlugin("com.github.ghik" % "silencer-plugin" % "1.6.0" cross CrossVersion.full),
     "com.github.ghik" % "silencer-lib" % "1.6.0" % Provided cross CrossVersion.full
   )
