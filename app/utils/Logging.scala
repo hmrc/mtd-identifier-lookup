@@ -14,11 +14,10 @@
  * limitations under the License.
  */
 
-package services
+package utils
 
-import support.UnitSpec
-import uk.gov.hmrc.http.HeaderCarrier
+import play.api.Logger
 
-trait ServiceBaseSpec extends UnitSpec {
-  implicit val hc: HeaderCarrier = HeaderCarrier()
+trait Logging {
+  lazy val logger: Logger = Logger(this.getClass)
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 HM Revenue & Customs
+ * Copyright 2021 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,19 +25,23 @@ trait MockAppConfig extends MockFactory {
   val mockAppConfig: AppConfig = mock[AppConfig]
 
   object MockedAppConfig {
-    def businessDetailsBaseUrl(): CallHandler[String] = {
-      (mockAppConfig.businessDetailsBaseUrl: () => String)
+    def businessDetailsBaseUrl: CallHandler[String] = {
+      (mockAppConfig.businessDetailsBaseUrl _: () => String)
         .expects()
     }
 
-    def businessDetailsEnvironment(): CallHandler[String] = {
-      (mockAppConfig.businessDetailsEnvironment: () => String)
+    def businessDetailsEnvironment: CallHandler[String] = {
+      (mockAppConfig.businessDetailsEnvironment _)
         .expects()
     }
 
-    def businessDetailsToken(): CallHandler[String] = {
-      (mockAppConfig.businessDetailsToken: () => String)
+    def businessDetailsToken: CallHandler[String] = {
+      (mockAppConfig.businessDetailsToken _)
         .expects()
     }
+
+    def businessDetailsEnvironmentHeaders: CallHandler[Option[Seq[String]]] =
+      (mockAppConfig.businessDetailsEnvironmentHeaders _)
+        .expects()
   }
 }

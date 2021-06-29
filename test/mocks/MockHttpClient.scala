@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 HM Revenue & Customs
+ * Copyright 2021 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,8 +27,17 @@ trait MockHttpClient extends MockFactory {
 
   val mockHttpClient: HttpClient = mock[HttpClient]
 
-  def mockGet[T](url: String): CallHandler[Future[T]] = {
-    (mockHttpClient.GET[T](_: String)(_: HttpReads[T], _: HeaderCarrier, _: ExecutionContext))
-      .expects(url, *, *, *)
+  def mockGet[T](url: String,
+                 config: HeaderCarrier.Config,
+                 requiredHeaders: Seq[(String, String)] = Seq.empty,
+                 excludedHeaders: Seq[(String, String)] = Seq.empty): CallHandler[Future[T]] = {
+    (mockHttpClient
+      .GET[T](_: String, _: Seq[(String, String)], _: Seq[(String, String)])(_: HttpReads[T], _: HeaderCarrier, _: ExecutionContext))
+      .expects(where { (actualUrl: String, _: Seq[(String, String)], _: Seq[(String, String)], _ : HttpReads[T], hc: HeaderCarrier, _: ExecutionContext) => {
+        val headersForUrl = hc.headersForUrl(config)(actualUrl)
+        url == actualUrl &&
+          requiredHeaders.forall(h => headersForUrl.contains(h)) &&
+          excludedHeaders.forall(h => !headersForUrl.contains(h))
+      }})
   }
 }
