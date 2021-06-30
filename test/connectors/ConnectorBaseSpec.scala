@@ -30,6 +30,7 @@ trait ConnectorBaseSpec extends UnitSpec
   lazy val baseUrl: String = "http://business-details"
 
   val otherHeaders: Seq[(String, String)] = Seq(
+    "Gov-Test-Scenario" -> "DEFAULT",
     "AnotherHeader" -> "HeaderValue"
   )
 
@@ -50,6 +51,7 @@ trait ConnectorBaseSpec extends UnitSpec
 
   val allowedBusinessDetailsHeaders: Seq[String] = Seq(
     "Accept",
+    "Gov-Test-Scenario",
     "Location",
     "X-Request-Timestamp",
     "X-Session-Id"
