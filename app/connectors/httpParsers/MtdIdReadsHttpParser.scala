@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 HM Revenue & Customs
+ * Copyright 2021 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,12 +17,12 @@
 package connectors.httpParsers
 
 import models.errors._
-import play.api.Logger
 import play.api.http.Status
 import play.api.libs.json.{JsError, JsSuccess, JsValue}
 import uk.gov.hmrc.http.{HttpReads, HttpResponse}
+import utils.Logging
 
-object MtdIdReadsHttpParser {
+object MtdIdReadsHttpParser extends Logging {
 
   implicit val reader: HttpReads[Either[ExternalServiceError, String]] = new HttpReads[Either[ExternalServiceError, String]] {
 
@@ -30,7 +30,7 @@ object MtdIdReadsHttpParser {
       (json \ "mtdbsa").validate[String] match {
         case success: JsSuccess[String] => Right(success.value)
         case error: JsError =>
-          Logger.warn(s"[MtdIdReadsHttpParser][read]: ${error.toString}")
+          logger.warn(s"[MtdIdReadsHttpParser][read]: ${error.toString}")
           Left(MalformedPayloadError)
       }
     }
@@ -39,16 +39,16 @@ object MtdIdReadsHttpParser {
       response.status match {
         case Status.OK => extractId(response.json)
         case Status.BAD_REQUEST =>
-          Logger.warn(s"[MtdIdReadsHttpParser][read]: Bad Request from DES: \nBody - ${response.body}\nURl - $url")
+          logger.warn(s"[MtdIdReadsHttpParser][read]: Bad Request from DES: \nBody - ${response.body}\nURl - $url")
           Left(BadRequestError)
         case Status.NOT_FOUND =>
-          Logger.warn(s"[MtdIdReadsHttpParser][read]: Not Found from DES: \nBody - ${response.body}\nURl - $url")
+          logger.warn(s"[MtdIdReadsHttpParser][read]: Not Found from DES: \nBody - ${response.body}\nURl - $url")
           Left(NotFoundError)
         case Status.SERVICE_UNAVAILABLE =>
-          Logger.warn(s"[MtdIdReadsHttpParser][read]: Service Unavailable from DES: \nBody - ${response.body}\nURl - $url")
+          logger.warn(s"[MtdIdReadsHttpParser][read]: Service Unavailable from DES: \nBody - ${response.body}\nURl - $url")
           Left(ServiceUnavailableError)
         case Status.INTERNAL_SERVER_ERROR =>
-          Logger.warn(s"[MtdIdReadsHttpParser][read]: ISE from DES: \nBody - ${response.body}\nURl - $url")
+          logger.warn(s"[MtdIdReadsHttpParser][read]: ISE from DES: \nBody - ${response.body}\nURl - $url")
           Left(InternalServerError)
       }
     }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 HM Revenue & Customs
+ * Copyright 2021 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,6 +26,37 @@ trait ConnectorBaseSpec extends UnitSpec
   with MimeTypes
   with HeaderNames
   with ResultExtractors {
+
+  lazy val baseUrl: String = "http://business-details"
+
+  val otherHeaders: Seq[(String, String)] = Seq(
+    "Gov-Test-Scenario" -> "DEFAULT",
+    "AnotherHeader" -> "HeaderValue"
+  )
+
+  val dummyBusinessDetailsHeaderCarrierConfig: HeaderCarrier.Config =
+    HeaderCarrier.Config(
+      Seq("^not-test-BaseUrl?$".r),
+      Seq.empty[String],
+      Some("mtd-identifier-lookup")
+    )
+
+  val requiredBusinessDetailsHeaders: Seq[(String, String)] = Seq(
+    "Environment" -> "business-details-environment",
+    "Authorization" -> s"Bearer business-details-token",
+    "User-Agent" -> "mtd-identifier-lookup",
+    "Accept" -> "application/json",
+    "Originator-Id" -> "DA_SDI"
+  )
+
+  val allowedBusinessDetailsHeaders: Seq[String] = Seq(
+    "Accept",
+    "Gov-Test-Scenario",
+    "Content-Type",
+    "Location",
+    "X-Request-Timestamp",
+    "X-Session-Id"
+  )
 
   implicit val hc: HeaderCarrier = HeaderCarrier()
 

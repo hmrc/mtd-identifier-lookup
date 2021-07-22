@@ -43,7 +43,7 @@ trait IntegrationBaseSpec extends AnyWordSpec
   val appRouteContext: String = "/mtd-identifier-lookup"
 
   lazy val client: WSClient = app.injector.instanceOf[WSClient]
-  lazy val repository = app.injector.instanceOf[LookupRepositoryImpl]
+  lazy val repository: LookupRepositoryImpl = app.injector.instanceOf[LookupRepositoryImpl]
 
   def servicesConfig: Map[String, String] = Map(
     "microservice.services.auth.host" -> mockHost,

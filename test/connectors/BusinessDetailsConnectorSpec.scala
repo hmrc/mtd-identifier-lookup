@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 HM Revenue & Customs
+ * Copyright 2021 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,19 +23,24 @@ import scala.concurrent.ExecutionContext.Implicits.global
 
 class BusinessDetailsConnectorSpec extends ConnectorBaseSpec {
 
-  trait Test extends MockHttpClient with MockAppConfig {
-    lazy val target: BusinessDetailsConnector = {
+  class Test(businessDetailsEnvironmentHeaders: Option[Seq[String]]) extends MockHttpClient with MockAppConfig {
+    val target: BusinessDetailsConnector = {
       new BusinessDetailsConnector(mockHttpClient, mockAppConfig)
     }
   }
 
   "Calling .getMtdId with a NINO" should {
-    "call the business details microservice using the correct URL" in new Test {
+    "call the business details microservice using the correct URL" in new Test(Some(allowedBusinessDetailsHeaders)) {
       val expectedId = "an expected Id"
-      MockedAppConfig.businessDetailsBaseUrl().returns("http://business-details")
-      MockedAppConfig.businessDetailsToken().returns("something")
-      MockedAppConfig.businessDetailsEnvironment().returns("something")
-      mockGet("http://business-details/registration/business-details/nino/AA123456A")
+      MockedAppConfig.businessDetailsBaseUrl.returns(baseUrl)
+      MockedAppConfig.businessDetailsToken.returns("business-details-token")
+      MockedAppConfig.businessDetailsEnvironment.returns("business-details-environment")
+      MockedAppConfig.businessDetailsEnvironmentHeaders returns Some(allowedBusinessDetailsHeaders)
+      mockGet(
+        "http://business-details/registration/business-details/nino/AA123456A",
+        config = dummyBusinessDetailsHeaderCarrierConfig,
+        requiredHeaders = requiredBusinessDetailsHeaders,
+        excludedHeaders = Seq("AnotherHeader" -> "HeaderValue"))
         .returns(Future.successful(Right(expectedId)))
 
       await(target.getMtdId("AA123456A"))

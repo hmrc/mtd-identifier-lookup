@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 HM Revenue & Customs
+ * Copyright 2021 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,21 +17,25 @@
 package config
 
 import javax.inject.{Inject, Singleton}
+import play.api.Configuration
 import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
 
 trait AppConfig {
-  def businessDetailsBaseUrl(): String
-  def businessDetailsEnvironment(): String
-  def businessDetailsToken(): String
+  def businessDetailsBaseUrl: String
+  def businessDetailsEnvironment: String
+  def businessDetailsEnvironmentHeaders: Option[Seq[String]]
+  def businessDetailsToken: String
 }
 
 @Singleton
-class AppConfigImpl @Inject()(servicesConfig: ServicesConfig)
+class AppConfigImpl @Inject()(servicesConfig: ServicesConfig, configuration: Configuration)
   extends AppConfig {
 
   override val businessDetailsBaseUrl: String = servicesConfig.baseUrl("business-details")
 
   override val businessDetailsEnvironment: String = servicesConfig.getString("microservice.services.business-details.env")
+
+  override val businessDetailsEnvironmentHeaders: Option[Seq[String]] = configuration.getOptional[Seq[String]]("microservice.services.business-details.environmentHeaders")
 
   override val businessDetailsToken: String = servicesConfig.getString("microservice.services.business-details.token")
 }

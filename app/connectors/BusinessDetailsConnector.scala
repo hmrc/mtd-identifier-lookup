@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 HM Revenue & Customs
+ * Copyright 2021 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,10 +19,8 @@ package connectors
 import config.AppConfig
 import connectors.httpParsers.MtdIdReadsHttpParser.reader
 import javax.inject.{Inject, Singleton}
-
 import models.errors.ExternalServiceError
 import uk.gov.hmrc.http.{HeaderCarrier, HttpReads}
-import uk.gov.hmrc.http.logging.Authorization
 import uk.gov.hmrc.http.HttpClient
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -31,20 +29,29 @@ import scala.concurrent.{ExecutionContext, Future}
 class BusinessDetailsConnector @Inject()(client: HttpClient,
                                          appConfig: AppConfig) {
 
+
+
+    private def hcWithDesHeaders(additionalHeaders: Seq[String] = Seq.empty)(implicit hc: HeaderCarrier): HeaderCarrier = {
+      HeaderCarrier(
+        extraHeaders = hc.extraHeaders ++
+          // Contract headers
+          Seq(
+            "Authorization" -> s"Bearer ${appConfig.businessDetailsToken}",
+            "Environment" -> appConfig.businessDetailsEnvironment,
+            "Accept" -> "application/json",
+            "Originator-Id" -> "DA_SDI"
+          ) ++
+          // Other headers (i.e Gov-Test-Scenario, Content-Type)
+          hc.headers(additionalHeaders ++ appConfig.businessDetailsEnvironmentHeaders.getOrElse(Seq.empty))
+      )
+    }
+
   def getMtdId(nino: String)
               (implicit hc: HeaderCarrier,
                ec: ExecutionContext): Future[Either[ExternalServiceError, String]] = {
 
-    val hcWithDesHeaders = hc
-      .copy(authorization = Some(Authorization(s"Bearer ${appConfig.businessDetailsToken()}")))
-      .withExtraHeaders(
-        "Environment" -> appConfig.businessDetailsEnvironment(),
-        "Accept" -> "application/json",
-        "Originator-Id" -> "DA_SDI"
-      )
+    val url = appConfig.businessDetailsBaseUrl + s"/registration/business-details/nino/$nino"
 
-    val url = appConfig.businessDetailsBaseUrl() + s"/registration/business-details/nino/$nino"
-
-    client.GET(url)(implicitly[HttpReads[Either[ExternalServiceError, String]]], hcWithDesHeaders, implicitly)
+    client.GET(url)(implicitly[HttpReads[Either[ExternalServiceError, String]]], hcWithDesHeaders(), implicitly)
   }
 }
