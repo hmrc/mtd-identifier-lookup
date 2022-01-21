@@ -28,7 +28,7 @@ lazy val microservice = Project(appName, file("."))
     majorVersion := 0,
     libraryDependencies ++= AppDependencies.compile ++ AppDependencies.test(),
     retrieveManaged := true,
-    scalaVersion := "2.12.13"
+    scalaVersion := "2.12.15"
   )
   .settings(publishingSettings: _*)
   .settings(CodeCoverageSettings.settings: _*)
