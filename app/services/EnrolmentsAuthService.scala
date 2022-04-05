@@ -26,7 +26,7 @@ import uk.gov.hmrc.http.HeaderCarrier
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
-class EnrolmentsAuthService @Inject()(val connector: AuthConnector) {
+class EnrolmentsAuthService @Inject() (val connector: AuthConnector) {
 
   private val authFunction: AuthorisedFunctions = new AuthorisedFunctions {
     override def authConnector: AuthConnector = connector
@@ -37,9 +37,10 @@ class EnrolmentsAuthService @Inject()(val connector: AuthConnector) {
 
       Future.successful(Right(true))
     } recoverWith {
-      case _: MissingBearerToken => Future.successful(Left(AuthError()))
-      case _: InvalidBearerToken => Future.successful(Left(AuthError()))
+      case _: MissingBearerToken     => Future.successful(Left(AuthError()))
+      case _: InvalidBearerToken     => Future.successful(Left(AuthError()))
       case _: AuthorisationException => Future.successful(Left(AuthError(authenticated = true)))
     }
   }
+
 }

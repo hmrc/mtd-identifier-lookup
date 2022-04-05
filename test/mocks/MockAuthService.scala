@@ -32,7 +32,8 @@ trait MockAuthService extends MockFactory {
   def authoriseUser(): Any = {
     val authResult: ServiceResponse[AuthError, Boolean] = Future.successful(Right(true))
 
-    (mockAuthService.authorised(_: Predicate)(_: HeaderCarrier, _: ExecutionContext))
+    (mockAuthService
+      .authorised(_: Predicate)(_: HeaderCarrier, _: ExecutionContext))
       .expects(*, *, *)
       .returning(authResult)
   }
@@ -40,7 +41,8 @@ trait MockAuthService extends MockFactory {
   def unauthorisedUser(): Any = {
     val authResult: ServiceResponse[AuthError, Boolean] = Future.successful(Left(AuthError()))
 
-    (mockAuthService.authorised(_: Predicate)(_: HeaderCarrier, _: ExecutionContext))
+    (mockAuthService
+      .authorised(_: Predicate)(_: HeaderCarrier, _: ExecutionContext))
       .expects(*, *, *)
       .returning(authResult)
   }

@@ -21,17 +21,13 @@ import play.api.test.ResultExtractors
 import support.UnitSpec
 import uk.gov.hmrc.http.HeaderCarrier
 
-trait ConnectorBaseSpec extends UnitSpec
-  with Status
-  with MimeTypes
-  with HeaderNames
-  with ResultExtractors {
+trait ConnectorBaseSpec extends UnitSpec with Status with MimeTypes with HeaderNames with ResultExtractors {
 
   lazy val baseUrl: String = "http://business-details"
 
   val otherHeaders: Seq[(String, String)] = Seq(
     "Gov-Test-Scenario" -> "DEFAULT",
-    "AnotherHeader" -> "HeaderValue"
+    "AnotherHeader"     -> "HeaderValue"
   )
 
   val dummyBusinessDetailsHeaderCarrierConfig: HeaderCarrier.Config =
@@ -42,10 +38,10 @@ trait ConnectorBaseSpec extends UnitSpec
     )
 
   val requiredBusinessDetailsHeaders: Seq[(String, String)] = Seq(
-    "Environment" -> "business-details-environment",
+    "Environment"   -> "business-details-environment",
     "Authorization" -> s"Bearer business-details-token",
-    "User-Agent" -> "mtd-identifier-lookup",
-    "Accept" -> "application/json",
+    "User-Agent"    -> "mtd-identifier-lookup",
+    "Accept"        -> "application/json",
     "Originator-Id" -> "DA_SDI"
   )
 

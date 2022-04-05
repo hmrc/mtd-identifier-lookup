@@ -25,4 +25,5 @@ class DIModule extends AbstractModule {
     bind(classOf[AppConfig]).to(classOf[AppConfigImpl]).asEagerSingleton()
     bind(classOf[LookupRepository]).to(classOf[LookupRepositoryImpl])
   }
+
 }

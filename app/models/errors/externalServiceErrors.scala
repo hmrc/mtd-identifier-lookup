@@ -18,9 +18,9 @@ package models.errors
 
 sealed trait ExternalServiceError
 
-case object BadRequestError extends ExternalServiceError
-case object InternalServerError extends ExternalServiceError
-case object NotFoundError extends ExternalServiceError
+case object BadRequestError         extends ExternalServiceError
+case object InternalServerError     extends ExternalServiceError
+case object NotFoundError           extends ExternalServiceError
 case object ServiceUnavailableError extends ExternalServiceError
-case object MalformedPayloadError extends ExternalServiceError
-case object ForbiddenError extends ExternalServiceError
+case object MalformedPayloadError   extends ExternalServiceError
+case object ForbiddenError          extends ExternalServiceError

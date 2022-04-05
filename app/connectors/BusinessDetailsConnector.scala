@@ -26,32 +26,28 @@ import uk.gov.hmrc.http.HttpClient
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
-class BusinessDetailsConnector @Inject()(client: HttpClient,
-                                         appConfig: AppConfig) {
+class BusinessDetailsConnector @Inject() (client: HttpClient, appConfig: AppConfig) {
 
+  private def hcWithDesHeaders(additionalHeaders: Seq[String] = Seq.empty)(implicit hc: HeaderCarrier): HeaderCarrier = {
+    HeaderCarrier(
+      extraHeaders = hc.extraHeaders ++
+        // Contract headers
+        Seq(
+          "Authorization" -> s"Bearer ${appConfig.businessDetailsToken}",
+          "Environment"   -> appConfig.businessDetailsEnvironment,
+          "Accept"        -> "application/json",
+          "Originator-Id" -> "DA_SDI"
+        ) ++
+        // Other headers (i.e Gov-Test-Scenario, Content-Type)
+        hc.headers(additionalHeaders ++ appConfig.businessDetailsEnvironmentHeaders.getOrElse(Seq.empty))
+    )
+  }
 
-
-    private def hcWithDesHeaders(additionalHeaders: Seq[String] = Seq.empty)(implicit hc: HeaderCarrier): HeaderCarrier = {
-      HeaderCarrier(
-        extraHeaders = hc.extraHeaders ++
-          // Contract headers
-          Seq(
-            "Authorization" -> s"Bearer ${appConfig.businessDetailsToken}",
-            "Environment" -> appConfig.businessDetailsEnvironment,
-            "Accept" -> "application/json",
-            "Originator-Id" -> "DA_SDI"
-          ) ++
-          // Other headers (i.e Gov-Test-Scenario, Content-Type)
-          hc.headers(additionalHeaders ++ appConfig.businessDetailsEnvironmentHeaders.getOrElse(Seq.empty))
-      )
-    }
-
-  def getMtdId(nino: String)
-              (implicit hc: HeaderCarrier,
-               ec: ExecutionContext): Future[Either[ExternalServiceError, String]] = {
+  def getMtdId(nino: String)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Either[ExternalServiceError, String]] = {
 
     val url = appConfig.businessDetailsBaseUrl + s"/registration/business-details/nino/$nino"
 
     client.GET(url)(implicitly[HttpReads[Either[ExternalServiceError, String]]], hcWithDesHeaders(), implicitly)
   }
+
 }

@@ -29,14 +29,13 @@ abstract class AuthorisedController(cc: ControllerComponents)(implicit ec: Execu
 
   val authService: EnrolmentsAuthService
 
-  def authorisedAction(predicate: Predicate = EmptyPredicate)
-                      (block: Request[AnyContent] => Future[Result]): Action[AnyContent] = Action.async {
+  def authorisedAction(predicate: Predicate = EmptyPredicate)(block: Request[AnyContent] => Future[Result]): Action[AnyContent] = Action.async {
     implicit request =>
-
       authService.authorised(predicate) flatMap {
-        case Right(_) => block(request)
+        case Right(_)                  => block(request)
         case Left(AuthError(false, _)) => Future.successful(Unauthorized(Json.obj()))
-        case Left(_) => Future.successful(Forbidden(Json.obj()))
+        case Left(_)                   => Future.successful(Forbidden(Json.obj()))
       }
   }
+
 }

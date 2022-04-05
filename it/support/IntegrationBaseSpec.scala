@@ -29,25 +29,26 @@ import repositories.LookupRepositoryImpl
 
 import scala.concurrent.ExecutionContext.Implicits.global
 
-trait IntegrationBaseSpec extends AnyWordSpec
-  with Matchers
-  with FutureAwaits
-  with DefaultAwaitTimeout
-  with WireMockHelper
-  with GuiceOneServerPerSuite
-  with BeforeAndAfterEach
-  with BeforeAndAfterAll {
+trait IntegrationBaseSpec
+    extends AnyWordSpec
+    with Matchers
+    with FutureAwaits
+    with DefaultAwaitTimeout
+    with WireMockHelper
+    with GuiceOneServerPerSuite
+    with BeforeAndAfterEach
+    with BeforeAndAfterAll {
 
-  val mockHost: String = WireMockHelper.host
-  val mockPort: String = WireMockHelper.wireMockPort.toString
+  val mockHost: String        = WireMockHelper.host
+  val mockPort: String        = WireMockHelper.wireMockPort.toString
   val appRouteContext: String = "/mtd-identifier-lookup"
 
-  lazy val client: WSClient = app.injector.instanceOf[WSClient]
+  lazy val client: WSClient                 = app.injector.instanceOf[WSClient]
   lazy val repository: LookupRepositoryImpl = app.injector.instanceOf[LookupRepositoryImpl]
 
   def servicesConfig: Map[String, String] = Map(
-    "microservice.services.auth.host" -> mockHost,
-    "microservice.services.auth.port" -> mockPort,
+    "microservice.services.auth.host"             -> mockHost,
+    "microservice.services.auth.port"             -> mockPort,
     "microservice.services.business-details.host" -> mockHost,
     "microservice.services.business-details.port" -> mockPort
   )

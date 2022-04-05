@@ -29,11 +29,14 @@ trait MockLookupService extends MockFactory {
   val mockLookupService: LookupService = mock[LookupService]
 
   object MockedLookupService {
+
     def getMtdId(nino: String): CallHandler[Future[Either[ExternalServiceError, String]]] = {
 
-      (mockLookupService.getMtdId(_: String)(_: HeaderCarrier, _: ExecutionContext))
+      (mockLookupService
+        .getMtdId(_: String)(_: HeaderCarrier, _: ExecutionContext))
         .expects(nino, *, *)
     }
+
   }
 
 }

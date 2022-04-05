@@ -24,9 +24,11 @@ import scala.concurrent.ExecutionContext.Implicits.global
 class BusinessDetailsConnectorSpec extends ConnectorBaseSpec {
 
   class Test(businessDetailsEnvironmentHeaders: Option[Seq[String]]) extends MockHttpClient with MockAppConfig {
+
     val target: BusinessDetailsConnector = {
       new BusinessDetailsConnector(mockHttpClient, mockAppConfig)
     }
+
   }
 
   "Calling .getMtdId with a NINO" should {
@@ -40,10 +42,12 @@ class BusinessDetailsConnectorSpec extends ConnectorBaseSpec {
         "http://business-details/registration/business-details/nino/AA123456A",
         config = dummyBusinessDetailsHeaderCarrierConfig,
         requiredHeaders = requiredBusinessDetailsHeaders,
-        excludedHeaders = Seq("AnotherHeader" -> "HeaderValue"))
+        excludedHeaders = Seq("AnotherHeader" -> "HeaderValue")
+      )
         .returns(Future.successful(Right(expectedId)))
 
       await(target.getMtdId("AA123456A"))
     }
   }
+
 }

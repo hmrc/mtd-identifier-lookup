@@ -28,14 +28,14 @@ trait AppConfig {
 }
 
 @Singleton
-class AppConfigImpl @Inject()(servicesConfig: ServicesConfig, configuration: Configuration)
-  extends AppConfig {
+class AppConfigImpl @Inject() (servicesConfig: ServicesConfig, configuration: Configuration) extends AppConfig {
 
   override val businessDetailsBaseUrl: String = servicesConfig.baseUrl("business-details")
 
   override val businessDetailsEnvironment: String = servicesConfig.getString("microservice.services.business-details.env")
 
-  override val businessDetailsEnvironmentHeaders: Option[Seq[String]] = configuration.getOptional[Seq[String]]("microservice.services.business-details.environmentHeaders")
+  override val businessDetailsEnvironmentHeaders: Option[Seq[String]] =
+    configuration.getOptional[Seq[String]]("microservice.services.business-details.environmentHeaders")
 
   override val businessDetailsToken: String = servicesConfig.getString("microservice.services.business-details.token")
 }

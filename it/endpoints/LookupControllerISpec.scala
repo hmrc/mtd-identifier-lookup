@@ -32,6 +32,7 @@ class LookupControllerISpec extends IntegrationBaseSpec {
       setupStubs()
       buildRequest(s"/nino/$nino")
     }
+
   }
 
   "Calling the mtd lookup endpoint" when {
@@ -63,7 +64,6 @@ class LookupControllerISpec extends IntegrationBaseSpec {
       }
     }
 
-
     "the user is NOT authorised" should {
 
       "return 401" in new Test {
@@ -89,4 +89,5 @@ class LookupControllerISpec extends IntegrationBaseSpec {
       }
     }
   }
+
 }
