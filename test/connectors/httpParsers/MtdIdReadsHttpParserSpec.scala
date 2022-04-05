@@ -26,7 +26,7 @@ class MtdIdReadsHttpParserSpec extends UnitSpec {
   private trait Test {
     val body: String
     val statusCode: Int
-    lazy val httpResponse: HttpResponse = HttpResponse(statusCode, body)
+    lazy val httpResponse: HttpResponse                   = HttpResponse(statusCode, body)
     lazy val result: Either[ExternalServiceError, String] = MtdIdReadsHttpParser.reader.read("", "", httpResponse)
   }
 
@@ -34,7 +34,7 @@ class MtdIdReadsHttpParserSpec extends UnitSpec {
     "the http response status is 200 OK with a valid body" should {
 
       "return a MTD ID" in new Test {
-        override val body = """{"mtdbsa": "1234567890"}"""
+        override val body            = """{"mtdbsa": "1234567890"}"""
         override val statusCode: Int = Status.OK
 
         result shouldBe Right("1234567890")
@@ -44,7 +44,7 @@ class MtdIdReadsHttpParserSpec extends UnitSpec {
     "the http response status is 200 OK with an invalid body" should {
 
       "return a MalformedPayloadError" in new Test {
-        override val body = """{"mtdbsa": 1234}"""
+        override val body            = """{"mtdbsa": 1234}"""
         override val statusCode: Int = Status.OK
 
         result shouldBe Left(MalformedPayloadError)
@@ -54,7 +54,7 @@ class MtdIdReadsHttpParserSpec extends UnitSpec {
     "the http response status is 400 (bad request)" should {
 
       "return a BadRequestError" in new Test {
-        override val body = ""
+        override val body            = ""
         override val statusCode: Int = Status.BAD_REQUEST
 
         result shouldBe Left(BadRequestError)
@@ -64,7 +64,7 @@ class MtdIdReadsHttpParserSpec extends UnitSpec {
     "the http response status is 404 (not found)" should {
 
       "return a NotFoundError" in new Test {
-        override val body = ""
+        override val body            = ""
         override val statusCode: Int = Status.NOT_FOUND
 
         result shouldBe Left(NotFoundError)
@@ -74,7 +74,7 @@ class MtdIdReadsHttpParserSpec extends UnitSpec {
     "the http response status is 500 (internal server error)" should {
 
       "return a InternalServerError" in new Test {
-        override val body = ""
+        override val body            = ""
         override val statusCode: Int = Status.INTERNAL_SERVER_ERROR
 
         result shouldBe Left(InternalServerError)
@@ -84,7 +84,7 @@ class MtdIdReadsHttpParserSpec extends UnitSpec {
     "the http response status is 503 (service unavailable)" should {
 
       "return a ServiceUnavailableError" in new Test {
-        override val body = ""
+        override val body            = ""
         override val statusCode: Int = Status.SERVICE_UNAVAILABLE
 
         result shouldBe Left(ServiceUnavailableError)
@@ -92,4 +92,5 @@ class MtdIdReadsHttpParserSpec extends UnitSpec {
     }
 
   }
+
 }

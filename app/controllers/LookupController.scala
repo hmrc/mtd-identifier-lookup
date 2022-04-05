@@ -26,22 +26,20 @@ import services.{EnrolmentsAuthService, LookupService}
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
-class LookupController @Inject()(val authService: EnrolmentsAuthService,
-                                 lookupService: LookupService,
-                                 cc: ControllerComponents)(implicit ec: ExecutionContext)
-  extends AuthorisedController(cc) {
+class LookupController @Inject() (val authService: EnrolmentsAuthService, lookupService: LookupService, cc: ControllerComponents)(implicit
+    ec: ExecutionContext)
+    extends AuthorisedController(cc) {
 
-  def lookup(nino: String): Action[AnyContent] = authorisedAction() {
-    implicit request =>
-      if (Nino.isValid(nino)) {
-        lookupService.getMtdId(nino).map {
-          case Right(mtdId) => Ok(Json.obj("mtdbsa" -> mtdId))
-          case Left(ForbiddenError) => Forbidden
-          case Left(_) => InternalServerError
-        }
-      } else {
-        Future.successful(BadRequest)
+  def lookup(nino: String): Action[AnyContent] = authorisedAction() { implicit request =>
+    if (Nino.isValid(nino)) {
+      lookupService.getMtdId(nino).map {
+        case Right(mtdId)         => Ok(Json.obj("mtdbsa" -> mtdId))
+        case Left(ForbiddenError) => Forbidden
+        case Left(_)              => InternalServerError
       }
+    } else {
+      Future.successful(BadRequest)
+    }
 
   }
 

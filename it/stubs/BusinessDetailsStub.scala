@@ -19,7 +19,7 @@ package stubs
 import com.github.tomakehurst.wiremock.stubbing.StubMapping
 import support.WireMockMethods
 
-object BusinessDetailsStub extends WireMockMethods{
+object BusinessDetailsStub extends WireMockMethods {
 
   private def lookupUri(nino: String): String = s"/registration/business-details/nino/$nino"
 

@@ -24,18 +24,20 @@ import uk.gov.hmrc.http.HeaderCarrier
 
 import scala.concurrent.{ExecutionContext, Future}
 
-trait MockLookupRepository extends MockFactory{
+trait MockLookupRepository extends MockFactory {
 
   val mockLookupRepository: LookupRepository = mock[LookupRepository]
 
   object MockedLookupRepository {
 
     def save(nino: String, mtdId: String): CallHandler[Future[Boolean]] = {
-      (mockLookupRepository.save(_: String, _:String)(_: HeaderCarrier, _: ExecutionContext)).expects(nino, mtdId, *, *)
+      (mockLookupRepository.save(_: String, _: String)(_: HeaderCarrier, _: ExecutionContext)).expects(nino, mtdId, *, *)
     }
 
     def getMtdReference(nino: String): CallHandler[Future[Option[MtdIdReference]]] = {
       (mockLookupRepository.getMtdReference(_: String)(_: HeaderCarrier, _: ExecutionContext)).expects(nino, *, *)
     }
+
   }
+
 }

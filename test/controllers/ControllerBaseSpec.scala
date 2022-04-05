@@ -22,11 +22,7 @@ import play.api.test.Helpers.stubControllerComponents
 import play.api.test.{FakeRequest, ResultExtractors}
 import support.UnitSpec
 
-trait ControllerBaseSpec extends UnitSpec
-  with Status
-  with MimeTypes
-  with HeaderNames
-  with ResultExtractors {
+trait ControllerBaseSpec extends UnitSpec with Status with MimeTypes with HeaderNames with ResultExtractors {
 
   implicit lazy val fakeRequest: FakeRequest[AnyContentAsEmpty.type] = FakeRequest()
 

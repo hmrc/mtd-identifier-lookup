@@ -29,7 +29,7 @@ class LookupControllerSpec extends ControllerBaseSpec {
     lazy val target: LookupController = new LookupController(mockAuthService, mockLookupService, cc)
   }
 
-  val nino: String = "AA123456A"
+  val nino: String  = "AA123456A"
   val mtdId: String = "1234567890"
 
   "Calling lookup with a known NINO" should {
@@ -78,6 +78,5 @@ class LookupControllerSpec extends ControllerBaseSpec {
       status(result) shouldBe BAD_REQUEST
     }
   }
-
 
 }

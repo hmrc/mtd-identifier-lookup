@@ -30,31 +30,29 @@ import scala.concurrent.{ExecutionContext, Future}
 
 trait LookupRepository {
 
-  def save(nino: String, mtdId: String)(implicit hc: HeaderCarrier,
-                                        ec: ExecutionContext): Future[Boolean]
+  def save(nino: String, mtdId: String)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Boolean]
 
-  def getMtdReference(nino: String)(implicit hc: HeaderCarrier,
-                                    ec: ExecutionContext): Future[Option[MtdIdReference]]
+  def getMtdReference(nino: String)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Option[MtdIdReference]]
 
 }
 
 @Singleton
-class LookupRepositoryImpl @Inject()()(implicit mongo: ReactiveMongoComponent)
-  extends ReactiveRepository[MtdIdReference, BSONObjectID]("mtdIdLookup",
-    mongo.mongoConnector.db,
-    MtdIdReference.format,
-    ReactiveMongoFormats.objectIdFormats) with LookupRepository {
+class LookupRepositoryImpl @Inject() ()(implicit mongo: ReactiveMongoComponent)
+    extends ReactiveRepository[MtdIdReference, BSONObjectID](
+      "mtdIdLookup",
+      mongo.mongoConnector.db,
+      MtdIdReference.format,
+      ReactiveMongoFormats.objectIdFormats)
+    with LookupRepository {
 
   override def indexes: Seq[Index] = Seq(Index(Seq(("nino", Ascending)), name = Some("mtd-nino"), unique = true))
 
-  override def save(nino: String, mtdId: String)(implicit hc: HeaderCarrier,
-                                                 ec: ExecutionContext): Future[Boolean] = {
+  override def save(nino: String, mtdId: String)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Boolean] = {
     insert(MtdIdReference(nino, mtdId)).map(result => result.ok && result.n > 0)
   }
 
-  override def getMtdReference(nino: String)(implicit hc: HeaderCarrier,
-                                             ec: ExecutionContext): Future[Option[MtdIdReference]] = {
+  override def getMtdReference(nino: String)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Option[MtdIdReference]] = {
     find("nino" -> nino).map(_.headOption)
   }
-}
 
+}

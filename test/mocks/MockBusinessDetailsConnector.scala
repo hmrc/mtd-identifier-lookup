@@ -24,12 +24,14 @@ import uk.gov.hmrc.http.HeaderCarrier
 
 import scala.concurrent.{ExecutionContext, Future}
 
-trait MockBusinessDetailsConnector extends MockFactory{
+trait MockBusinessDetailsConnector extends MockFactory {
 
-  val mockBusinessDetailsConnector : BusinessDetailsConnector = mock[BusinessDetailsConnector]
+  val mockBusinessDetailsConnector: BusinessDetailsConnector = mock[BusinessDetailsConnector]
 
   def mockGetMtdId(nino: String): CallHandler[Future[Either[ExternalServiceError, String]]] = {
-    (mockBusinessDetailsConnector.getMtdId(_: String)(_: HeaderCarrier, _: ExecutionContext))
+    (mockBusinessDetailsConnector
+      .getMtdId(_: String)(_: HeaderCarrier, _: ExecutionContext))
       .expects(nino, *, *)
   }
+
 }
