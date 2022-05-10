@@ -23,8 +23,9 @@ object AppDependencies {
   val compile: Seq[ModuleID] = Seq(
     ws,
     "uk.gov.hmrc"                  %% "bootstrap-backend-play-28" % "5.24.0",
-    "uk.gov.hmrc"                  %% "simple-reactivemongo"      % "8.0.0-play-28",
-    "com.fasterxml.jackson.module" %% "jackson-module-scala"      % "2.13.1"
+    "com.fasterxml.jackson.module" %% "jackson-module-scala"      % "2.13.2",
+    "uk.gov.hmrc.mongo" %% "hmrc-mongo-play-28"      % "0.63.0",
+    "uk.gov.hmrc.mongo" %% "hmrc-mongo-test-play-28" % "0.63.0"
   )
 
   def test(scope: String = "test, it"): Seq[sbt.ModuleID] = Seq(

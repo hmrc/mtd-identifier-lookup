@@ -16,15 +16,14 @@
 
 package repositories
 
+import com.mongodb.client.model.Indexes
+import org.mongodb.scala.model.{IndexModel, IndexOptions}
 import javax.inject.{Inject, Singleton}
 import models.MtdIdReference
-import play.modules.reactivemongo.ReactiveMongoComponent
-import reactivemongo.api.indexes.Index
-import reactivemongo.api.indexes.IndexType.Ascending
-import reactivemongo.bson.BSONObjectID
+import org.mongodb.scala.model.Indexes.ascending
 import uk.gov.hmrc.http.HeaderCarrier
-import uk.gov.hmrc.mongo.ReactiveRepository
-import uk.gov.hmrc.mongo.json.ReactiveMongoFormats
+import uk.gov.hmrc.mongo.MongoComponent
+import uk.gov.hmrc.mongo.play.json.PlayMongoRepository
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -37,15 +36,16 @@ trait LookupRepository {
 }
 
 @Singleton
-class LookupRepositoryImpl @Inject() ()(implicit mongo: ReactiveMongoComponent)
-    extends ReactiveRepository[MtdIdReference, BSONObjectID](
-      "mtdIdLookup",
-      mongo.mongoConnector.db,
-      MtdIdReference.format,
-      ReactiveMongoFormats.objectIdFormats)
-    with LookupRepository {
+class LookupRepositoryImpl @Inject()(mongo: MongoComponent)(implicit ec: ExecutionContext)
+    extends PlayMongoRepository[MtdIdReference](
+      collectionName = "mtdIdLookup",
+      mongoComponent = mongo,
+      domainFormat = MtdIdReference.format,
+      indexes = Seq(IndexModel(ascending("mtdIdLookup"), IndexOptions().unique(true))),
+      replaceIndexes = false
+    ) {
 
-  override def indexes: Seq[Index] = Seq(Index(Seq(("nino", Ascending)), name = Some("mtd-nino"), unique = true))
+  override def indexes: Seq[IndexModel] = Seq(IndexModel(Seq(("nino", Indexes.ascending())), name = Some("mtd-nino"), unique = true))
 
   override def save(nino: String, mtdId: String)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Boolean] = {
     insert(MtdIdReference(nino, mtdId)).map(result => result.ok && result.n > 0)
