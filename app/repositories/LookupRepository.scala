@@ -16,11 +16,12 @@
 
 package repositories
 
-import com.mongodb.client.model.Indexes
-import org.mongodb.scala.model.{IndexModel, IndexOptions}
 import javax.inject.{Inject, Singleton}
 import models.MtdIdReference
+import org.mongodb.scala.model.Filters._
 import org.mongodb.scala.model.Indexes.ascending
+import org.mongodb.scala.model.{Filters, IndexModel, IndexOptions}
+import org.mongodb.scala.result.InsertOneResult
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.mongo.MongoComponent
 import uk.gov.hmrc.mongo.play.json.PlayMongoRepository
@@ -45,13 +46,16 @@ class LookupRepositoryImpl @Inject()(mongo: MongoComponent)(implicit ec: Executi
       replaceIndexes = false
     ) {
 
-  override def indexes: Seq[IndexModel] = Seq(IndexModel(Seq(("nino", Indexes.ascending())), name = Some("mtd-nino"), unique = true))
+
+
+  def insert(data: MtdIdReference): Future[InsertOneResult] = collection.insertOne(data).toFuture()
+
 
   override def save(nino: String, mtdId: String)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Boolean] = {
     insert(MtdIdReference(nino, mtdId)).map(result => result.ok && result.n > 0)
   }
 
-  override def getMtdReference(nino: String)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Option[MtdIdReference]] = {
+   def getMtdReference(nino: String)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Option[MtdIdReference]] = {
     find("nino" -> nino).map(_.headOption)
   }
 
