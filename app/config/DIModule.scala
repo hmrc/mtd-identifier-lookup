@@ -23,7 +23,7 @@ class DIModule extends AbstractModule {
 
   override def configure(): Unit = {
     bind(classOf[AppConfig]).to(classOf[AppConfigImpl]).asEagerSingleton()
-    bind(classOf[LookupRepository]).asInstanceOf[LookupRepositoryImpl]
+    bind(classOf[LookupRepository]).to(classOf[LookupRepositoryImpl])
   }
 
 }

@@ -20,9 +20,8 @@ import models.MtdIdReference
 import org.scalamock.handlers.CallHandler
 import org.scalamock.scalatest.MockFactory
 import repositories.LookupRepository
-import uk.gov.hmrc.http.HeaderCarrier
 
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.Future
 
 trait MockLookupRepository extends MockFactory {
 
@@ -31,11 +30,11 @@ trait MockLookupRepository extends MockFactory {
   object MockedLookupRepository {
 
     def save(nino: String, mtdId: String): CallHandler[Future[Boolean]] = {
-      (mockLookupRepository.save(_: String, _: String)(_: HeaderCarrier, _: ExecutionContext)).expects(nino, mtdId, *, *)
+      (mockLookupRepository.save(_: String, _: String)).expects(nino, mtdId)
     }
 
     def getMtdReference(nino: String): CallHandler[Future[Option[MtdIdReference]]] = {
-      (mockLookupRepository.getMtdReference(_: String)(_: HeaderCarrier, _: ExecutionContext)).expects(nino, *, *)
+      (mockLookupRepository.getMtdReference(_: String)).expects(nino)
     }
 
   }

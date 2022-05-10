@@ -18,24 +18,22 @@ package repositories
 
 import com.mongodb.BasicDBObject
 import com.typesafe.sslconfig.ssl.LessThan
-import javax.inject.{Inject, Singleton}
 import models.MtdIdReference
-import org.mongodb.scala.model.Filters._
 import org.mongodb.scala.model.Indexes.ascending
 import org.mongodb.scala.model.{IndexModel, IndexOptions}
 import org.mongodb.scala.result.DeleteResult
 import play.mvc.Results.ok
-import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.mongo.MongoComponent
 import uk.gov.hmrc.mongo.play.json.PlayMongoRepository
 
+import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
 
 trait LookupRepository {
 
-  def save(nino: String, mtdId: String)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Boolean]
+  def save(nino: String, mtdId: String): Future[Boolean]
 
-  def getMtdReference(nino: String)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Option[MtdIdReference]]
+  def getMtdReference(nino: String): Future[Option[MtdIdReference]]
 
 }
 
@@ -47,7 +45,7 @@ class LookupRepositoryImpl @Inject()(mongo: MongoComponent)(implicit ec: Executi
       domainFormat = MtdIdReference.format,
       indexes = Seq(IndexModel(ascending("mtdIdLookup"), IndexOptions().unique(true))),
       replaceIndexes = false
-    ) {
+    ) with LookupRepository {
 
 
   def save(nino: String, mtdId: String): Future[Boolean] = {
@@ -56,8 +54,9 @@ class LookupRepositoryImpl @Inject()(mongo: MongoComponent)(implicit ec: Executi
 
   def removeAll(): Future[DeleteResult] = collection.deleteMany(new BasicDBObject()).toFuture()
 
-   def getMtdReference(nino: String): Future[Seq[MtdIdReference]] = {
-    collection.find(equal("nino", nino)).toFuture()
+   def getMtdReference(nino: String): Future[Option[MtdIdReference]] = {
+     ???
+//    collection.find(equal("nino", nino)).toFuture()
   }
 
 }
