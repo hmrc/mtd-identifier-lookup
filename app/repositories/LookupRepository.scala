@@ -17,16 +17,15 @@
 package repositories
 
 import com.mongodb.BasicDBObject
-import com.typesafe.sslconfig.ssl.LessThan
 import models.MtdIdReference
+import org.mongodb.scala.model.Filters.equal
 import org.mongodb.scala.model.Indexes.ascending
 import org.mongodb.scala.model.{IndexModel, IndexOptions}
 import org.mongodb.scala.result.DeleteResult
-import play.mvc.Results.ok
 import uk.gov.hmrc.mongo.MongoComponent
 import uk.gov.hmrc.mongo.play.json.PlayMongoRepository
-
 import javax.inject.{Inject, Singleton}
+
 import scala.concurrent.{ExecutionContext, Future}
 
 trait LookupRepository {
@@ -49,14 +48,13 @@ class LookupRepositoryImpl @Inject()(mongo: MongoComponent)(implicit ec: Executi
 
 
   def save(nino: String, mtdId: String): Future[Boolean] = {
-    collection.insertOne(MtdIdReference(nino, mtdId)).toFuture().map(result => result.equals(ok) && result.equals(LessThan(0)))
+    collection.insertOne(MtdIdReference(nino, mtdId)).toFuture().map(result => result.wasAcknowledged())
   }
 
   def removeAll(): Future[DeleteResult] = collection.deleteMany(new BasicDBObject()).toFuture()
 
    def getMtdReference(nino: String): Future[Option[MtdIdReference]] = {
-     ???
-//    collection.find(equal("nino", nino)).toFuture()
+     collection.find(equal("nino", nino)).toFuture().map(_.headOption)
   }
 
 }
