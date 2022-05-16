@@ -20,6 +20,7 @@ import com.github.tomakehurst.wiremock.stubbing.StubMapping
 import play.api.http.Status
 import play.api.libs.json.Json
 import play.api.libs.ws.{WSRequest, WSResponse}
+import play.api.test.Helpers.{ACCEPT, AUTHORIZATION}
 import stubs.{AuthStub, BusinessDetailsStub}
 import support.IntegrationBaseSpec
 
@@ -31,6 +32,10 @@ class LookupControllerISpec extends IntegrationBaseSpec {
     def request(nino: String): WSRequest = {
       setupStubs()
       buildRequest(s"/nino/$nino")
+        .withHttpHeaders(
+          (ACCEPT, "application/vnd.hmrc.1.0+json"),
+          (AUTHORIZATION, "Bearer 123") // some bearer token
+        )
     }
 
   }

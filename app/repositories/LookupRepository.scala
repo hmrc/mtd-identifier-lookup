@@ -16,43 +16,45 @@
 
 package repositories
 
-import javax.inject.{Inject, Singleton}
+import com.mongodb.BasicDBObject
 import models.MtdIdReference
-import play.modules.reactivemongo.ReactiveMongoComponent
-import reactivemongo.api.indexes.Index
-import reactivemongo.api.indexes.IndexType.Ascending
-import reactivemongo.bson.BSONObjectID
-import uk.gov.hmrc.http.HeaderCarrier
-import uk.gov.hmrc.mongo.ReactiveRepository
-import uk.gov.hmrc.mongo.json.ReactiveMongoFormats
+import org.mongodb.scala.model.Filters.equal
+import org.mongodb.scala.model.Indexes.ascending
+import org.mongodb.scala.model.{IndexModel, IndexOptions}
+import org.mongodb.scala.result.DeleteResult
+import uk.gov.hmrc.mongo.MongoComponent
+import uk.gov.hmrc.mongo.play.json.PlayMongoRepository
+import javax.inject.{Inject, Singleton}
 
 import scala.concurrent.{ExecutionContext, Future}
 
 trait LookupRepository {
 
-  def save(nino: String, mtdId: String)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Boolean]
+  def save(nino: String, mtdId: String): Future[Boolean]
 
-  def getMtdReference(nino: String)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Option[MtdIdReference]]
+  def getMtdReference(nino: String): Future[Option[MtdIdReference]]
 
 }
 
 @Singleton
-class LookupRepositoryImpl @Inject() ()(implicit mongo: ReactiveMongoComponent)
-    extends ReactiveRepository[MtdIdReference, BSONObjectID](
-      "mtdIdLookup",
-      mongo.mongoConnector.db,
-      MtdIdReference.format,
-      ReactiveMongoFormats.objectIdFormats)
-    with LookupRepository {
+class LookupRepositoryImpl @Inject()(mongo: MongoComponent)(implicit ec: ExecutionContext)
+    extends PlayMongoRepository[MtdIdReference](
+      collectionName = "mtdIdLookup",
+      mongoComponent = mongo,
+      domainFormat = MtdIdReference.format,
+      indexes = Seq(IndexModel(ascending("mtdIdLookup"), IndexOptions().unique(true))),
+      replaceIndexes = false
+    ) with LookupRepository {
 
-  override def indexes: Seq[Index] = Seq(Index(Seq(("nino", Ascending)), name = Some("mtd-nino"), unique = true))
 
-  override def save(nino: String, mtdId: String)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Boolean] = {
-    insert(MtdIdReference(nino, mtdId)).map(result => result.ok && result.n > 0)
+  def save(nino: String, mtdId: String): Future[Boolean] = {
+    collection.insertOne(MtdIdReference(nino, mtdId)).toFuture().map(result => result.wasAcknowledged())
   }
 
-  override def getMtdReference(nino: String)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Option[MtdIdReference]] = {
-    find("nino" -> nino).map(_.headOption)
+  def removeAll(): Future[DeleteResult] = collection.deleteMany(new BasicDBObject()).toFuture()
+
+   def getMtdReference(nino: String): Future[Option[MtdIdReference]] = {
+     collection.find(equal("nino", nino)).toFuture().map(_.headOption)
   }
 
 }

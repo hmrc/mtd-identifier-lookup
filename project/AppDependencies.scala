@@ -22,17 +22,18 @@ object AppDependencies {
 
   val compile: Seq[ModuleID] = Seq(
     ws,
-    "uk.gov.hmrc"                  %% "bootstrap-backend-play-28" % "5.20.0",
-    "uk.gov.hmrc"                  %% "simple-reactivemongo"      % "8.0.0-play-28",
-    "com.fasterxml.jackson.module" %% "jackson-module-scala"      % "2.13.1"
+    "uk.gov.hmrc"                  %% "bootstrap-backend-play-28" % "5.24.0",
+    "com.fasterxml.jackson.module" %% "jackson-module-scala"      % "2.13.2",
+    "uk.gov.hmrc.mongo" %% "hmrc-mongo-play-28"      % "0.63.0",
   )
 
   def test(scope: String = "test, it"): Seq[sbt.ModuleID] = Seq(
-    "org.scalatest"          %% "scalatest"          % "3.2.11"            % scope,
-    "com.vladsch.flexmark"   % "flexmark-all"        % "0.62.2"            % scope,
-    "com.typesafe.play"      %% "play-test"          % PlayVersion.current % scope,
-    "org.scalatestplus.play" %% "scalatestplus-play" % "5.1.0"             % scope,
-    "org.scalamock"          %% "scalamock"          % "5.2.0"             % scope,
-    "com.github.tomakehurst" % "wiremock-jre8"       % "2.32.0"            % scope
+    "org.scalatest"          %% "scalatest"               % "3.2.12"            % scope,
+    "com.vladsch.flexmark"   % "flexmark-all"             % "0.62.2"            % scope,
+    "com.typesafe.play"      %% "play-test"               % PlayVersion.current % scope,
+    "org.scalatestplus.play" %% "scalatestplus-play"      % "5.1.0"             % scope,
+    "org.scalamock"          %% "scalamock"               % "5.2.0"             % scope,
+    "com.github.tomakehurst" % "wiremock-jre8"            % "2.33.2"            % scope,
+    "uk.gov.hmrc.mongo"      %% "hmrc-mongo-test-play-28" % "0.63.0"            % scope
   )
 }

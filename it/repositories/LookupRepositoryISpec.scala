@@ -18,13 +18,9 @@ package repositories
 
 import models.MtdIdReference
 import support.IntegrationBaseSpec
-import uk.gov.hmrc.http.HeaderCarrier
-
-import scala.concurrent.ExecutionContext.Implicits.global
 
 class LookupRepositoryISpec extends IntegrationBaseSpec {
 
-  private implicit val hc: HeaderCarrier = HeaderCarrier()
   val target: LookupRepositoryImpl       = repository
 
   val nino: String = "AA123456A"
