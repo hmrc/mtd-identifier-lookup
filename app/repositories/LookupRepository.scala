@@ -42,7 +42,7 @@ class LookupRepositoryImpl @Inject()(mongo: MongoComponent)(implicit ec: Executi
       collectionName = "mtdIdLookup",
       mongoComponent = mongo,
       domainFormat = MtdIdReference.format,
-      indexes = Seq(IndexModel(ascending("mtdIdLookup"), IndexOptions().unique(true))),
+      indexes = Seq(IndexModel(ascending("mtdRef"), IndexOptions().unique(true).background(true))),
       replaceIndexes = false
     ) with LookupRepository {
 
