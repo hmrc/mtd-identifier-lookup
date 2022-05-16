@@ -24,8 +24,8 @@ import org.mongodb.scala.model.{IndexModel, IndexOptions}
 import org.mongodb.scala.result.DeleteResult
 import uk.gov.hmrc.mongo.MongoComponent
 import uk.gov.hmrc.mongo.play.json.PlayMongoRepository
-import javax.inject.{Inject, Singleton}
 
+import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
 
 trait LookupRepository {
@@ -37,24 +37,24 @@ trait LookupRepository {
 }
 
 @Singleton
-class LookupRepositoryImpl @Inject()(mongo: MongoComponent)(implicit ec: ExecutionContext)
+class LookupRepositoryImpl @Inject() (mongo: MongoComponent)(implicit ec: ExecutionContext)
     extends PlayMongoRepository[MtdIdReference](
       collectionName = "mtdIdLookup",
       mongoComponent = mongo,
       domainFormat = MtdIdReference.format,
-      indexes = Seq(IndexModel(ascending("mtdIdLookup"), IndexOptions().unique(true))),
+      indexes = Seq(
+        IndexModel(ascending("nino"), IndexOptions().name("mtd-nino").unique(true).background(true))
+      ),
       replaceIndexes = false
-    ) with LookupRepository {
+    )
+    with LookupRepository {
 
-
-  def save(nino: String, mtdId: String): Future[Boolean] = {
+  def save(nino: String, mtdId: String): Future[Boolean] =
     collection.insertOne(MtdIdReference(nino, mtdId)).toFuture().map(result => result.wasAcknowledged())
-  }
 
   def removeAll(): Future[DeleteResult] = collection.deleteMany(new BasicDBObject()).toFuture()
 
-   def getMtdReference(nino: String): Future[Option[MtdIdReference]] = {
-     collection.find(equal("nino", nino)).toFuture().map(_.headOption)
-  }
+  def getMtdReference(nino: String): Future[Option[MtdIdReference]] =
+    collection.find(equal("nino", nino)).toFuture().map(_.headOption)
 
 }
