@@ -51,7 +51,8 @@ object MtdIdReadsHttpParser extends Logging {
           logger.warn(s"[MtdIdReadsHttpParser][read]: ISE from DES: \nBody - ${response.body}\nURl - $url")
           Left(InternalServerError)
         case _ =>
-          logger.warn(s"[MtdIdReadsHttpParser][read]: Unexpected repsonse from DES: \nStatus - ${response.status}\nBody - ${response.body}\nURl - $url")
+          logger.warn(
+            s"[MtdIdReadsHttpParser][read]: Unexpected response from DES: \nStatus - ${response.status}\nBody - ${response.body}\nURl - $url")
           Left(InternalServerError)
       }
     }
