@@ -1,5 +1,5 @@
 /*
- * Copyright 2022 HM Revenue & Customs
+ * Copyright 2023 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -88,6 +88,16 @@ class MtdIdReadsHttpParserSpec extends UnitSpec {
         override val statusCode: Int = Status.SERVICE_UNAVAILABLE
 
         result shouldBe Left(ServiceUnavailableError)
+      }
+    }
+
+    "the http response status is unexpected" should {
+
+      "return a InternalServerError" in new Test {
+        override val body            = ""
+        override val statusCode: Int = Status.IM_A_TEAPOT
+
+        result shouldBe Left(InternalServerError)
       }
     }
 

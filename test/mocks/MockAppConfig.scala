@@ -1,5 +1,5 @@
 /*
- * Copyright 2022 HM Revenue & Customs
+ * Copyright 2023 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,22 +27,22 @@ trait MockAppConfig extends MockFactory {
   object MockedAppConfig {
 
     def businessDetailsBaseUrl: CallHandler[String] = {
-      (mockAppConfig.businessDetailsBaseUrl _: () => String)
+      (() => mockAppConfig.businessDetailsBaseUrl)
         .expects()
     }
 
     def businessDetailsEnvironment: CallHandler[String] = {
-      (mockAppConfig.businessDetailsEnvironment _)
+      (() => mockAppConfig.businessDetailsEnvironment)
         .expects()
     }
 
     def businessDetailsToken: CallHandler[String] = {
-      (mockAppConfig.businessDetailsToken _)
+      (() => mockAppConfig.businessDetailsToken)
         .expects()
     }
 
     def businessDetailsEnvironmentHeaders: CallHandler[Option[Seq[String]]] =
-      (mockAppConfig.businessDetailsEnvironmentHeaders _)
+      (() => mockAppConfig.businessDetailsEnvironmentHeaders)
         .expects()
 
   }
