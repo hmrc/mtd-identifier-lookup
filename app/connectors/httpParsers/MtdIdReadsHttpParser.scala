@@ -1,5 +1,5 @@
 /*
- * Copyright 2022 HM Revenue & Customs
+ * Copyright 2023 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -49,6 +49,10 @@ object MtdIdReadsHttpParser extends Logging {
           Left(ServiceUnavailableError)
         case Status.INTERNAL_SERVER_ERROR =>
           logger.warn(s"[MtdIdReadsHttpParser][read]: ISE from DES: \nBody - ${response.body}\nURl - $url")
+          Left(InternalServerError)
+        case _ =>
+          logger.warn(
+            s"[MtdIdReadsHttpParser][read]: Unexpected response from DES: \nStatus - ${response.status}\nBody - ${response.body}\nURl - $url")
           Left(InternalServerError)
       }
     }
