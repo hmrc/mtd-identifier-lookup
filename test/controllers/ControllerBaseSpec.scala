@@ -21,10 +21,17 @@ import play.api.mvc.{AnyContentAsEmpty, ControllerComponents}
 import play.api.test.Helpers.stubControllerComponents
 import play.api.test.{FakeRequest, ResultExtractors}
 import support.UnitSpec
+import utils.IdGenerator
+
+import scala.concurrent.ExecutionContext
 
 trait ControllerBaseSpec extends UnitSpec with Status with MimeTypes with HeaderNames with ResultExtractors {
 
   implicit lazy val fakeRequest: FakeRequest[AnyContentAsEmpty.type] = FakeRequest()
+  implicit val idGenerator:IdGenerator = new IdGenerator()
+  implicit val ec: ExecutionContext = scala.concurrent.ExecutionContext.global
+
+
 
   lazy val cc: ControllerComponents = stubControllerComponents()
 

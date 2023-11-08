@@ -17,14 +17,19 @@
 package endpoints
 
 import com.github.tomakehurst.wiremock.stubbing.StubMapping
-import play.api.http.Status
+import models.domain.MtdIdReference
 import play.api.libs.json.Json
+import play.api.http.Status
 import play.api.libs.ws.{WSRequest, WSResponse}
 import play.api.test.Helpers.{ACCEPT, AUTHORIZATION}
-import stubs.{AuthStub, BusinessDetailsStub}
+import stubs.{AuthStub, DownstreamStub}
 import support.IntegrationBaseSpec
 
 class LookupControllerISpec extends IntegrationBaseSpec {
+
+  val nino      = "AA123456A"
+  val mtdId     = "1234567890"
+  val reference = MtdIdReference(mtdId)
 
   private trait Test {
     def setupStubs(): StubMapping
@@ -42,14 +47,13 @@ class LookupControllerISpec extends IntegrationBaseSpec {
 
   "Calling the mtd lookup endpoint" when {
 
-    val nino = "AA123456A"
-
     "the user is authorised" should {
 
       "return 200" in new Test {
+
         override def setupStubs(): StubMapping = {
           AuthStub.authorised()
-          BusinessDetailsStub.getMtdId(Json.obj("mtdbsa" -> "1234567890").toString(), nino, Status.OK)
+          DownstreamStub.onSuccess(DownstreamStub.GET, s"/registration/business-details/nino/$nino", Status.OK, Json.toJson(reference))
         }
 
         val response: WSResponse = await(request(nino).get())
@@ -86,7 +90,9 @@ class LookupControllerISpec extends IntegrationBaseSpec {
       "return 403" in new Test {
         override def setupStubs(): StubMapping = {
           AuthStub.authorised()
-          BusinessDetailsStub.getMtdId("", nino, Status.NOT_FOUND)
+          repository.removeAll()
+          DownstreamStub.onError(DownstreamStub.GET, s"/registration/business-details/nino/$nino", Status.NOT_FOUND, "")
+
         }
 
         val response: WSResponse = await(request(nino).get())
@@ -94,5 +100,13 @@ class LookupControllerISpec extends IntegrationBaseSpec {
       }
     }
   }
+
+  def errorBody(code: String): String =
+    s"""
+       |{
+       |  "code": "$code",
+       |  "reason": "error message from downstream"
+       |}
+   """.stripMargin
 
 }

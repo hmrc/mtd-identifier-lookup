@@ -18,30 +18,46 @@ package services
 
 import com.google.inject.{Inject, Singleton}
 import connectors.BusinessDetailsConnector
-import models.errors.{ExternalServiceError, ForbiddenError, InternalServerError, NotFoundError}
+
+import scala.util.control.NonFatal
+import models.domain.{MtdIdMongoReference, MtdIdReference}
+import models.errors.{ForbiddenError, InternalError, MtdError, NotFoundError}
+import models.outcomes.ResponseWrapper
 import repositories.LookupRepository
 import uk.gov.hmrc.http.HeaderCarrier
+import utils.Logging
 
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
-class LookupService @Inject() (connector: BusinessDetailsConnector, repository: LookupRepository) {
+class LookupService @Inject() (connector: BusinessDetailsConnector, repository: LookupRepository) extends Logging {
 
-  def getMtdId(nino: String)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Either[ExternalServiceError, String]] = {
-    repository.getMtdReference(nino).flatMap {
-      case Some(mtdIdReference) => Future.successful(Right(mtdIdReference.mtdRef))
-      case None                 => getMtdIdFromBusinessDetailsApi(nino)
+  def getMtdId(nino: String)(implicit correlationId: String, hc: HeaderCarrier, ec: ExecutionContext): Future[Either[MtdError, MtdIdReference]] = {
+    val result = repository.getMtdReference(nino)
+    result.flatMap {
+      case Some(mongoReference) => Future.successful(Right(MtdIdReference(mongoReference.mtdRef)))
+      case None =>
+        getMtdIdFromService(nino)
     }
   }
 
-  private[services] def getMtdIdFromBusinessDetailsApi(
-      nino: String)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Either[ExternalServiceError, String]] = {
-    connector.getMtdId(nino).map {
-      case success @ Right(mtdId) =>
-        repository.save(nino, mtdId)
-        success
-      case Left(NotFoundError) => Left(ForbiddenError)
-      case Left(_)             => Left(InternalServerError)
+  private def getMtdIdFromService(
+      nino: String)(implicit correlationId: String, hc: HeaderCarrier, ec: ExecutionContext): Future[Either[MtdError, MtdIdReference]] = {
+    val result = for {
+      mtdResponse <- connector.getMtdId(nino).map {
+        case Right(response) => { // Note: If we use a stateless stub that returns the nino submitted, then we don't have to do this
+          repository.save(MtdIdMongoReference(nino, response.responseData.mtdbsa))
+          Right(MtdIdReference(response.responseData.mtdbsa))
+        }
+        case Left(ResponseWrapper(_, NotFoundError)) => Left(ForbiddenError)
+        case _                                       => Left(InternalError)
+      }
+
+    } yield mtdResponse
+
+    result.recover { case NonFatal(e) =>
+      logger.error(s"Error getting MTD ID for nino $nino", e)
+      Left(InternalError)
     }
   }
 

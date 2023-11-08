@@ -16,37 +16,41 @@
 
 package connectors
 
-import mocks.{MockAppConfig, MockHttpClient}
+//import mocks.{MockAppConfig, MockHttpClient}
+import models.domain.MtdIdReference
+import play.api.Configuration
 
 import scala.concurrent.Future
-import scala.concurrent.ExecutionContext.Implicits.global
 
 class BusinessDetailsConnectorSpec extends ConnectorBaseSpec {
 
-  class Test(businessDetailsEnvironmentHeaders: Option[Seq[String]]) extends MockHttpClient with MockAppConfig {
+  // class Test(businessDetailsEnvironmentHeaders: Option[Seq[String]]) extends MockHttpClient with MockAppConfig {
 
-    val target: BusinessDetailsConnector = {
-      new BusinessDetailsConnector(mockHttpClient, mockAppConfig)
-    }
-
-  }
+  // }
 
   "Calling .getMtdId with a NINO" should {
-    "call the business details microservice using the correct URL" in new Test(Some(allowedBusinessDetailsHeaders)) {
+    "call the business details microservice using the correct URL" in new IfsTest
+      with ConnectorTest {
       val expectedId = "an expected Id"
-      MockedAppConfig.businessDetailsBaseUrl.returns(baseUrl)
-      MockedAppConfig.businessDetailsToken.returns("business-details-token")
-      MockedAppConfig.businessDetailsEnvironment.returns("business-details-environment")
-      MockedAppConfig.businessDetailsEnvironmentHeaders returns Some(allowedBusinessDetailsHeaders)
-      mockGet(
-        "http://business-details/registration/business-details/nino/AA123456A",
-        config = dummyBusinessDetailsHeaderCarrierConfig,
-        requiredHeaders = requiredBusinessDetailsHeaders,
-        excludedHeaders = Seq("AnotherHeader" -> "HeaderValue")
-      )
-        .returns(Future.successful(Right(expectedId)))
+      val nino       = "AA123456A"
+      val reference  = MtdIdReference(expectedId)
+      val config     = Configuration("IFSEndpoint.enabled" -> true)
+      MockedAppConfig.featureSwitches.returns(config)
+      MockedAppConfig.ifsBaseUrl.returns(baseUrl)
+      MockedAppConfig.ifsToken.returns("business-details-token")
+      MockedAppConfig.ifsEnv.returns("business-details-environment")
+      MockedAppConfig.ifsEnvironmentHeaders returns Some(allowedBusinessDetailsHeaders)
 
-      await(target.getMtdId("AA123456A"))
+      MockHttpClient
+        .get(
+          s"$baseUrl/registration/business-details/nino/$nino",
+          config = dummyBusinessDetailsHeaderCarrierConfig,
+          requiredHeaders = requiredBusinessDetailsHeaders,
+          excludedHeaders = Seq("AnotherHeader" -> "HeaderValue")
+        )
+        .returns(Future.successful(Right(reference)))
+
+      await(target.getMtdId(nino))
     }
   }
 

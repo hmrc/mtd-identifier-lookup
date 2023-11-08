@@ -18,27 +18,38 @@ package controllers
 
 import javax.inject.{Inject, Singleton}
 import models.domain.Nino
-import models.errors.ForbiddenError
+import models.errors._
 import play.api.libs.json.Json
-import play.api.mvc.{Action, AnyContent, ControllerComponents}
+import play.api.mvc._
 import services.{EnrolmentsAuthService, LookupService}
+import utils.IdGenerator
+import uk.gov.hmrc.play.http.HeaderCarrierConverter
 
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
 class LookupController @Inject() (val authService: EnrolmentsAuthService, lookupService: LookupService, cc: ControllerComponents)(implicit
-    ec: ExecutionContext)
+    ec: ExecutionContext,
+    idGenerator: IdGenerator)
     extends AuthorisedController(cc) {
 
+  implicit val correlationId: String = idGenerator.generateCorrelationId
+
+  // Note: Updated to use a case class instead of mapping from json
   def lookup(nino: String): Action[AnyContent] = authorisedAction() { implicit request =>
+    implicit val hc = HeaderCarrierConverter.fromRequestAndSession(request, request.session)
     if (Nino.isValid(nino)) {
-      lookupService.getMtdId(nino).map {
-        case Right(mtdId)         => Ok(Json.obj("mtdbsa" -> mtdId))
-        case Left(ForbiddenError) => Forbidden
-        case Left(_)              => InternalServerError
-      }
+      lookupService
+        .getMtdId(nino)
+        .map {
+          case Right(reference)        => Ok(Json.toJson(reference))
+          case Left(NotFoundError)     => Forbidden(ForbiddenError.asJson)
+          case Left(ForbiddenError)    => Forbidden(ForbiddenError.asJson)
+          case Left(UnauthorisedError) => Forbidden(ForbiddenError.asJson)
+          case Left(_)                 => InternalServerError(InternalError.asJson)
+        }
     } else {
-      Future.successful(BadRequest)
+      Future.successful(BadRequest(NinoFormatError.asJson))
     }
 
   }

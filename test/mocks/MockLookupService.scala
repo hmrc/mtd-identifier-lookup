@@ -16,8 +16,9 @@
 
 package mocks
 
-import models.errors.ExternalServiceError
-import org.scalamock.handlers.CallHandler
+import models.domain.MtdIdReference
+import models.errors.MtdError
+import org.scalamock.handlers.CallHandler4
 import org.scalamock.scalatest.MockFactory
 import services.LookupService
 import uk.gov.hmrc.http.HeaderCarrier
@@ -27,14 +28,16 @@ import scala.concurrent.{ExecutionContext, Future}
 trait MockLookupService extends MockFactory {
 
   val mockLookupService: LookupService = mock[LookupService]
+  implicit val hc: HeaderCarrier       = HeaderCarrier()
+  implicit val correlationId: String   = "X-123"
+  implicit val ec: ExecutionContext    = scala.concurrent.ExecutionContext.global
 
   object MockedLookupService {
 
-    def getMtdId(nino: String): CallHandler[Future[Either[ExternalServiceError, String]]] = {
-
+    def getMtdId(nino: String): CallHandler4[String, String, HeaderCarrier, ExecutionContext, Future[Either[MtdError, MtdIdReference]]] = {
       (mockLookupService
-        .getMtdId(_: String)(_: HeaderCarrier, _: ExecutionContext))
-        .expects(nino, *, *)
+        .getMtdId(_: String)(_: String, _: HeaderCarrier, _: ExecutionContext))
+        .expects(*, *, *, *)
     }
 
   }

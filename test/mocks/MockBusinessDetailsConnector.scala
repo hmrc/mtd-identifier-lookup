@@ -16,8 +16,8 @@
 
 package mocks
 
-import connectors.BusinessDetailsConnector
-import models.errors.ExternalServiceError
+import connectors.{BusinessDetailsConnector, DownstreamOutcome}
+import models.domain.MtdIdReference
 import org.scalamock.handlers.CallHandler
 import org.scalamock.scalatest.MockFactory
 import uk.gov.hmrc.http.HeaderCarrier
@@ -28,10 +28,11 @@ trait MockBusinessDetailsConnector extends MockFactory {
 
   val mockBusinessDetailsConnector: BusinessDetailsConnector = mock[BusinessDetailsConnector]
 
-  def mockGetMtdId(nino: String): CallHandler[Future[Either[ExternalServiceError, String]]] = {
+  def mockGetMtdId(nino: String): CallHandler[Future[DownstreamOutcome[MtdIdReference]]] = {
     (mockBusinessDetailsConnector
-      .getMtdId(_: String)(_: HeaderCarrier, _: ExecutionContext))
-      .expects(nino, *, *)
+      .getMtdId(_: String)(_: HeaderCarrier, _: ExecutionContext, _: String))
+      .expects(nino, *, *, *)
   }
+
 
 }

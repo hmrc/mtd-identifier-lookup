@@ -16,18 +16,22 @@
 
 package connectors
 
+import mocks.{MockAppConfig, MockHttpClient}
+import org.scalamock.handlers.CallHandler
 import play.api.http.{HeaderNames, MimeTypes, Status}
-import play.api.test.ResultExtractors
 import support.UnitSpec
 import uk.gov.hmrc.http.HeaderCarrier
 
-trait ConnectorBaseSpec extends UnitSpec with Status with MimeTypes with HeaderNames with ResultExtractors {
+import scala.concurrent.{ExecutionContext, Future}
+
+trait ConnectorBaseSpec extends UnitSpec with Status with MimeTypes with HeaderNames {
 
   lazy val baseUrl: String = "http://business-details"
 
   val otherHeaders: Seq[(String, String)] = Seq(
     "Gov-Test-Scenario" -> "DEFAULT",
-    "AnotherHeader"     -> "HeaderValue"
+   // "Accept"            -> "1.0",
+    "CorrelationId"     -> correlationId
   )
 
   val dummyBusinessDetailsHeaderCarrierConfig: HeaderCarrier.Config =
@@ -38,13 +42,15 @@ trait ConnectorBaseSpec extends UnitSpec with Status with MimeTypes with HeaderN
     )
 
   val requiredBusinessDetailsHeaders: Seq[(String, String)] = Seq(
-    "Environment"   -> "business-details-environment",
-    "Authorization" -> s"Bearer business-details-token",
-    "User-Agent"    -> "mtd-identifier-lookup",
-    "Accept"        -> "application/json",
-    "Originator-Id" -> "DA_SDI"
-  )
-
+ "Environment" -> "business-details-environment",
+    "Authorization"->"Bearer business-details-token",
+    "User-Agent"-> "mtd-identifier-lookup",
+    "Originator-Id"->"DA_SDI",
+    "Gov-Test-Scenario"->"DEFAULT",
+    "Accept"->"application/json",
+    //"CorrelationId"->"X-123"
+     )
+  // ("CorrelationId", "X-123"), ("Accept", "1.0"), ("Gov-Test-Scenario", "DEFAULT")
   val allowedBusinessDetailsHeaders: Seq[String] = Seq(
     "Accept",
     "Gov-Test-Scenario",
@@ -54,6 +60,44 @@ trait ConnectorBaseSpec extends UnitSpec with Status with MimeTypes with HeaderN
     "X-Session-Id"
   )
 
-  implicit val hc: HeaderCarrier = HeaderCarrier()
+  implicit val hc: HeaderCarrier    = HeaderCarrier()
+  implicit val correlationId        = "X-123"
+  implicit val ec: ExecutionContext = scala.concurrent.ExecutionContext.global
+
+  protected trait ConnectorTest extends MockHttpClient with MockAppConfig {
+
+    // protected val baseUrl: String = "http://test-BaseUrl"
+    val target: BusinessDetailsConnector = {
+      new BusinessDetailsConnector(mockHttpClient, mockAppConfig)
+    }
+
+    implicit protected val hc: HeaderCarrier = HeaderCarrier(otherHeaders = otherHeaders)
+
+    protected val requiredHeaders: Seq[(String, String)]
+
+    protected def excludedHeaders: Seq[(String, String)] = Seq("AnotherHeader" -> "HeaderValue")
+
+    protected def willGet[T](url: String, parameters: Seq[(String, String)] = Nil): CallHandler[Future[T]] = {
+      MockHttpClient
+        .get(
+          url = url,
+          parameters = parameters,
+          config = dummyBusinessDetailsHeaderCarrierConfig,
+          requiredHeaders = requiredBusinessDetailsHeaders,
+          excludedHeaders = excludedHeaders
+        )
+    }
+
+  }
+
+  protected trait IfsTest extends ConnectorTest {
+
+    protected lazy val requiredHeaders: Seq[(String, String)] = requiredBusinessDetailsHeaders
+
+    MockedAppConfig.ifsBaseUrl returns baseUrl
+    MockedAppConfig.ifsToken returns "ifs-token"
+    MockedAppConfig.ifsEnv returns "ifs-environment"
+    MockedAppConfig.ifsEnvironmentHeaders returns Some(allowedBusinessDetailsHeaders)
+  }
 
 }

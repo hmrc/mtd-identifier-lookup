@@ -19,6 +19,7 @@ package mocks
 import config.AppConfig
 import org.scalamock.handlers.CallHandler
 import org.scalamock.scalatest.MockFactory
+import play.api.Configuration
 
 trait MockAppConfig extends MockFactory {
 
@@ -26,24 +27,51 @@ trait MockAppConfig extends MockFactory {
 
   object MockedAppConfig {
 
-    def businessDetailsBaseUrl: CallHandler[String] = {
-      (() => mockAppConfig.businessDetailsBaseUrl)
+    def featureSwitches: CallHandler[Configuration] = {
+      (() => mockAppConfig.featureSwitches)
         .expects()
     }
 
-    def businessDetailsEnvironment: CallHandler[String] = {
-      (() => mockAppConfig.businessDetailsEnvironment)
+    def desBaseUrl: CallHandler[String] = {
+      (() => mockAppConfig.desBaseUrl)
         .expects()
     }
 
-    def businessDetailsToken: CallHandler[String] = {
-      (() => mockAppConfig.businessDetailsToken)
+    def desEnv: CallHandler[String] = {
+      (() => mockAppConfig.desEnv)
         .expects()
     }
 
-    def businessDetailsEnvironmentHeaders: CallHandler[Option[Seq[String]]] =
-      (() => mockAppConfig.businessDetailsEnvironmentHeaders)
+    def desToken: CallHandler[String] = {
+      (() => mockAppConfig.desToken)
         .expects()
+    }
+
+    def desEnvironmentHeaders: CallHandler[Option[Seq[String]]] = {
+      (() => mockAppConfig.desEnvironmentHeaders)
+        .expects()
+    }
+
+    // IFS Config
+    def ifsBaseUrl: CallHandler[String] = {
+      (() => mockAppConfig.ifsBaseUrl)
+        .expects()
+    }
+
+    def ifsEnv: CallHandler[String] = {
+      (() => mockAppConfig.ifsEnv)
+        .expects()
+    }
+
+    def ifsToken: CallHandler[String] = {
+      (() => mockAppConfig.ifsToken)
+        .expects()
+    }
+
+    def ifsEnvironmentHeaders: CallHandler[Option[Seq[String]]] = {
+      (() => mockAppConfig.ifsEnvironmentHeaders)
+        .expects()
+    }
 
   }
 
