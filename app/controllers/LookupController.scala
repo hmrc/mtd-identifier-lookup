@@ -39,9 +39,9 @@ class LookupController @Inject() (val authService: EnrolmentsAuthService, lookup
   def lookup(nino: String): Action[AnyContent] = authorisedAction() { implicit request =>
     implicit val hc = HeaderCarrierConverter.fromRequestAndSession(request, request.session)
     if (Nino.isValid(nino)) {
-      lookupService
+      val result = lookupService
         .getMtdId(nino)
-        .map {
+        result.map {
           case Right(reference)        => Ok(Json.toJson(reference))
           case Left(NotFoundError)     => Forbidden(ForbiddenError.asJson)
           case Left(ForbiddenError)    => Forbidden(ForbiddenError.asJson)

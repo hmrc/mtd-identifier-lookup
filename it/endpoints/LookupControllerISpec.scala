@@ -31,6 +31,17 @@ class LookupControllerISpec extends IntegrationBaseSpec {
   val mtdId     = "1234567890"
   val reference = MtdIdReference(mtdId)
 
+  private val ifsJson = Json.parse(
+    """
+      |{
+      |   "taxPayerDisplayResponse": {
+      |       "nino": "NS112233A",
+      |       "mtdId": "XAIT0000000000"
+      |    }
+      |}
+  """.stripMargin
+  )
+
   private trait Test {
     def setupStubs(): StubMapping
 
@@ -53,7 +64,7 @@ class LookupControllerISpec extends IntegrationBaseSpec {
 
         override def setupStubs(): StubMapping = {
           AuthStub.authorised()
-          DownstreamStub.onSuccess(DownstreamStub.GET, s"/registration/business-details/nino/$nino", Status.OK, Json.toJson(reference))
+          DownstreamStub.onSuccess(DownstreamStub.GET, s"/registration/business-details/nino/$nino", Status.OK, ifsJson)
         }
 
         val response: WSResponse = await(request(nino).get())
@@ -91,10 +102,8 @@ class LookupControllerISpec extends IntegrationBaseSpec {
         override def setupStubs(): StubMapping = {
           AuthStub.authorised()
           repository.removeAll()
-          DownstreamStub.onError(DownstreamStub.GET, s"/registration/business-details/nino/$nino", Status.NOT_FOUND, "")
-
+          DownstreamStub.onError(DownstreamStub.GET, s"/registration/business-details/nino/$nino", Status.NOT_FOUND, errorBody("NOT_FOUND"))
         }
-
         val response: WSResponse = await(request(nino).get())
         response.status shouldBe Status.FORBIDDEN
       }

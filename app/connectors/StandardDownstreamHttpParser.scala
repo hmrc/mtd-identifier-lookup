@@ -17,7 +17,7 @@
 package connectors
 
 import api.connectors.httpparsers.HttpParser
-import models.errors.{ForbiddenError, InternalError}
+import models.errors.{ForbiddenError, InternalError, NotFoundError}
 import models.outcomes.ResponseWrapper
 import play.api.http.Status._
 import play.api.libs.json.Reads
@@ -34,12 +34,23 @@ object StandardDownstreamHttpParser extends HttpParser {
         Right(ResponseWrapper(correlationId, ()))
       }
 
+  import play.api.http.Status._
+
   implicit def reads[A: Reads](implicit successCode: SuccessCode = SuccessCode(OK)): HttpReads[DownstreamOutcome[A]] =
     (_: String, url: String, response: HttpResponse) =>
       doRead(url, response) { correlationId =>
-        response.validateJson[A] match {
-          case Some(ref) => Right(ResponseWrapper(correlationId, ref))
-          case None      => Left(ResponseWrapper(correlationId, InternalError))
+        if (response.status == OK) {
+          response.validateJson[A] match {
+            case Some(ref) => Right(ResponseWrapper(correlationId, ref))
+            case None      => Left(ResponseWrapper(correlationId, InternalError))
+          }
+        } else {
+          response.status match {
+            case NOT_FOUND =>
+              Left(ResponseWrapper(correlationId, ForbiddenError))
+            case _ =>
+              Left(ResponseWrapper(correlationId, InternalError))
+          }
         }
       }
 
@@ -61,8 +72,9 @@ object StandardDownstreamHttpParser extends HttpParser {
           "[StandardDownstreamHttpParser][read] - " +
             s"Success response received with correlationId: $correlationId when calling $url")
         successOutcomeFactory(correlationId)
-      case NOT_FOUND | FORBIDDEN => Left(ResponseWrapper(correlationId, ForbiddenError))
-      case _                     => Left(ResponseWrapper(correlationId, InternalError))
+      case NOT_FOUND => Left(ResponseWrapper(correlationId, NotFoundError))
+      case FORBIDDEN => Left(ResponseWrapper(correlationId, ForbiddenError))
+      case _         => Left(ResponseWrapper(correlationId, InternalError))
     }
   }
 

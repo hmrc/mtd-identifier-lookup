@@ -33,7 +33,7 @@ case class MtdIdReference(mtdbsa: String)
 object MtdIdReference {
 //NOTE: confirm DES Mapping (mtdbsa) is correct
   implicit val reads: Reads[MtdIdReference] = (
-    (JsPath \ "mtdRef").read[String] orElse
+    (JsPath \ "mtdbsa").read[String] orElse
       (JsPath \ "taxPayerDisplayResponse" \ "mtdId").read[String]
   ).map(MtdIdReference.apply _)
 

@@ -49,8 +49,9 @@ class LookupService @Inject() (connector: BusinessDetailsConnector, repository: 
           repository.save(MtdIdMongoReference(nino, response.responseData.mtdbsa))
           Right(MtdIdReference(response.responseData.mtdbsa))
         }
-        case Left(ResponseWrapper(_, NotFoundError)) => Left(ForbiddenError)
-        case _                                       => Left(InternalError)
+        case Left(ResponseWrapper(_, NotFoundError))  => Left(ForbiddenError)
+        case Left(ResponseWrapper(_, ForbiddenError)) => Left(InternalError)
+        case _                                        => Left(InternalError)
       }
 
     } yield mtdResponse

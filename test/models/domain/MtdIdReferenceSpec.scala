@@ -26,7 +26,7 @@ class MtdIdReferenceSpec extends UnitSpec {
     """
       |{
       |  "nino": "NS112233A",
-      |  "mtdRef": "XAIT0000000000"
+      |  "mtdbsa": "XAIT0000000000"
       |}
     """.stripMargin
   )
