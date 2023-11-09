@@ -16,7 +16,7 @@
 
 package mocks
 
-import models.MtdIdReference
+import models.domain.MtdIdMongoReference
 import org.scalamock.handlers.CallHandler
 import org.scalamock.scalatest.MockFactory
 import repositories.LookupRepository
@@ -29,11 +29,11 @@ trait MockLookupRepository extends MockFactory {
 
   object MockedLookupRepository {
 
-    def save(nino: String, mtdId: String): CallHandler[Future[Boolean]] = {
-      (mockLookupRepository.save(_: String, _: String)).expects(nino, mtdId)
+    def save(reference: MtdIdMongoReference): CallHandler[Future[Boolean]] = {
+      (mockLookupRepository.save(_: MtdIdMongoReference)).expects(reference)
     }
 
-    def getMtdReference(nino: String): CallHandler[Future[Option[MtdIdReference]]] = {
+    def getMtdReference(nino: String): CallHandler[Future[Option[MtdIdMongoReference]]] = {
       (mockLookupRepository.getMtdReference(_: String)).expects(nino)
     }
 

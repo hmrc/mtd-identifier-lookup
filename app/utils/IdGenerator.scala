@@ -14,13 +14,13 @@
  * limitations under the License.
  */
 
-package models.errors
+package utils
 
-sealed trait ExternalServiceError
+import java.util.UUID
+import javax.inject.{Inject, Singleton}
 
-case object BadRequestError         extends ExternalServiceError
-case object InternalServerError     extends ExternalServiceError
-case object NotFoundError           extends ExternalServiceError
-case object ServiceUnavailableError extends ExternalServiceError
-case object MalformedPayloadError   extends ExternalServiceError
-case object ForbiddenError          extends ExternalServiceError
+@Singleton
+class IdGenerator @Inject() () {
+
+  def generateCorrelationId: String = UUID.randomUUID().toString
+}

@@ -16,19 +16,22 @@
 
 package repositories
 
-import models.MtdIdReference
+import models.domain.{MtdIdMongoReference, MtdIdReference}
 import support.IntegrationBaseSpec
 
 class LookupRepositoryISpec extends IntegrationBaseSpec {
 
-  val target: LookupRepositoryImpl       = repository
+  val target: LookupRepositoryImpl = repository
 
-  val nino: String = "AA123456A"
+  val nino: String              = "AA123456A"
+  val mtdId: String             = "id"
+  val reference: MtdIdReference = MtdIdReference(mtdId)
+  val cached                    = MtdIdMongoReference(nino, mtdId)
 
   "calling .save" when {
     "a valid nino and mtdId is passed" should {
       "return true" in {
-        val result = target.save(nino, "id")
+        val result = target.save(cached)
         await(result) shouldBe true
       }
     }
@@ -37,9 +40,9 @@ class LookupRepositoryISpec extends IntegrationBaseSpec {
   "calling .getMtdId" when {
     "a valid nino is passed " should {
       "return a mtdId if exists" in {
-        target.save(nino, "id")
-        val result = target.getMtdReference("AA123456A")
-        await(result) shouldBe Some(MtdIdReference(nino, "id"))
+        target.save(cached)
+        val result = target.getMtdReference(nino)
+        await(result) shouldBe Some(cached)
       }
     }
   }
@@ -47,7 +50,7 @@ class LookupRepositoryISpec extends IntegrationBaseSpec {
   "calling .getMtdId" when {
     "a valid nino is passed " should {
       "return a none if not exists" in {
-        val result = target.getMtdReference("AA123456A")
+        val result = target.getMtdReference("not-exist")
         await(result) shouldBe None
       }
     }

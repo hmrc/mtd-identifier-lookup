@@ -17,31 +17,34 @@
 package services
 
 import mocks.{MockBusinessDetailsConnector, MockLookupRepository}
-import models.MtdIdReference
+import models.domain.{MtdIdMongoReference, MtdIdReference}
 import models.errors._
+import models.outcomes.ResponseWrapper
 
-import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
 class LookupServiceSpec extends ServiceBaseSpec {
 
+  val nino: String = "AA123456A"
+  val mtdId = "some id"
+  val reference: MtdIdReference = MtdIdReference(mtdId)
+  val cached: MtdIdMongoReference = MtdIdMongoReference(nino, mtdId)
   trait Test extends MockBusinessDetailsConnector with MockLookupRepository {
     lazy val target = new LookupService(mockBusinessDetailsConnector, mockLookupRepository)
   }
 
   "calling .getMtdId function" when {
 
-    val nino: String = "AA123456A"
-    val mtdId        = "some id"
+
     "a known MTD NINO is passed and not available in lookup cache" should {
       "save a valid mtdId in the lookup cache and return" in new Test {
 
-        val connectorResponse   = Right(mtdId)
+        val connectorResponse   = Right(reference)
         val lookupCacheResponse = None
         val isCachedResponse    = true
 
-        MockedLookupRepository.save(nino, mtdId).returns(Future.successful(isCachedResponse))
-        mockGetMtdId(nino).returns(Future.successful(connectorResponse))
+        mockGetMtdId(nino).returns(Future.successful(Right(ResponseWrapper(correlationId, reference))))
+        MockedLookupRepository.save(cached).returns(Future.successful(isCachedResponse))
         MockedLookupRepository.getMtdReference(nino).returns(Future.successful(lookupCacheResponse))
 
         private val result = await(target.getMtdId(nino))
@@ -53,8 +56,8 @@ class LookupServiceSpec extends ServiceBaseSpec {
     "a known MTD NINO is passed which is available in lookup cache" should {
       "return the mtdId from the lookup cache" in new Test {
 
-        val lookupCacheResponse = Some(MtdIdReference(nino, mtdId))
-        val serviceResponse     = Right(mtdId)
+        val lookupCacheResponse = Some(cached)
+        val serviceResponse     = Right(reference)
 
         mockGetMtdId(nino).never()
         MockedLookupRepository.getMtdReference(nino).returns(Future.successful(lookupCacheResponse))
@@ -67,11 +70,9 @@ class LookupServiceSpec extends ServiceBaseSpec {
 
     "a NotFoundError is returned" should {
       "transform the error into a forbidden error" in new Test {
-        val connectorResponse        = Left(NotFoundError)
         val serviceResponse          = Left(ForbiddenError)
         val lookupRepositoryResponse = None
-
-        mockGetMtdId(nino).returns(Future.successful(connectorResponse))
+        mockGetMtdId(nino).returns(Future.successful(Left(ResponseWrapper(correlationId, NotFoundError))))
         MockedLookupRepository.getMtdReference(nino).returns(Future.successful(lookupRepositoryResponse))
 
         private val result = await(target.getMtdId(nino))
@@ -81,20 +82,19 @@ class LookupServiceSpec extends ServiceBaseSpec {
     }
 
     Map(
-      "BadRequestError"         -> BadRequestError,
+      "BadRequestError"         -> NinoFormatError,
       "ForbiddenError"          -> ForbiddenError,
-      "InternalServerError"     -> InternalServerError,
-      "ServiceUnavailableError" -> ServiceUnavailableError,
-      "MalformedPayloadError"   -> MalformedPayloadError
+      "InternalServerError"     -> InternalError,
+      "ServiceUnavailableError" -> UnauthorisedError
     ).foreach { case (description, error) =>
       s"a $description is returned" should {
         "transform the error into an internal server error" in new Test {
 
-          val connectorResponse        = Left(error)
-          val serviceResponse          = Left(InternalServerError)
+          val serviceResponse          = Left(InternalError)
           val lookupRepositoryResponse = None
 
-          mockGetMtdId(nino).returns(Future.successful(connectorResponse))
+          mockGetMtdId(nino).returns(Future.successful(Left(ResponseWrapper(correlationId, error))))
+
           MockedLookupRepository.getMtdReference(nino).returns(Future.successful(lookupRepositoryResponse))
 
           private val result = await(target.getMtdId(nino))
