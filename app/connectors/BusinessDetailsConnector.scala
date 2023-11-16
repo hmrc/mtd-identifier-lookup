@@ -17,37 +17,28 @@
 package connectors
 
 import config.AppConfig
-import connectors.httpParsers.MtdIdReadsHttpParser.reader
-import javax.inject.{Inject, Singleton}
-import models.errors.ExternalServiceError
-import uk.gov.hmrc.http.{HeaderCarrier, HttpReads}
-import uk.gov.hmrc.http.HttpClient
+import connectors.DownstreamUri.{DesUri, IfsUri}
+import connectors.StandardDownstreamHttpParser._
+import models.{MtdIdDesReference, MtdIdIfsReference}
+import models.connectors.DownstreamOutcome
+import uk.gov.hmrc.http.{HeaderCarrier, HttpClient}
 
+import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
-class BusinessDetailsConnector @Inject() (client: HttpClient, appConfig: AppConfig) {
+class BusinessDetailsConnector @Inject() (val http: HttpClient, val appConfig: AppConfig) extends BaseDownstreamConnector {
 
-  private def hcWithDesHeaders(additionalHeaders: Seq[String] = Seq.empty)(implicit hc: HeaderCarrier): HeaderCarrier = {
-    HeaderCarrier(
-      extraHeaders = hc.extraHeaders ++
-        // Contract headers
-        Seq(
-          "Authorization" -> s"Bearer ${appConfig.businessDetailsToken}",
-          "Environment"   -> appConfig.businessDetailsEnvironment,
-          "Accept"        -> "application/json",
-          "Originator-Id" -> "DA_SDI"
-        ) ++
-        // Other headers (i.e Gov-Test-Scenario, Content-Type)
-        hc.headers(additionalHeaders ++ appConfig.businessDetailsEnvironmentHeaders.getOrElse(Seq.empty))
-    )
+  def getMtdIdFromDes(
+      nino: String)(implicit hc: HeaderCarrier, ec: ExecutionContext, correlationId: String): Future[DownstreamOutcome[MtdIdDesReference]] = {
+    val url = DesUri[MtdIdDesReference](s"registration/business-details/nino/$nino")
+    get(url)
   }
 
-  def getMtdId(nino: String)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Either[ExternalServiceError, String]] = {
-
-    val url = appConfig.businessDetailsBaseUrl + s"/registration/business-details/nino/$nino"
-
-    client.GET(url)(implicitly[HttpReads[Either[ExternalServiceError, String]]], hcWithDesHeaders(), implicitly)
+  def getMtdIdFromIfs(
+      nino: String)(implicit hc: HeaderCarrier, ec: ExecutionContext, correlationId: String): Future[DownstreamOutcome[MtdIdIfsReference]] = {
+    val url = IfsUri[MtdIdIfsReference](s"registration/business-details/nino/$nino")
+    get(url)
   }
 
 }

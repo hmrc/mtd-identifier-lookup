@@ -16,37 +16,74 @@
 
 package connectors
 
-import mocks.{MockAppConfig, MockHttpClient}
+import models.{MtdIdDesReference, MtdIdIfsReference}
+import play.api.Configuration
 
 import scala.concurrent.Future
-import scala.concurrent.ExecutionContext.Implicits.global
 
 class BusinessDetailsConnectorSpec extends ConnectorBaseSpec {
 
-  class Test(businessDetailsEnvironmentHeaders: Option[Seq[String]]) extends MockHttpClient with MockAppConfig {
+  "Calling getMtdIdFromIfs with a NINO" should {
+    "call the business details microservice using the correct URL" in new IfsTest with ConnectorTest {
+      val expectedId = "an expected Id"
+      val nino       = "AA123456A"
+      val reference  = MtdIdIfsReference(expectedId)
+      val config     = Configuration("IFSEndpoint.enabled" -> true)
+      MockedAppConfig.featureSwitches.returns(config)
+      MockedAppConfig.ifsAccept.returns(Some("accept-header"))
 
-    val target: BusinessDetailsConnector = {
-      new BusinessDetailsConnector(mockHttpClient, mockAppConfig)
+      MockHttpClient
+        .get(
+          s"$baseUrl/registration/business-details/nino/$nino",
+          config = dummyBusinessDetailsHeaderCarrierConfig,
+          requiredHeaders = requiredIfsBusinessDetailsHeaders,
+          excludedHeaders = Seq("AnotherHeader" -> "HeaderValue")
+        )
+        .returns(Future.successful(Right(reference)))
+
+      await(target.getMtdIdFromIfs(nino))
+    }
+
+    "call the business details microservice using the correct URL return an empty result" in new IfsTest with ConnectorTest {
+      val nino = "AA123456A"
+
+      val config = Configuration("IFSEndpoint.enabled" -> true)
+      MockedAppConfig.featureSwitches.returns(config)
+      MockedAppConfig.ifsAccept.returns(Some("accept-header"))
+
+      MockHttpClient
+        .get(
+          s"$baseUrl/registration/business-details/nino/$nino",
+          config = dummyBusinessDetailsHeaderCarrierConfig,
+          requiredHeaders = requiredIfsBusinessDetailsHeaders,
+          excludedHeaders = Seq("AnotherHeader" -> "HeaderValue")
+        )
+        .returns(Future.successful(Right(None)))
+
+      (await(target.getMtdIdFromIfs(nino))) shouldBe Right(None)
     }
 
   }
 
-  "Calling .getMtdId with a NINO" should {
-    "call the business details microservice using the correct URL" in new Test(Some(allowedBusinessDetailsHeaders)) {
+  "Calling getMtdIdFromDes with a NINO" should {
+    "call the business details microservice using the correct URL" in new DesTest with ConnectorTest {
       val expectedId = "an expected Id"
-      MockedAppConfig.businessDetailsBaseUrl.returns(baseUrl)
-      MockedAppConfig.businessDetailsToken.returns("business-details-token")
-      MockedAppConfig.businessDetailsEnvironment.returns("business-details-environment")
-      MockedAppConfig.businessDetailsEnvironmentHeaders returns Some(allowedBusinessDetailsHeaders)
-      mockGet(
-        "http://business-details/registration/business-details/nino/AA123456A",
-        config = dummyBusinessDetailsHeaderCarrierConfig,
-        requiredHeaders = requiredBusinessDetailsHeaders,
-        excludedHeaders = Seq("AnotherHeader" -> "HeaderValue")
-      )
-        .returns(Future.successful(Right(expectedId)))
+      val nino       = "AA123456A"
+      val reference  = MtdIdDesReference(expectedId)
+      val config     = Configuration("IFSEndpoint.enabled" -> false)
+      MockedAppConfig.featureSwitches.returns(config)
+      MockedAppConfig.desOriginator.returns(Some("originator-id"))
 
-      await(target.getMtdId("AA123456A"))
+      MockHttpClient
+        .get(
+          s"$baseUrl/registration/business-details/nino/$nino",
+          config = dummyBusinessDetailsHeaderCarrierConfig,
+          requiredHeaders = requiredDesBusinessDetailsHeaders,
+          excludedHeaders = Seq("AnotherHeader" -> "HeaderValue")
+        )
+        .returns(Future.successful(Right(reference)))
+
+      await(target.getMtdIdFromDes(nino))
     }
   }
 

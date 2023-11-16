@@ -14,12 +14,8 @@
  * limitations under the License.
  */
 
-package models
+package models.outcomes
 
-import play.api.libs.json.{Json, OFormat}
-
-case class MtdIdReference(nino: String, mtdRef: String)
-
-object MtdIdReference {
-  implicit val format: OFormat[MtdIdReference] = Json.format[MtdIdReference]
+case class ResponseWrapper[+A](correlationId: String, responseData: A) {
+  def map[B](f: A => B): ResponseWrapper[B] = ResponseWrapper(correlationId, f(responseData))
 }

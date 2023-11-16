@@ -14,15 +14,15 @@
  * limitations under the License.
  */
 
-package services
+package connectors
 
-import support.UnitSpec
-import uk.gov.hmrc.http.HeaderCarrier
+sealed trait DownstreamUri[Resp] {
+  val value: String
+}
 
-import scala.concurrent.ExecutionContext
+object DownstreamUri {
+  final case class DesUri[Resp](value: String) extends DownstreamUri[Resp]
 
-trait ServiceBaseSpec extends UnitSpec {
-  implicit val hc: HeaderCarrier = HeaderCarrier()
-  implicit val correlationId = "X-123"
-  implicit val ec: ExecutionContext = scala.concurrent.ExecutionContext.global
+  final case class IfsUri[Resp](value: String) extends DownstreamUri[Resp]
+
 }

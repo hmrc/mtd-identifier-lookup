@@ -16,18 +16,21 @@
 
 package connectors
 
+import mocks.{MockAppConfig, MockHttpClient}
+import org.scalamock.handlers.CallHandler
 import play.api.http.{HeaderNames, MimeTypes, Status}
-import play.api.test.ResultExtractors
 import support.UnitSpec
 import uk.gov.hmrc.http.HeaderCarrier
 
-trait ConnectorBaseSpec extends UnitSpec with Status with MimeTypes with HeaderNames with ResultExtractors {
+import scala.concurrent.{ExecutionContext, Future}
+
+trait ConnectorBaseSpec extends UnitSpec with Status with MimeTypes with HeaderNames {
 
   lazy val baseUrl: String = "http://business-details"
 
   val otherHeaders: Seq[(String, String)] = Seq(
     "Gov-Test-Scenario" -> "DEFAULT",
-    "AnotherHeader"     -> "HeaderValue"
+    "CorrelationId"     -> correlationId
   )
 
   val dummyBusinessDetailsHeaderCarrierConfig: HeaderCarrier.Config =
@@ -37,16 +40,23 @@ trait ConnectorBaseSpec extends UnitSpec with Status with MimeTypes with HeaderN
       Some("mtd-identifier-lookup")
     )
 
-  val requiredBusinessDetailsHeaders: Seq[(String, String)] = Seq(
-    "Environment"   -> "business-details-environment",
-    "Authorization" -> s"Bearer business-details-token",
-    "User-Agent"    -> "mtd-identifier-lookup",
-    "Accept"        -> "application/json",
-    "Originator-Id" -> "DA_SDI"
+  val requiredDesBusinessDetailsHeaders: Seq[(String, String)] = Seq(
+    "Environment"       -> "des-environment",
+    "Authorization"     -> "Bearer des-token",
+    "User-Agent"        -> "mtd-identifier-lookup",
+    "Gov-Test-Scenario" -> "DEFAULT"
+  )
+
+  val requiredIfsBusinessDetailsHeaders: Seq[(String, String)] = Seq(
+    "Environment"       -> "ifs-environment",
+    "Authorization"     -> "Bearer ifs-token",
+    "User-Agent"        -> "mtd-identifier-lookup",
+    "Gov-Test-Scenario" -> "DEFAULT"
   )
 
   val allowedBusinessDetailsHeaders: Seq[String] = Seq(
     "Accept",
+    "Originator-Id",
     "Gov-Test-Scenario",
     "Content-Type",
     "Location",
@@ -54,6 +64,55 @@ trait ConnectorBaseSpec extends UnitSpec with Status with MimeTypes with HeaderN
     "X-Session-Id"
   )
 
-  implicit val hc: HeaderCarrier = HeaderCarrier()
+  implicit val hc: HeaderCarrier    = HeaderCarrier()
+  implicit val correlationId        = "X-123"
+  implicit val ec: ExecutionContext = scala.concurrent.ExecutionContext.global
+
+  protected trait ConnectorTest extends MockHttpClient with MockAppConfig {
+
+    val target: BusinessDetailsConnector = {
+      new BusinessDetailsConnector(mockHttpClient, mockAppConfig)
+    }
+
+    implicit protected val hc: HeaderCarrier = HeaderCarrier(otherHeaders = otherHeaders)
+
+    protected val requiredHeaders: Seq[(String, String)]
+
+    protected def excludedHeaders: Seq[(String, String)] = Seq("AnotherHeader" -> "HeaderValue")
+
+    protected def willGet[T](url: String, parameters: Seq[(String, String)] = Nil): CallHandler[Future[T]] = {
+      MockHttpClient
+        .get(
+          url = url,
+          parameters = parameters,
+          config = dummyBusinessDetailsHeaderCarrierConfig,
+          requiredHeaders = requiredIfsBusinessDetailsHeaders,
+          excludedHeaders = excludedHeaders
+        )
+    }
+
+  }
+
+  protected trait IfsTest extends ConnectorTest {
+
+    protected lazy val requiredHeaders: Seq[(String, String)] = requiredDesBusinessDetailsHeaders
+
+    MockedAppConfig.ifsBaseUrl returns baseUrl
+    MockedAppConfig.ifsToken returns "ifs-token"
+    MockedAppConfig.ifsEnv returns "ifs-environment"
+    MockedAppConfig.ifsAccept returns Some("accept-header")
+    MockedAppConfig.ifsEnvironmentHeaders returns Some(allowedBusinessDetailsHeaders)
+  }
+
+  protected trait DesTest extends ConnectorTest {
+
+    protected lazy val requiredHeaders: Seq[(String, String)] = requiredDesBusinessDetailsHeaders
+
+    MockedAppConfig.desBaseUrl returns baseUrl
+    MockedAppConfig.desToken returns "des-token"
+    MockedAppConfig.desEnv returns "des-environment"
+    MockedAppConfig.desOriginator returns Some("des-originator")
+    MockedAppConfig.desEnvironmentHeaders returns Some(allowedBusinessDetailsHeaders)
+  }
 
 }

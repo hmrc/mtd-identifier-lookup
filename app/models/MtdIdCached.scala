@@ -14,15 +14,12 @@
  * limitations under the License.
  */
 
-package services
+package models
 
-import support.UnitSpec
-import uk.gov.hmrc.http.HeaderCarrier
+import play.api.libs.json.{Json, OFormat}
 
-import scala.concurrent.ExecutionContext
+case class MtdIdCached(nino: String, mtdRef: String)
 
-trait ServiceBaseSpec extends UnitSpec {
-  implicit val hc: HeaderCarrier = HeaderCarrier()
-  implicit val correlationId = "X-123"
-  implicit val ec: ExecutionContext = scala.concurrent.ExecutionContext.global
+object MtdIdCached {
+  implicit val format: OFormat[MtdIdCached] = Json.format[MtdIdCached]
 }

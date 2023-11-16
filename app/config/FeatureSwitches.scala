@@ -14,15 +14,15 @@
  * limitations under the License.
  */
 
-package services
+package config
 
-import support.UnitSpec
-import uk.gov.hmrc.http.HeaderCarrier
+import play.api.Configuration
 
-import scala.concurrent.ExecutionContext
+case class FeatureSwitches(featureSwitchConfig: Configuration) {
+  def isIfsEnabled(): Boolean         = isEnabled("ifs.enabled")
+  def isEnabled(key: String): Boolean = featureSwitchConfig.getOptional[Boolean](key).getOrElse(true)
+}
 
-trait ServiceBaseSpec extends UnitSpec {
-  implicit val hc: HeaderCarrier = HeaderCarrier()
-  implicit val correlationId = "X-123"
-  implicit val ec: ExecutionContext = scala.concurrent.ExecutionContext.global
+object FeatureSwitches {
+  def apply()(implicit appConfig: AppConfig): FeatureSwitches = FeatureSwitches(appConfig.featureSwitches)
 }

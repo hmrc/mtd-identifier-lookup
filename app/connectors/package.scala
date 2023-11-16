@@ -14,15 +14,11 @@
  * limitations under the License.
  */
 
-package services
+package models
 
-import support.UnitSpec
-import uk.gov.hmrc.http.HeaderCarrier
+import models.errors.{MtdError}
+import models.outcomes.ResponseWrapper
 
-import scala.concurrent.ExecutionContext
-
-trait ServiceBaseSpec extends UnitSpec {
-  implicit val hc: HeaderCarrier = HeaderCarrier()
-  implicit val correlationId = "X-123"
-  implicit val ec: ExecutionContext = scala.concurrent.ExecutionContext.global
+package object connectors {
+  type DownstreamOutcome[A] = Either[ResponseWrapper[MtdError], ResponseWrapper[A]]
 }

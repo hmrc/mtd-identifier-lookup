@@ -17,7 +17,7 @@
 package repositories
 
 import com.mongodb.BasicDBObject
-import models.MtdIdReference
+import models.MtdIdCached
 import org.mongodb.scala.model.Filters.equal
 import org.mongodb.scala.model.Indexes.ascending
 import org.mongodb.scala.model.{IndexModel, IndexOptions}
@@ -27,21 +27,22 @@ import uk.gov.hmrc.mongo.play.json.PlayMongoRepository
 
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
+import scala.util.Try
 
 trait LookupRepository {
 
-  def save(nino: String, mtdId: String): Future[Boolean]
+  def save(reference: MtdIdCached): Future[Boolean]
 
-  def getMtdReference(nino: String): Future[Option[MtdIdReference]]
+  def getMtdReference(nino: String): Future[Option[MtdIdCached]]
 
 }
 
 @Singleton
 class LookupRepositoryImpl @Inject() (mongo: MongoComponent)(implicit ec: ExecutionContext)
-    extends PlayMongoRepository[MtdIdReference](
+    extends PlayMongoRepository[MtdIdCached](
       collectionName = "mtdIdLookup",
       mongoComponent = mongo,
-      domainFormat = MtdIdReference.format,
+      domainFormat = MtdIdCached.format,
       indexes = Seq(
         IndexModel(ascending("nino"), IndexOptions().name("mtd-nino").unique(true).background(true))
       ),
@@ -49,12 +50,12 @@ class LookupRepositoryImpl @Inject() (mongo: MongoComponent)(implicit ec: Execut
     )
     with LookupRepository {
 
-  def save(nino: String, mtdId: String): Future[Boolean] =
-    collection.insertOne(MtdIdReference(nino, mtdId)).toFuture().map(result => result.wasAcknowledged())
+  def save(reference: MtdIdCached): Future[Boolean] =
+    Try { collection.insertOne(reference).toFuture().map(result => result.wasAcknowledged()) }.getOrElse(Future.successful(false))
 
   def removeAll(): Future[DeleteResult] = collection.deleteMany(new BasicDBObject()).toFuture()
 
-  def getMtdReference(nino: String): Future[Option[MtdIdReference]] =
-    collection.find(equal("nino", nino)).toFuture().map(_.headOption)
+  def getMtdReference(nino: String): Future[Option[MtdIdCached]] =
+    Try { collection.find(equal("nino", nino)).toFuture().map(_.headOption) }.getOrElse(Future.successful(None))
 
 }

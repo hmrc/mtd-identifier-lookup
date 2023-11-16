@@ -14,13 +14,21 @@
  * limitations under the License.
  */
 
-package models.errors
+package models.outcomes
 
-sealed trait ExternalServiceError
+import support.UnitSpec
 
-case object BadRequestError         extends ExternalServiceError
-case object InternalServerError     extends ExternalServiceError
-case object NotFoundError           extends ExternalServiceError
-case object ServiceUnavailableError extends ExternalServiceError
-case object MalformedPayloadError   extends ExternalServiceError
-case object ForbiddenError          extends ExternalServiceError
+class ResponseWrapperSpec extends UnitSpec {
+
+  "mapping a ResponseWrapper" should {
+    "return the the response mapped by applied partial function" in {
+      val partialFunction: Int => String = _.toString
+
+      val response         = ResponseWrapper("X-123", 1)
+      val expectedResponse = ResponseWrapper("X-123", "1")
+
+      response.map(partialFunction) shouldBe expectedResponse
+    }
+  }
+
+}
