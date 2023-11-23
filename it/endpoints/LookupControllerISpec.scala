@@ -31,13 +31,10 @@ class LookupControllerISpec extends IntegrationBaseSpec {
   val mtdId     = "1234567890"
   val reference = MtdIdResponse(mtdId)
 
-  private val ifsJson = Json.parse(
+  private val responseJson = Json.parse(
     """
       |{
-      |   "taxPayerDisplayResponse": {
-      |       "nino": "NS112233A",
-      |       "mtdId": "XAIT0000000000"
-      |    }
+      |    "mtdbsa": "XAIT0000000000"
       |}
   """.stripMargin
   )
@@ -63,8 +60,8 @@ class LookupControllerISpec extends IntegrationBaseSpec {
       "return 200" in new Test {
 
         override def setupStubs(): StubMapping = {
-          AuthStub.authorised()
-          DownstreamStub.onSuccess(DownstreamStub.GET, s"/registration/business-details/nino/$nino", Status.OK, ifsJson)
+          AuthStub.authorised() // registration/business-details/nino/AA123456A
+          DownstreamStub.onSuccess(DownstreamStub.GET, s"/registration/business-details/nino/$nino", Status.OK, responseJson)
         }
 
         val response: WSResponse = await(request(nino).get())
