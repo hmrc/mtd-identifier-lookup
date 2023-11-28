@@ -51,11 +51,23 @@ class LookupRepositoryImpl @Inject() (mongo: MongoComponent)(implicit ec: Execut
     with LookupRepository {
 
   def save(reference: MtdIdCached): Future[Boolean] =
-    Try { collection.insertOne(reference).toFuture().map(result => result.wasAcknowledged()) }.getOrElse(Future.successful(false))
+    Future
+      .fromTry(Try(collection.insertOne(reference).toFuture()))
+      .flatMap { resultFuture =>
+        resultFuture.map(result => result.wasAcknowledged())
+      }
+      .recover { case _ =>
+        false
+      }
 
   def removeAll(): Future[DeleteResult] = collection.deleteMany(new BasicDBObject()).toFuture()
 
   def getMtdReference(nino: String): Future[Option[MtdIdCached]] =
-    Try { collection.find(equal("nino", nino)).toFuture().map(_.headOption) }.getOrElse(Future.successful(None))
+    Future
+      .fromTry(Try(collection.find(equal("nino", nino)).toFuture()))
+      .flatMap(result => result.map(_.headOption))
+      .recover { case _ =>
+        None
+      }
 
 }

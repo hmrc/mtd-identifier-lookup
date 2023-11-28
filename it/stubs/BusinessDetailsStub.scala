@@ -22,8 +22,6 @@ import play.api.libs.json.JsValue
 
 object BusinessDetailsStub extends WireMockMethods {
 
-  // private def lookupUri(nino: String): String = s"/registration/business-details/nino/$nino"
-
   def getMtdId(response: String, nino: String, statusCode: Int): StubMapping = {
     when(method = GET, uri = nino)
       .thenReturn(status = statusCode, body = response)
@@ -32,10 +30,7 @@ object BusinessDetailsStub extends WireMockMethods {
 }
 
 object DownstreamStub extends WireMockMethods {
-
-  // private def lookupUri(nino: String): String = s"/registration/business-details/nino/$nino"
-
-  def onSuccess(method: HTTPMethod, uri: String, status: Int, body: JsValue): StubMapping = {
+ def onSuccess(method: HTTPMethod, uri: String, status: Int, body: JsValue): StubMapping = {
     when(method = method, uri = uri)
       .thenReturn(status = status, body)
   }

@@ -21,10 +21,10 @@ import support.IntegrationBaseSpec
 
 class LookupRepositoryISpec extends IntegrationBaseSpec {
 
-  val target: LookupRepositoryImpl       = repository
+  val target: LookupRepositoryImpl = repository
 
   val nino: String = "AA123456A"
-  val reference = MtdIdCached(nino, "id")
+  val reference    = MtdIdCached(nino, "id")
 
   "calling .save" when {
     "a valid nino and mtdId is passed" should {

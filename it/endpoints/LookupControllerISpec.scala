@@ -47,7 +47,7 @@ class LookupControllerISpec extends IntegrationBaseSpec {
       buildRequest(s"/nino/$nino")
         .withHttpHeaders(
           (ACCEPT, "application/vnd.hmrc.1.0+json"),
-          (AUTHORIZATION, "Bearer 123") // some bearer token
+          (AUTHORIZATION, "Bearer 123")
         )
     }
 
@@ -60,12 +60,13 @@ class LookupControllerISpec extends IntegrationBaseSpec {
       "return 200" in new Test {
 
         override def setupStubs(): StubMapping = {
-          AuthStub.authorised() // registration/business-details/nino/AA123456A
+          AuthStub.authorised()
           DownstreamStub.onSuccess(DownstreamStub.GET, s"/registration/business-details/nino/$nino", Status.OK, responseJson)
         }
 
         val response: WSResponse = await(request(nino).get())
         response.status shouldBe Status.OK
+        response.json shouldBe responseJson
       }
     }
 

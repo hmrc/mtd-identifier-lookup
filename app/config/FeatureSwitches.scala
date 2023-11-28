@@ -19,8 +19,8 @@ package config
 import play.api.Configuration
 
 case class FeatureSwitches(featureSwitchConfig: Configuration) {
-  def isIfsEnabled(): Boolean         = isEnabled("ifs.enabled")
-  def isEnabled(key: String): Boolean = featureSwitchConfig.getOptional[Boolean](key).getOrElse(true)
+  def isIfsEnabled(): Boolean         = isEnabled("ifs")
+  def isEnabled(key: String): Boolean = featureSwitchConfig.getOptional[Boolean](key+ ".enabled").getOrElse(true)
 }
 
 object FeatureSwitches {

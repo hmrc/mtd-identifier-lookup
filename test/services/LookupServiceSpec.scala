@@ -26,12 +26,14 @@ import scala.concurrent.Future
 
 class LookupServiceSpec extends ServiceBaseSpec with MockAppConfig {
 
-  val nino: String                    = "AA123456A"
-  val mtdId                           = "some id"
-  val ifsReference: MtdIdIfsReference = MtdIdIfsReference(mtdId)
-  val desReference: MtdIdDesReference = MtdIdDesReference(mtdId)
-  val reference: MtdIdResponse        = MtdIdResponse(mtdId)
-  val cached: MtdIdCached             = MtdIdCached(nino, mtdId)
+  val nino: String                             = "AA123456A"
+  val mtdId                                    = "some id"
+  val ifsReference: MtdIdIfsReference          = MtdIdIfsReference(mtdId)
+  val desReference: MtdIdDesReference          = MtdIdDesReference(mtdId)
+  val reference: MtdIdResponse                 = MtdIdResponse(mtdId)
+  val cached: MtdIdCached                      = MtdIdCached(nino, mtdId)
+  val lookupCacheResponse: Option[MtdIdCached] = None
+  val isCachedResponse: Boolean                = true
 
   trait Test extends MockBusinessDetailsConnector with MockLookupRepository {
     lazy val target = new LookupService(mockBusinessDetailsConnector, mockLookupRepository, mockAppConfig)
@@ -41,9 +43,6 @@ class LookupServiceSpec extends ServiceBaseSpec with MockAppConfig {
   "calling .getMtdIdFromDes function" when {
     "a known MTD Nino is passed" should {
       "return a valid mtdId" in new Test {
-
-        val lookupCacheResponse = None
-        val isCachedResponse    = true
         MockedAppConfig.featureSwitches
           .returns(Configuration("ifs.enabled" -> false))
           .anyNumberOfTimes()
@@ -64,15 +63,13 @@ class LookupServiceSpec extends ServiceBaseSpec with MockAppConfig {
     "a known MTD NINO is passed and not available in lookup cache" should {
       "save a valid mtdId in the lookup cache and return" in new Test {
 
-        val lookupCacheResponse = None
-        val isCachedResponse    = true
         MockedAppConfig.featureSwitches
           .returns(Configuration("ifs.enabled" -> true))
           .anyNumberOfTimes()
 
+        MockedLookupRepository.getMtdReference(nino).returns(Future.successful(lookupCacheResponse))
         mockGetMtdIdFromIfs(nino).returns(Future.successful(Right(ResponseWrapper(correlationId, ifsReference))))
         MockedLookupRepository.save(cached).returns(Future.successful(isCachedResponse))
-        MockedLookupRepository.getMtdReference(nino).returns(Future.successful(lookupCacheResponse))
 
         private val result = await(target.getMtdId(nino))
 
@@ -83,14 +80,11 @@ class LookupServiceSpec extends ServiceBaseSpec with MockAppConfig {
     "a known MTD NINO is passed which is available in lookup cache" should {
       "return the mtdId from the lookup cache" in new Test {
 
-        val lookupCacheResponse = Some(cached)
-        val serviceResponse     = Right(reference)
+        val lookupCacheResponse: Option[MtdIdCached] = Some(cached)
+        val serviceResponse                          = Right(reference)
 
         mockGetMtdIdFromIfs(nino).never()
         MockedLookupRepository.getMtdReference(nino).returns(Future.successful(lookupCacheResponse))
-        MockedAppConfig.featureSwitches
-          .returns(Configuration("ifs.enabled" -> true))
-          .anyNumberOfTimes()
 
         private val result = await(target.getMtdId(nino))
 
@@ -114,13 +108,13 @@ class LookupServiceSpec extends ServiceBaseSpec with MockAppConfig {
       }
     }
 
-    Map(
-      "BadRequestError"         -> NinoFormatError,
-      "ForbiddenError"          -> ForbiddenError,
-      "InternalServerError"     -> InternalError,
-      "ServiceUnavailableError" -> UnauthorisedError
-    ).foreach { case (description, error) =>
-      s"a $description is returned" should {
+    Seq(
+      NinoFormatError,
+      ForbiddenError,
+      InternalError,
+      UnAuthorisedError
+    ).foreach { error =>
+      s"a ${error.message} is returned" should {
         "transform the error into an internal server error" in new Test {
 
           val serviceResponse          = Left(InternalError)

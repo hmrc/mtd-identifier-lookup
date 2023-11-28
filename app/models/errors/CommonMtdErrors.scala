@@ -34,12 +34,11 @@ object InternalError
       INTERNAL_SERVER_ERROR
     )
 
-object ForbiddenError extends MtdError(code = "CLIENT_OR_AGENT_NOT_AUTHORISED", message = "The client and/or agent is not authorised", UNAUTHORIZED)
+object ForbiddenError extends MtdError(code = "FORBIDDEN", message = "The client and/or agent is not authorised", UNAUTHORIZED)
 
-object UnauthorisedError
+object UnAuthorisedError
     extends MtdError(
       code = "CLIENT_OR_AGENT_NOT_AUTHORISED",
       message = "The client and/or agent is not authorised",
       UNAUTHORIZED
     )
-

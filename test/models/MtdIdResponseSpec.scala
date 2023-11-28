@@ -37,9 +37,9 @@ class MtdIdResponseSpec extends UnitSpec {
       reference.mtdbsa shouldBe mtdbsa
     }
 
-    "reads" should {
-      "return the correct model in " in {
-       modelJson.as[MtdIdResponse] shouldBe reference
+    "writes" should {
+      "return the correct Json in " in {
+        Json.toJson(reference) shouldBe modelJson
       }
     }
   }

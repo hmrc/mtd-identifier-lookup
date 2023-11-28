@@ -22,7 +22,6 @@ import models.errors.{ForbiddenError, NinoFormatError, InternalError}
 import play.api.libs.json.Json
 import play.api.mvc.{Action, AnyContent, ControllerComponents}
 import services.{EnrolmentsAuthService, LookupService}
-import uk.gov.hmrc.play.http.HeaderCarrierConverter
 import utils.IdGenerator
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -35,14 +34,13 @@ class LookupController @Inject() (val authService: EnrolmentsAuthService, lookup
   implicit val correlationId: String = idGenerator.generateCorrelationId
 
   def lookup(nino: String): Action[AnyContent] = authorisedAction() { implicit request =>
-    implicit val hc = HeaderCarrierConverter.fromRequestAndSession(request, request.session)
     if (Nino.isValid(nino)) {
       val result = lookupService
         .getMtdId(nino)
       result.map {
-        case Right(reference) => Ok(Json.toJson(reference))
+        case Right(reference)     => Ok(Json.toJson(reference))
         case Left(ForbiddenError) => Forbidden(ForbiddenError.asJson)
-        case Left(_) => InternalServerError(InternalError.asJson)
+        case Left(_)              => InternalServerError(InternalError.asJson)
       }
     } else {
       Future.successful(BadRequest(NinoFormatError.asJson))

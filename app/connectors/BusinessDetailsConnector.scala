@@ -18,7 +18,7 @@ package connectors
 
 import config.AppConfig
 import connectors.DownstreamUri.{DesUri, IfsUri}
-import connectors.StandardDownstreamHttpParser._
+import connectors.httpParsers.StandardDownstreamHttpParser._
 import models.{MtdIdDesReference, MtdIdIfsReference}
 import models.connectors.DownstreamOutcome
 import uk.gov.hmrc.http.{HeaderCarrier, HttpClient}

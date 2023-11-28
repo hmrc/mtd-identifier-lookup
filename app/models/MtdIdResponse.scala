@@ -16,13 +16,12 @@
 
 package models
 
-import play.api.libs.json.{Json, OFormat}
+import play.api.libs.json.{Json, OWrites}
 
 trait MtdIdentifier { val mtdbsa: String }
-
 
 case class MtdIdResponse(mtdbsa: String) extends MtdIdentifier
 
 object MtdIdResponse {
-  implicit val formats: OFormat[MtdIdResponse] = Json.format[MtdIdResponse]
+  implicit val writes: OWrites[MtdIdResponse] = Json.writes
 }

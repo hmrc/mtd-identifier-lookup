@@ -28,51 +28,52 @@ object StandardDownstreamHttpParser extends HttpParser {
 
   case class SuccessCode(status: Int) extends AnyVal
 
-  // Return Right[DownstreamOutcome[Unit]] as success response has no body - no need to assign it a value
   implicit def readsEmpty(implicit successCode: SuccessCode = SuccessCode(NO_CONTENT)): HttpReads[DownstreamOutcome[Unit]] =
-    (_: String, url: String, response: HttpResponse) =>
-      doRead(url, response) { correlationId =>
-        Right(ResponseWrapper(correlationId, ()))
-      }
+    (_: String, url: String, response: HttpResponse) => doRead(url, response, () => Right(ResponseWrapper(retrieveCorrelationId(response), ())))
 
   import play.api.http.Status._
 
   implicit def reads[A: Reads](implicit successCode: SuccessCode = SuccessCode(OK)): HttpReads[DownstreamOutcome[A]] =
     (_: String, url: String, response: HttpResponse) =>
-      doRead(url, response) { correlationId =>
-        if (response.status == OK) {
-          response.validateJson[A] match {
-            case Some(ref) => Right(ResponseWrapper(correlationId, ref))
-            case None      => Left(ResponseWrapper(correlationId, InternalError))
-          }
-        } else {
-          response.status match {
-            case NOT_FOUND =>
-              Left(ResponseWrapper(correlationId, ForbiddenError))
-            case _ =>
-              Left(ResponseWrapper(correlationId, InternalError))
+      doRead(
+        url,
+        response,
+        () => {
+          val correlationId = retrieveCorrelationId(response)
+          if (response.status == OK) {
+            response.validateJson[A] match {
+              case Some(ref) => Right(ResponseWrapper(correlationId, ref))
+              case None      => Left(ResponseWrapper(correlationId, InternalError))
+            }
+          } else {
+            handleErrorResponse(correlationId, response.status)
           }
         }
-      }
+      )
 
-  private def doRead[A](url: String, response: HttpResponse)(successOutcomeFactory: String => DownstreamOutcome[A])(implicit
+  private def doRead[A](url: String, response: HttpResponse, successOutcomeFactory: () => DownstreamOutcome[A])(implicit
       successCode: SuccessCode): DownstreamOutcome[A] = {
 
     val correlationId = retrieveCorrelationId(response)
+    val success       = response.status == successCode.status
 
-    if (response.status != successCode.status) {
+    if (!success) {
       logger.warn(
-        "[StandardDownstreamHttpParser][read] - " +
+        s"[StandardDownstreamHttpParser][read] - " +
           s"Error response received with status: ${response.status} and body\n" +
           s"${response.body} and correlationId: $correlationId when calling $url")
+    } else {
+      logger.info(
+        s"[StandardDownstreamHttpParser][read] - " +
+          s"Success response received with correlationId: $correlationId when calling $url")
     }
 
-    response.status match {
-      case successCode.status =>
-        logger.info(
-          "[StandardDownstreamHttpParser][read] - " +
-            s"Success response received with correlationId: $correlationId when calling $url")
-        successOutcomeFactory(correlationId)
+    if (success) { successOutcomeFactory() }
+    else { handleErrorResponse(correlationId, response.status) }
+  }
+
+  private def handleErrorResponse(correlationId: String, status: Int): DownstreamOutcome[Nothing] = {
+    status match {
       case NOT_FOUND => Left(ResponseWrapper(correlationId, NotFoundError))
       case FORBIDDEN => Left(ResponseWrapper(correlationId, ForbiddenError))
       case _         => Left(ResponseWrapper(correlationId, InternalError))

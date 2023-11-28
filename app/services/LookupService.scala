@@ -28,7 +28,6 @@ import uk.gov.hmrc.http.HeaderCarrier
 import utils.Logging
 
 import scala.concurrent.{ExecutionContext, Future}
-import scala.util.control.NonFatal
 
 @Singleton
 class LookupService @Inject() (connector: BusinessDetailsConnector, repository: LookupRepository, appConfig: AppConfig) extends Logging {
@@ -47,13 +46,8 @@ class LookupService @Inject() (connector: BusinessDetailsConnector, repository: 
   private def getMtdIdFromService(
       nino: String)(implicit correlationId: String, hc: HeaderCarrier, ec: ExecutionContext): Future[Either[MtdError, MtdIdResponse]] = {
 
-    val getResult = (if (isIfsEnabled) getMtdIdFromIfs _ else getMtdIdFromDes _)(nino)
+    if (isIfsEnabled) getMtdIdFromIfs(nino)  else getMtdIdFromDes(nino)
 
-    getResult.recover { case NonFatal(e) =>
-      val source = if (isIfsEnabled) "IFS" else "DES"
-      logger.error(s"Error getting MTD ID from $source for nino $nino", e)
-      Left(InternalError)
-    }
   }
 
   private def getMtdIdFromDes(
@@ -76,10 +70,6 @@ class LookupService @Inject() (connector: BusinessDetailsConnector, repository: 
         case Left(ResponseWrapper(_, NotFoundError))  => Left(ForbiddenError)
         case Left(ResponseWrapper(_, ForbiddenError)) => Left(InternalError)
         case _                                        => Left(InternalError)
-      }
-      .recover { case NonFatal(e) =>
-        logger.error(s"Error getting MTD ID for nino $nino", e)
-        Left(InternalError)
       }
   }
 

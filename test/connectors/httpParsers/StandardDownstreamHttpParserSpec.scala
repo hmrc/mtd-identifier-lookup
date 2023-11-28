@@ -14,10 +14,10 @@
  * limitations under the License.
  */
 
-package api.connectors.parsers
+package api.connectors.httpParsers
 
 import models.connectors.DownstreamOutcome
-import models.errors.{InternalError, NotFoundError, UnauthorisedError}
+import models.errors.{InternalError, NotFoundError, UnAuthorisedError}
 import models.outcomes.ResponseWrapper
 import play.api.http.Status._
 import play.api.libs.json.{JsValue, Json, Reads}
@@ -38,7 +38,7 @@ class StandardDownstreamHttpParserSpec extends UnitSpec {
 
   val correlationId = "a1e8057e-fbbc-47a8-a8b4-78d9f015c253"
 
-  import connectors.StandardDownstreamHttpParser._
+  import connectors.httpParsers.StandardDownstreamHttpParser._
 
   val httpReads: HttpReads[DownstreamOutcome[Unit]] = implicitly
 
@@ -120,7 +120,7 @@ class StandardDownstreamHttpParserSpec extends UnitSpec {
   )
 
   private def handleErrorsCorrectly[A](httpReads: HttpReads[DownstreamOutcome[A]]): Unit =
-    Map(BAD_REQUEST -> InternalError, NOT_FOUND -> NotFoundError, FORBIDDEN -> UnauthorisedError).foreach(responseCode =>
+    Map(BAD_REQUEST -> InternalError, NOT_FOUND -> NotFoundError, FORBIDDEN -> UnAuthorisedError).foreach(responseCode =>
       s"receiving a $responseCode response" should {
         "be able to parse a single error" in {
           val httpResponse = HttpResponse(responseCode._1, singleErrorJson, Map("CorrelationId" -> Seq(correlationId)))

@@ -19,6 +19,4 @@ package config
 case class DownstreamConfig(baseUrl: String,
                             env: String,
                             token: String,
-                            accept: Option[String] = None,
-                            originator: Option[String]= None,
                             environmentHeaders: Option[Seq[String]])

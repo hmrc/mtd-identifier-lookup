@@ -33,7 +33,7 @@ trait ControllerBaseSpec extends UnitSpec with Status with MimeTypes with Header
 
 
 
-  implicit lazy val cc: ControllerComponents = stubControllerComponents()
+  lazy val cc: ControllerComponents = stubControllerComponents()
 
   lazy val fakeGetRequest: FakeRequest[AnyContentAsEmpty.type] = fakeRequest.withHeaders(
     HeaderNames.AUTHORIZATION -> "Bearer Token"

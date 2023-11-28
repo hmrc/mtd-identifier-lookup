@@ -33,7 +33,7 @@ trait AppConfig {
   def desEnvironmentHeaders: Option[Seq[String]]
 
   lazy val desDownstreamConfig: DownstreamConfig =
-    DownstreamConfig(baseUrl = desBaseUrl, env = desEnv, token = desToken, originator = desOriginator, environmentHeaders = desEnvironmentHeaders)
+    DownstreamConfig(baseUrl = desBaseUrl, env = desEnv, token = desToken,environmentHeaders = desEnvironmentHeaders)
 
   // IFS Config
   def ifsBaseUrl: String
@@ -46,7 +46,7 @@ trait AppConfig {
   def ifsAccept: Option[String]
 
   lazy val ifsDownstreamConfig: DownstreamConfig =
-    DownstreamConfig(baseUrl = ifsBaseUrl, env = ifsEnv, token = ifsToken, accept = ifsAccept, environmentHeaders = ifsEnvironmentHeaders)
+    DownstreamConfig(baseUrl = ifsBaseUrl, env = ifsEnv, token = ifsToken, environmentHeaders = ifsEnvironmentHeaders)
 
 }
 

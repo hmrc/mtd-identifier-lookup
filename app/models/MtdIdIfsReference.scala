@@ -16,9 +16,7 @@
 
 package models
 
-//import play.api.libs.functional.syntax.unlift
 import play.api.libs.json.{JsPath, Reads}
-import scala.language.implicitConversions
 
 case class MtdIdIfsReference(mtdbsa: String) extends MtdIdentifier
 
@@ -28,13 +26,7 @@ object MtdIdIfsReference {
     (JsPath \ "taxPayerDisplayResponse" \ "mtdId").read[String]
   ).map(MtdIdIfsReference.apply _)
 
-  /* implicit val writes: Writes[MtdIdIfsReference] =
-    (JsPath \ "mtdbsa").write[String].contramap(unlift(MtdIdIfsReference.unapply))
-
-  implicit val format: Format[MtdIdIfsReference] =
-    Format(reads, writes)
-   */
-  implicit def convertToMtdIdResponse(ifsReference: MtdIdIfsReference): MtdIdResponse =
+  def convertToMtdIdResponse(ifsReference: MtdIdIfsReference): MtdIdResponse =
     MtdIdResponse(ifsReference.mtdbsa)
 
 }

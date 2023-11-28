@@ -16,9 +16,7 @@
 
 package models
 
-//import play.api.libs.functional.syntax.unlift
 import play.api.libs.json.{JsPath, Reads}
-import scala.language.implicitConversions
 
 case class MtdIdDesReference(mtdbsa: String) extends MtdIdentifier
 
@@ -29,7 +27,7 @@ object MtdIdDesReference {
   ).map(MtdIdDesReference.apply _)
 
 
-  implicit def convertToMtdIdResponse(desReference: MtdIdDesReference): MtdIdResponse =
+  def convertToMtdIdResponse(desReference: MtdIdDesReference): MtdIdResponse =
     MtdIdResponse(desReference.mtdbsa)
 
 }

@@ -60,14 +60,11 @@ trait BaseDownstreamConnector {
       .headers(downstreamConfig.environmentHeaders.getOrElse(Seq.empty))
       .filterNot(hdr => additionalHeaders.exists(_._1.equalsIgnoreCase(hdr._1)))
 
-    // required for stub
     val downstreamHeader: Option[(String, String)] =
-      (downstreamConfig.accept, downstreamConfig.originator) match {
-        case (_, Some(header)) => Some("Originator-Id" -> header)
-        case (Some(header), _) => Some("Accept" -> header)
+      if (!featureSwitches.isIfsEnabled()) {
+        Some(("Originator-Id", "DA_SDI"))
 
-        case _ => None
-      }
+      } else None
 
     val headersToAdd: Seq[(String, String)] = Seq(
       "Authorization" -> s"Bearer ${downstreamConfig.token}",
