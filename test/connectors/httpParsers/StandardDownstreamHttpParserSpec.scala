@@ -17,7 +17,7 @@
 package api.connectors.httpParsers
 
 import models.connectors.DownstreamOutcome
-import models.errors.{InternalError, NotFoundError, UnAuthorisedError}
+import models.errors.{ForbiddenError, InternalError, NotFoundError}
 import models.outcomes.ResponseWrapper
 import play.api.http.Status._
 import play.api.libs.json.{JsValue, Json, Reads}
@@ -120,7 +120,7 @@ class StandardDownstreamHttpParserSpec extends UnitSpec {
   )
 
   private def handleErrorsCorrectly[A](httpReads: HttpReads[DownstreamOutcome[A]]): Unit =
-    Map(BAD_REQUEST -> InternalError, NOT_FOUND -> NotFoundError, FORBIDDEN -> UnAuthorisedError).foreach(responseCode =>
+    Map(BAD_REQUEST -> InternalError, NOT_FOUND -> NotFoundError, FORBIDDEN -> ForbiddenError).foreach(responseCode =>
       s"receiving a $responseCode response" should {
         "be able to parse a single error" in {
           val httpResponse = HttpResponse(responseCode._1, singleErrorJson, Map("CorrelationId" -> Seq(correlationId)))

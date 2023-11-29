@@ -114,7 +114,7 @@ class LookupServiceSpec extends ServiceBaseSpec with MockAppConfig {
       InternalError,
       UnAuthorisedError
     ).foreach { error =>
-      s"a ${error.message} is returned" should {
+      s"a ${error.code.toString} is returned" should {
         "transform the error into an internal server error" in new Test {
 
           val serviceResponse          = Left(InternalError)
