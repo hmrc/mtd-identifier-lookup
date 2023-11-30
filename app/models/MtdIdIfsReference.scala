@@ -26,7 +26,4 @@ object MtdIdIfsReference {
     (JsPath \ "taxPayerDisplayResponse" \ "mtdId").read[String]
   ).map(MtdIdIfsReference.apply _)
 
-  def convertToMtdIdResponse(ifsReference: MtdIdIfsReference): MtdIdResponse =
-    MtdIdResponse(ifsReference.mtdbsa)
-
 }

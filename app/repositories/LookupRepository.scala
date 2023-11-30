@@ -24,13 +24,12 @@ import org.mongodb.scala.model.{IndexModel, IndexOptions}
 import org.mongodb.scala.result.DeleteResult
 import uk.gov.hmrc.mongo.MongoComponent
 import uk.gov.hmrc.mongo.play.json.PlayMongoRepository
+import utils.Logging
 
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
-import scala.util.Try
 
-trait LookupRepository {
-
+trait LookupRepository extends Logging {
   def save(reference: MtdIdCached): Future[Boolean]
 
   def getMtdReference(nino: String): Future[Option[MtdIdCached]]
@@ -51,22 +50,24 @@ class LookupRepositoryImpl @Inject() (mongo: MongoComponent)(implicit ec: Execut
     with LookupRepository {
 
   def save(reference: MtdIdCached): Future[Boolean] =
-    Future
-      .fromTry(Try(collection.insertOne(reference).toFuture()))
-      .flatMap { resultFuture =>
-        resultFuture.map(result => result.wasAcknowledged())
-      }
-      .recover { case _ =>
+    collection
+      .insertOne(reference)
+      .toFuture()
+      .map(_ => true)
+      .recover { case e =>
+        logger.warn("Error saving reference to cache", e)
         false
       }
 
   def removeAll(): Future[DeleteResult] = collection.deleteMany(new BasicDBObject()).toFuture()
 
   def getMtdReference(nino: String): Future[Option[MtdIdCached]] =
-    Future
-      .fromTry(Try(collection.find(equal("nino", nino)).toFuture()))
-      .flatMap(result => result.map(_.headOption))
-      .recover { case _ =>
+    collection
+      .find(equal("nino", nino))
+      .toFuture()
+      .map(_.headOption)
+      .recover { case e =>
+        logger.warn("Error retrieving cached reference", e)
         None
       }
 

@@ -16,7 +16,6 @@
 
 package models
 
-import models.MtdIdIfsReference.convertToMtdIdResponse
 import play.api.libs.json.Json
 import support.UnitSpec
 
@@ -39,9 +38,7 @@ class MtdIdIfsReferenceSpec extends UnitSpec {
     "return the correct MtdId" in {
       reference.mtdbsa shouldBe mtdId
     }
-    "convertToMtdIdResponse should return the correct MtdIdResponse" in {
-      convertToMtdIdResponse(reference) shouldBe MtdIdResponse(mtdId)
-    }
+
     "reads" should {
       "return the correct model " in {
         ifsJson.as[MtdIdIfsReference] shouldBe reference

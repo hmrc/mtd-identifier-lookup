@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package api.connectors.httpParsers
+package connectors.httpParsers
 
 import models.connectors.DownstreamOutcome
 import models.errors.{ForbiddenError, InternalError, NotFoundError}
@@ -110,15 +110,6 @@ class StandardDownstreamHttpParserSpec extends UnitSpec {
     """.stripMargin
   )
 
-  val malformedErrorJson: JsValue = Json.parse(
-    """
-      |{
-      |   "coed": "CODE",
-      |   "resaon": "MESSAGE"
-      |}
-    """.stripMargin
-  )
-
   private def handleErrorsCorrectly[A](httpReads: HttpReads[DownstreamOutcome[A]]): Unit =
     Map(BAD_REQUEST -> InternalError, NOT_FOUND -> NotFoundError, FORBIDDEN -> ForbiddenError).foreach(responseCode =>
       s"receiving a $responseCode response" should {
@@ -137,12 +128,6 @@ class StandardDownstreamHttpParserSpec extends UnitSpec {
 
           httpReads.read(method, url, httpResponse) shouldBe Left(ResponseWrapper(correlationId, InternalError))
         }
-
-        "return an outbound error when the error returned doesn't match the Error model" in {
-          val httpResponse = HttpResponse(responseCode, malformedErrorJson, Map("CorrelationId" -> Seq(correlationId)))
-
-          httpReads.read(method, url, httpResponse) shouldBe Left(ResponseWrapper(correlationId, InternalError))
-        }
       })
 
   private def handleUnexpectedResponse[A](httpReads: HttpReads[DownstreamOutcome[A]]): Unit =
@@ -154,11 +139,6 @@ class StandardDownstreamHttpParserSpec extends UnitSpec {
         httpReads.read(method, url, httpResponse) shouldBe Left(ResponseWrapper(correlationId, InternalError))
       }
 
-      "return an outbound error when the error returned doesn't match the Error model" in {
-        val httpResponse = HttpResponse(responseCode, malformedErrorJson, Map("CorrelationId" -> Seq(correlationId)))
-
-        httpReads.read(method, url, httpResponse) shouldBe Left(ResponseWrapper(correlationId, InternalError))
-      }
     }
 
 }

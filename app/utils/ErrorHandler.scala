@@ -16,7 +16,7 @@
 
 package utils
 
-import models.errors.{MtdError, NinoFormatError, NotFoundError, UnAuthorisedError, InternalError}
+import models.errors.{NinoFormatError, NotFoundError, UnAuthorisedError, InternalError}
 import play.api.http.Status.{BAD_REQUEST, INTERNAL_SERVER_ERROR, NOT_FOUND, UNAUTHORIZED}
 import play.api.mvc.Results.{BadRequest, NotFound, Status}
 import play.api.mvc.{RequestHeader, Result}
@@ -60,7 +60,7 @@ class ErrorHandler @Inject() (
       case _ =>
         val errorCode = statusCode match {
           case UNAUTHORIZED => UnAuthorisedError
-          case _            => MtdError("INVALID_REQUEST", message, BAD_REQUEST)
+          case _            => InternalError
         }
 
         auditConnector.sendEvent(

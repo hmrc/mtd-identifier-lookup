@@ -60,17 +60,16 @@ trait BaseDownstreamConnector {
       .headers(downstreamConfig.environmentHeaders.getOrElse(Seq.empty))
       .filterNot(hdr => additionalHeaders.exists(_._1.equalsIgnoreCase(hdr._1)))
 
-    val downstreamHeader: Option[(String, String)] =
+    val downstreamHeader: Option[Seq[(String, String)]] =
       if (!featureSwitches.isIfsEnabled()) {
-        Some(("Originator-Id", "DA_SDI"))
-
-      } else None
+        Some(Seq(("Originator-Id" -> "DA_SDI"), ("Accept" -> "application/json")))
+      } else { None }
 
     val headersToAdd: Seq[(String, String)] = Seq(
       "Authorization" -> s"Bearer ${downstreamConfig.token}",
       "Environment"   -> downstreamConfig.env,
       "CorrelationId" -> correlationId
-    ) ++ additionalHeaders ++ passThroughHeaders ++ downstreamHeader.toSeq
+    ) ++ additionalHeaders ++ passThroughHeaders ++ downstreamHeader.getOrElse(Seq.empty)
 
     HeaderCarrier(extraHeaders = hc.extraHeaders ++ headersToAdd)
   }
