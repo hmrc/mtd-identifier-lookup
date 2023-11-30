@@ -44,10 +44,6 @@ trait MockAppConfig extends MockFactory {
         .expects()
     }
 
-    def desOriginator: CallHandler[Option[String]] = {
-      (() => mockAppConfig.desOriginator)
-        .expects()
-    }
 
     def desEnvironmentHeaders: CallHandler[Option[Seq[String]]] = {
       (() => mockAppConfig.desEnvironmentHeaders)
@@ -70,10 +66,6 @@ trait MockAppConfig extends MockFactory {
         .expects()
     }
 
-    def ifsAccept: CallHandler[Option[String]] = {
-      (() => mockAppConfig.ifsAccept)
-        .expects()
-    }
 
     def ifsEnvironmentHeaders: CallHandler[Option[Seq[String]]] = {
       (() => mockAppConfig.ifsEnvironmentHeaders)

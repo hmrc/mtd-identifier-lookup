@@ -47,9 +47,9 @@ class LookupServiceSpec extends ServiceBaseSpec with MockAppConfig {
           .returns(Configuration("ifs.enabled" -> false))
           .anyNumberOfTimes()
 
+        MockedLookupRepository.getMtdReference(nino).returns(Future.successful(lookupCacheResponse))
         mockGetMtdIdFromDes(nino).returns(Future.successful(Right(ResponseWrapper(correlationId, desReference))))
         MockedLookupRepository.save(cached).returns(Future.successful(isCachedResponse))
-        MockedLookupRepository.getMtdReference(nino).returns(Future.successful(lookupCacheResponse))
 
         private val result = await(target.getMtdId(nino))
 
@@ -83,8 +83,8 @@ class LookupServiceSpec extends ServiceBaseSpec with MockAppConfig {
         val lookupCacheResponse: Option[MtdIdCached] = Some(cached)
         val serviceResponse                          = Right(reference)
 
-        mockGetMtdIdFromIfs(nino).never()
         MockedLookupRepository.getMtdReference(nino).returns(Future.successful(lookupCacheResponse))
+        mockGetMtdIdFromIfs(nino).never()
 
         private val result = await(target.getMtdId(nino))
 
@@ -96,11 +96,13 @@ class LookupServiceSpec extends ServiceBaseSpec with MockAppConfig {
       "transform the error into a forbidden error" in new Test {
         val serviceResponse          = Left(ForbiddenError)
         val lookupRepositoryResponse = None
-        mockGetMtdIdFromIfs(nino).returns(Future.successful(Left(ResponseWrapper(correlationId, NotFoundError))))
-        MockedLookupRepository.getMtdReference(nino).returns(Future.successful(lookupRepositoryResponse))
+
         MockedAppConfig.featureSwitches
           .returns(Configuration("ifs.enabled" -> true))
           .anyNumberOfTimes()
+
+        MockedLookupRepository.getMtdReference(nino).returns(Future.successful(lookupRepositoryResponse))
+        mockGetMtdIdFromIfs(nino).returns(Future.successful(Left(ResponseWrapper(correlationId, NotFoundError))))
 
         private val result = await(target.getMtdId(nino))
 
@@ -123,9 +125,8 @@ class LookupServiceSpec extends ServiceBaseSpec with MockAppConfig {
             .returns(Configuration("ifs.enabled" -> true))
             .anyNumberOfTimes()
 
-          mockGetMtdIdFromIfs(nino).returns(Future.successful(Left(ResponseWrapper(correlationId, error))))
-
           MockedLookupRepository.getMtdReference(nino).returns(Future.successful(lookupRepositoryResponse))
+          mockGetMtdIdFromIfs(nino).returns(Future.successful(Left(ResponseWrapper(correlationId, error))))
 
           private val result = await(target.getMtdId(nino))
 

@@ -100,7 +100,6 @@ trait ConnectorBaseSpec extends UnitSpec with Status with MimeTypes with HeaderN
     MockedAppConfig.ifsBaseUrl returns baseUrl
     MockedAppConfig.ifsToken returns "ifs-token"
     MockedAppConfig.ifsEnv returns "ifs-environment"
-    MockedAppConfig.ifsAccept returns Some("accept-header")
     MockedAppConfig.ifsEnvironmentHeaders returns Some(allowedBusinessDetailsHeaders)
   }
 
@@ -111,7 +110,6 @@ trait ConnectorBaseSpec extends UnitSpec with Status with MimeTypes with HeaderN
     MockedAppConfig.desBaseUrl returns baseUrl
     MockedAppConfig.desToken returns "des-token"
     MockedAppConfig.desEnv returns "des-environment"
-    MockedAppConfig.desOriginator returns Some("des-originator")
     MockedAppConfig.desEnvironmentHeaders returns Some(allowedBusinessDetailsHeaders)
   }
 

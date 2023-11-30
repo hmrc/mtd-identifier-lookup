@@ -28,7 +28,6 @@ trait AppConfig {
   def desEnv: String
 
   def desToken: String
-  def desOriginator: Option[String]
 
   def desEnvironmentHeaders: Option[Seq[String]]
 
@@ -43,7 +42,6 @@ trait AppConfig {
   def ifsToken: String
 
   def ifsEnvironmentHeaders: Option[Seq[String]]
-  def ifsAccept: Option[String]
 
   lazy val ifsDownstreamConfig: DownstreamConfig =
     DownstreamConfig(baseUrl = ifsBaseUrl, env = ifsEnv, token = ifsToken, environmentHeaders = ifsEnvironmentHeaders)
@@ -58,7 +56,6 @@ class AppConfigImpl @Inject() (config: ServicesConfig, configuration: Configurat
   def desEnv: String = config.getString("microservice.services.des.env")
 
   def desToken: String              = config.getString("microservice.services.des.token")
-  def desOriginator: Option[String] = configuration.getOptional[String]("microservice.services.des.originatorId")
 
   def desEnvironmentHeaders: Option[Seq[String]] = configuration.getOptional[Seq[String]]("microservice.services.des.environmentHeaders")
 
@@ -70,7 +67,6 @@ class AppConfigImpl @Inject() (config: ServicesConfig, configuration: Configurat
 
   def ifsEnvironmentHeaders: Option[Seq[String]] = configuration.getOptional[Seq[String]]("microservice.services.ifs.environmentHeaders")
 
-  def ifsAccept: Option[String]      = configuration.getOptional[String]("microservice.services.ifs.accept")
   def featureSwitches: Configuration = configuration.getOptional[Configuration](s"feature-switch").getOrElse(Configuration.empty)
 
 }

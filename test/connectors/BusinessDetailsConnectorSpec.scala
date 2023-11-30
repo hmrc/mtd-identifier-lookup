@@ -30,7 +30,6 @@ class BusinessDetailsConnectorSpec extends ConnectorBaseSpec {
       val reference  = MtdIdIfsReference(expectedId)
       val config     = Configuration("IFSEndpoint.enabled" -> true)
       MockedAppConfig.featureSwitches.returns(config)
-      MockedAppConfig.ifsAccept.returns(Some("accept-header"))
 
       MockHttpClient
         .get(
@@ -49,7 +48,6 @@ class BusinessDetailsConnectorSpec extends ConnectorBaseSpec {
 
       val config = Configuration("IFSEndpoint.enabled" -> true)
       MockedAppConfig.featureSwitches.returns(config)
-      MockedAppConfig.ifsAccept.returns(Some("accept-header"))
 
       MockHttpClient
         .get(
@@ -72,7 +70,6 @@ class BusinessDetailsConnectorSpec extends ConnectorBaseSpec {
       val reference  = MtdIdDesReference(expectedId)
       val config     = Configuration("IFSEndpoint.enabled" -> false)
       MockedAppConfig.featureSwitches.returns(config)
-      MockedAppConfig.desOriginator.returns(Some("originator-id"))
 
       MockHttpClient
         .get(
