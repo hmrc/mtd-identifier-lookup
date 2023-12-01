@@ -16,7 +16,6 @@
 
 package connectors.httpParsers
 
-import connectors.httpParsers.HttpParser
 import models.connectors.DownstreamOutcome
 import models.errors.{ForbiddenError, InternalError, NotFoundError}
 import models.outcomes.ResponseWrapper
@@ -40,13 +39,9 @@ object StandardDownstreamHttpParser extends HttpParser {
         response,
         () => {
           val correlationId = retrieveCorrelationId(response)
-          if (response.status == OK) {
-            response.validateJson[A] match {
-              case Some(ref) => Right(ResponseWrapper(correlationId, ref))
-              case None      => Left(ResponseWrapper(correlationId, InternalError))
-            }
-          } else {
-            handleErrorResponse(correlationId, response.status)
+          response.validateJson[A] match {
+            case Some(ref) => Right(ResponseWrapper(correlationId, ref))
+            case None      => Left(ResponseWrapper(correlationId, InternalError))
           }
         }
       )

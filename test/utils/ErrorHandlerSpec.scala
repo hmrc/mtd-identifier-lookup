@@ -20,7 +20,7 @@ import models.errors.{InternalError, NinoFormatError, NotFoundError, UnAuthorise
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 import play.api.Configuration
 import play.api.http.Status
-import play.api.http.Status.{FORBIDDEN, INTERNAL_SERVER_ERROR, NOT_FOUND}
+import play.api.http.Status.{INTERNAL_SERVER_ERROR, NOT_FOUND}
 import play.api.mvc.{AnyContentAsEmpty, RequestHeader}
 import play.api.test.FakeRequest
 import play.api.test.Helpers.{ACCEPT, BAD_REQUEST, UNAUTHORIZED, contentAsJson, status}
@@ -98,10 +98,10 @@ class ErrorHandlerSpec extends UnitSpec with GuiceOneAppPerSuite {
         contentAsJson(result) shouldBe NinoFormatError.asJson
       }
     }
-    "return 403 with error body" when {
+    "return 500 with error body" when {
       "JsValidationException thrown and header is supplied" in new Test() {
-        private val result = handler.onClientError(requestHeader, FORBIDDEN, "test")
-        status(result) shouldBe FORBIDDEN
+        private val result = handler.onClientError(requestHeader, INTERNAL_SERVER_ERROR, "test")
+        status(result) shouldBe INTERNAL_SERVER_ERROR
 
         contentAsJson(result) shouldBe InternalError.asJson
       }

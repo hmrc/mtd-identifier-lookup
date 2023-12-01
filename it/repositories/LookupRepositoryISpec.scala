@@ -20,8 +20,8 @@ import models.MtdIdCached
 import support.IntegrationBaseSpec
 
 class LookupRepositoryISpec extends IntegrationBaseSpec {
-
-  val target: LookupRepositoryImpl = repository
+  override def servicesConfig: Map[String, Any] = Map()
+  val target: LookupRepositoryImpl              = repository
 
   val nino: String = "AA123456A"
   val reference    = MtdIdCached(nino, "id")

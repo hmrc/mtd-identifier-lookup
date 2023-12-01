@@ -26,8 +26,4 @@ object MtdIdDesReference {
     (JsPath \ "mtdbsa").read[String]
   ).map(MtdIdDesReference.apply _)
 
-
-  def convertToMtdIdResponse(desReference: MtdIdDesReference): MtdIdResponse =
-    MtdIdResponse(desReference.mtdbsa)
-
 }

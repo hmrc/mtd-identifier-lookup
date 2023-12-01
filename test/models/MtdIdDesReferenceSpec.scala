@@ -16,7 +16,6 @@
 
 package models
 
-import models.MtdIdDesReference.convertToMtdIdResponse
 import play.api.libs.json.Json
 import support.UnitSpec
 
@@ -39,9 +38,7 @@ class MtdIdDesReferenceSpec extends UnitSpec {
     "return the correct MtdId" in {
       reference.mtdbsa shouldBe mtdbsa
     }
-    "convertToMtdIdResponse should return the correct MtdIdResponse" in {
-      convertToMtdIdResponse(reference) shouldBe MtdIdResponse(mtdbsa)
-    }
+
     "reads" should {
       "return the correct model " in {
         desJson.as[MtdIdDesReference] shouldBe reference

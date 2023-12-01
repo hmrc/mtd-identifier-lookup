@@ -28,7 +28,7 @@ import play.api.{Application, Environment, Mode}
 import repositories.LookupRepositoryImpl
 
 trait IntegrationBaseSpec
-  extends AnyWordSpec
+    extends AnyWordSpec
     with Matchers
     with FutureAwaits
     with DefaultAwaitTimeout
@@ -45,15 +45,7 @@ trait IntegrationBaseSpec
 
   val rootPath: String = s"http://localhost:$port/mtd-identifier-lookup"
 
-  def servicesConfig: Map[String, String] = Map(
-    "microservice.services.des.host"  -> mockHost,
-    "microservice.services.des.port"  -> mockPort,
-    "microservice.services.ifs.host"  -> mockHost,
-    "microservice.services.ifs.port"  -> mockPort,
-    "microservice.services.auth.host" -> mockHost,
-    "microservice.services.auth.port" -> mockPort,
-    "auditing.consumer.baseUri.port"  -> mockPort
-  )
+  def servicesConfig: Map[String, Any]
 
   override implicit lazy val app: Application = new GuiceApplicationBuilder()
     .in(Environment.simple(mode = Mode.Dev))
