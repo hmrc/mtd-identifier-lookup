@@ -14,15 +14,21 @@
  * limitations under the License.
  */
 
-package services
+package models.outcomes
 
 import support.UnitSpec
-import uk.gov.hmrc.http.HeaderCarrier
 
-import scala.concurrent.ExecutionContext
+class ResponseWrapperSpec extends UnitSpec {
 
-trait ServiceBaseSpec extends UnitSpec {
-  implicit val hc: HeaderCarrier = HeaderCarrier()
-  implicit val correlationId = "X-123"
-  implicit val ec: ExecutionContext = scala.concurrent.ExecutionContext.global
+  "mapping a ResponseWrapper" should {
+    "return the the response mapped by applied partial function" in {
+      val partialFunction: Int => String = _.toString
+
+      val response         = ResponseWrapper("X-123", 1)
+      val expectedResponse = ResponseWrapper("X-123", "1")
+
+      response.map(partialFunction) shouldBe expectedResponse
+    }
+  }
+
 }

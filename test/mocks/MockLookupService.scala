@@ -16,7 +16,8 @@
 
 package mocks
 
-import models.errors.ExternalServiceError
+import models.MtdIdResponse
+import models.errors.MtdError
 import org.scalamock.handlers.CallHandler
 import org.scalamock.scalatest.MockFactory
 import services.LookupService
@@ -28,13 +29,12 @@ trait MockLookupService extends MockFactory {
 
   val mockLookupService: LookupService = mock[LookupService]
 
-  object MockedLookupService {
+  object MockLookupService {
 
-    def getMtdId(nino: String): CallHandler[Future[Either[ExternalServiceError, String]]] = {
-
+    def getMtdId(nino: String): CallHandler[Future[Either[MtdError, MtdIdResponse]]] = {
       (mockLookupService
-        .getMtdId(_: String)(_: HeaderCarrier, _: ExecutionContext))
-        .expects(nino, *, *)
+        .getMtdId(_: String)(_: String, _: HeaderCarrier, _: ExecutionContext))
+        .expects(nino, *, *, *)
     }
 
   }

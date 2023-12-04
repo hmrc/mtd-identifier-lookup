@@ -14,15 +14,20 @@
  * limitations under the License.
  */
 
-package services
+package utils
 
 import support.UnitSpec
-import uk.gov.hmrc.http.HeaderCarrier
 
-import scala.concurrent.ExecutionContext
+class IdGeneratorSpec extends UnitSpec {
 
-trait ServiceBaseSpec extends UnitSpec {
-  implicit val hc: HeaderCarrier = HeaderCarrier()
-  implicit val correlationId = "X-123"
-  implicit val ec: ExecutionContext = scala.concurrent.ExecutionContext.global
+  val generator        = new IdGenerator
+  val correlationRegex = "^[A-Za-z0-9\\-]{36}$"
+
+  "IdGenerator" should {
+    "generate a correlation id" when {
+      "getCorrelationId is called" in {
+        generator.generateCorrelationId.matches(correlationRegex) shouldBe true
+      }
+    }
+  }
 }

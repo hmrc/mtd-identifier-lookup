@@ -14,15 +14,8 @@
  * limitations under the License.
  */
 
-package services
+package models.outcomes
 
-import support.UnitSpec
-import uk.gov.hmrc.http.HeaderCarrier
-
-import scala.concurrent.ExecutionContext
-
-trait ServiceBaseSpec extends UnitSpec {
-  implicit val hc: HeaderCarrier = HeaderCarrier()
-  implicit val correlationId = "X-123"
-  implicit val ec: ExecutionContext = scala.concurrent.ExecutionContext.global
+case class ResponseWrapper[+A](correlationId: String, responseData: A) {
+  def map[B](f: A => B): ResponseWrapper[B] = ResponseWrapper(correlationId, f(responseData))
 }

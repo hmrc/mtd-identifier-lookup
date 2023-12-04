@@ -14,15 +14,12 @@
  * limitations under the License.
  */
 
-package services
+package utils
 
-import support.UnitSpec
-import uk.gov.hmrc.http.HeaderCarrier
+import java.util.UUID
+import javax.inject.{Inject, Singleton}
 
-import scala.concurrent.ExecutionContext
-
-trait ServiceBaseSpec extends UnitSpec {
-  implicit val hc: HeaderCarrier = HeaderCarrier()
-  implicit val correlationId = "X-123"
-  implicit val ec: ExecutionContext = scala.concurrent.ExecutionContext.global
+@Singleton
+class IdGenerator @Inject() () {
+  def generateCorrelationId: String = UUID.randomUUID().toString
 }

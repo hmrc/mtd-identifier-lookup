@@ -14,13 +14,15 @@
  * limitations under the License.
  */
 
-package models.errors
+package config
 
-sealed trait ExternalServiceError
+import play.api.Configuration
 
-case object BadRequestError         extends ExternalServiceError
-case object InternalServerError     extends ExternalServiceError
-case object NotFoundError           extends ExternalServiceError
-case object ServiceUnavailableError extends ExternalServiceError
-case object MalformedPayloadError   extends ExternalServiceError
-case object ForbiddenError          extends ExternalServiceError
+case class FeatureSwitches(featureSwitchConfig: Configuration) {
+  def isIfsEnabled(): Boolean         = isEnabled("ifs")
+  def isEnabled(key: String): Boolean = featureSwitchConfig.getOptional[Boolean](key+ ".enabled").getOrElse(true)
+}
+
+object FeatureSwitches {
+  def apply()(implicit appConfig: AppConfig): FeatureSwitches = FeatureSwitches(appConfig.featureSwitches)
+}

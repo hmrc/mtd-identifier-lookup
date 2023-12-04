@@ -14,12 +14,9 @@
  * limitations under the License.
  */
 
-package models
+package config
 
-import play.api.libs.json.{Json, OFormat}
-
-case class MtdIdReference(nino: String, mtdRef: String)
-
-object MtdIdReference {
-  implicit val format: OFormat[MtdIdReference] = Json.format[MtdIdReference]
-}
+case class DownstreamConfig(baseUrl: String,
+                            env: String,
+                            token: String,
+                            environmentHeaders: Option[Seq[String]])

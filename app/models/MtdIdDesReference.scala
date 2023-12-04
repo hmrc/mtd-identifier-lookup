@@ -14,15 +14,16 @@
  * limitations under the License.
  */
 
-package services
+package models
 
-import support.UnitSpec
-import uk.gov.hmrc.http.HeaderCarrier
+import play.api.libs.json.{JsPath, Reads}
 
-import scala.concurrent.ExecutionContext
+case class MtdIdDesReference(mtdbsa: String) extends MtdIdentifier
 
-trait ServiceBaseSpec extends UnitSpec {
-  implicit val hc: HeaderCarrier = HeaderCarrier()
-  implicit val correlationId = "X-123"
-  implicit val ec: ExecutionContext = scala.concurrent.ExecutionContext.global
+object MtdIdDesReference {
+
+  implicit val reads: Reads[MtdIdDesReference] = (
+    (JsPath \ "mtdbsa").read[String]
+  ).map(MtdIdDesReference.apply _)
+
 }

@@ -21,21 +21,52 @@ import play.api.Configuration
 import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
 
 trait AppConfig {
-  def businessDetailsBaseUrl: String
-  def businessDetailsEnvironment: String
-  def businessDetailsEnvironmentHeaders: Option[Seq[String]]
-  def businessDetailsToken: String
+  def featureSwitches: Configuration
+
+  def desBaseUrl: String
+
+  def desEnv: String
+
+  def desToken: String
+
+  def desEnvironmentHeaders: Option[Seq[String]]
+
+  lazy val desDownstreamConfig: DownstreamConfig =
+    DownstreamConfig(baseUrl = desBaseUrl, env = desEnv, token = desToken,environmentHeaders = desEnvironmentHeaders)
+
+  // IFS Config
+  def ifsBaseUrl: String
+
+  def ifsEnv: String
+
+  def ifsToken: String
+
+  def ifsEnvironmentHeaders: Option[Seq[String]]
+
+  lazy val ifsDownstreamConfig: DownstreamConfig =
+    DownstreamConfig(baseUrl = ifsBaseUrl, env = ifsEnv, token = ifsToken, environmentHeaders = ifsEnvironmentHeaders)
+
 }
 
 @Singleton
-class AppConfigImpl @Inject() (servicesConfig: ServicesConfig, configuration: Configuration) extends AppConfig {
+class AppConfigImpl @Inject() (config: ServicesConfig, configuration: Configuration) extends AppConfig {
 
-  override val businessDetailsBaseUrl: String = servicesConfig.baseUrl("business-details")
+  def desBaseUrl: String = config.baseUrl("des")
 
-  override val businessDetailsEnvironment: String = servicesConfig.getString("microservice.services.business-details.env")
+  def desEnv: String = config.getString("microservice.services.des.env")
 
-  override val businessDetailsEnvironmentHeaders: Option[Seq[String]] =
-    configuration.getOptional[Seq[String]]("microservice.services.business-details.environmentHeaders")
+  def desToken: String              = config.getString("microservice.services.des.token")
 
-  override val businessDetailsToken: String = servicesConfig.getString("microservice.services.business-details.token")
+  def desEnvironmentHeaders: Option[Seq[String]] = configuration.getOptional[Seq[String]]("microservice.services.des.environmentHeaders")
+
+  def ifsBaseUrl: String = config.baseUrl("ifs")
+
+  def ifsEnv: String = config.getString("microservice.services.ifs.env")
+
+  def ifsToken: String = config.getString("microservice.services.ifs.token")
+
+  def ifsEnvironmentHeaders: Option[Seq[String]] = configuration.getOptional[Seq[String]]("microservice.services.ifs.environmentHeaders")
+
+  def featureSwitches: Configuration = configuration.getOptional[Configuration](s"feature-switch").getOrElse(Configuration.empty)
+
 }

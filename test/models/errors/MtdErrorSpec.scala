@@ -14,15 +14,27 @@
  * limitations under the License.
  */
 
-package services
+package models.errors
 
+import play.api.http.Status.BAD_REQUEST
+import play.api.libs.json.Json
 import support.UnitSpec
-import uk.gov.hmrc.http.HeaderCarrier
 
-import scala.concurrent.ExecutionContext
+class MtdErrorSpec extends UnitSpec {
 
-trait ServiceBaseSpec extends UnitSpec {
-  implicit val hc: HeaderCarrier = HeaderCarrier()
-  implicit val correlationId = "X-123"
-  implicit val ec: ExecutionContext = scala.concurrent.ExecutionContext.global
+  val dummyError: MtdError = MtdError("SOME_CODE", "some message", BAD_REQUEST)
+
+  "writes" should {
+    "generate the correct JSON" in {
+      Json.toJson(dummyError) shouldBe Json.parse(
+        """
+          |{
+          |   "code": "SOME_CODE",
+          |   "message": "some message"
+          |}
+        """.stripMargin
+      )
+    }
+  }
+
 }

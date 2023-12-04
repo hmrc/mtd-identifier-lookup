@@ -16,19 +16,20 @@
 
 package repositories
 
-import models.MtdIdReference
+import models.MtdIdCached
 import support.IntegrationBaseSpec
 
 class LookupRepositoryISpec extends IntegrationBaseSpec {
-
-  val target: LookupRepositoryImpl       = repository
+  override def servicesConfig: Map[String, Any] = Map()
+  val target: LookupRepositoryImpl              = repository
 
   val nino: String = "AA123456A"
+  val reference    = MtdIdCached(nino, "id")
 
   "calling .save" when {
     "a valid nino and mtdId is passed" should {
       "return true" in {
-        val result = target.save(nino, "id")
+        val result = target.save(reference)
         await(result) shouldBe true
       }
     }
@@ -37,9 +38,9 @@ class LookupRepositoryISpec extends IntegrationBaseSpec {
   "calling .getMtdId" when {
     "a valid nino is passed " should {
       "return a mtdId if exists" in {
-        target.save(nino, "id")
+        target.save(reference)
         val result = target.getMtdReference("AA123456A")
-        await(result) shouldBe Some(MtdIdReference(nino, "id"))
+        await(result) shouldBe Some(reference)
       }
     }
   }

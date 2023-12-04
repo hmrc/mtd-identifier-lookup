@@ -14,15 +14,36 @@
  * limitations under the License.
  */
 
-package services
+package models
 
+import play.api.libs.json.Json
 import support.UnitSpec
-import uk.gov.hmrc.http.HeaderCarrier
 
-import scala.concurrent.ExecutionContext
+class MtdIdDesReferenceSpec extends UnitSpec {
 
-trait ServiceBaseSpec extends UnitSpec {
-  implicit val hc: HeaderCarrier = HeaderCarrier()
-  implicit val correlationId = "X-123"
-  implicit val ec: ExecutionContext = scala.concurrent.ExecutionContext.global
+  val mtdbsa: String = "XAIT0000000000"
+
+  private val desJson = Json.parse(
+    s"""
+      |{
+      |  "nino": "NS112233A",
+      |  "mtdbsa": "$mtdbsa"
+      |}
+     """.stripMargin
+  )
+
+  private val reference: MtdIdDesReference = MtdIdDesReference(mtdbsa)
+
+  "MtdIdDesReference" should {
+    "return the correct MtdId" in {
+      reference.mtdbsa shouldBe mtdbsa
+    }
+
+    "reads" should {
+      "return the correct model " in {
+        desJson.as[MtdIdDesReference] shouldBe reference
+      }
+    }
+  }
+
 }

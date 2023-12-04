@@ -21,7 +21,7 @@ import org.scalatest.wordspec.AnyWordSpec
 import org.scalatest.{BeforeAndAfterAll, BeforeAndAfterEach}
 import org.scalatestplus.play.guice.GuiceOneServerPerSuite
 import play.api.inject.guice.GuiceApplicationBuilder
-import play.api.libs.json.{JsValue, Json}
+import play.api.libs.json.{Format, JsValue, Json}
 import play.api.libs.ws.{WSClient, WSRequest, WSResponse}
 import play.api.test.{DefaultAwaitTimeout, FutureAwaits}
 import play.api.{Application, Environment, Mode}
@@ -37,19 +37,15 @@ trait IntegrationBaseSpec
     with BeforeAndAfterEach
     with BeforeAndAfterAll {
 
-  val mockHost: String        = WireMockHelper.host
-  val mockPort: String        = WireMockHelper.wireMockPort.toString
-  val appRouteContext: String = "/mtd-identifier-lookup"
+  val mockHost: String = WireMockHelper.host
+  val mockPort: String = WireMockHelper.wireMockPort.toString
 
   lazy val client: WSClient                 = app.injector.instanceOf[WSClient]
   lazy val repository: LookupRepositoryImpl = app.injector.instanceOf[LookupRepositoryImpl]
 
-  def servicesConfig: Map[String, String] = Map(
-    "microservice.services.auth.host"             -> mockHost,
-    "microservice.services.auth.port"             -> mockPort,
-    "microservice.services.business-details.host" -> mockHost,
-    "microservice.services.business-details.port" -> mockPort
-  )
+  val rootPath: String = s"http://localhost:$port/mtd-identifier-lookup"
+
+  def servicesConfig: Map[String, Any]
 
   override implicit lazy val app: Application = new GuiceApplicationBuilder()
     .in(Environment.simple(mode = Mode.Dev))
@@ -71,7 +67,13 @@ trait IntegrationBaseSpec
     super.afterAll()
   }
 
-  def buildRequest(path: String): WSRequest = client.url(s"http://localhost:$port$appRouteContext$path").withFollowRedirects(false)
+  /** Creates downstream request body by reading JSON and then writing it back via a model class `A` */
+  def downstreamBody[A: Format](json: JsValue): JsValue = Json.toJson(json.as[A])
+
+  /** Creates downstream request body by reading JSON and then writing it back via a model class `A` */
+  def downstreamBody[A: Format](json: String): String = downstreamBody(Json.parse(json)).toString()
+
+  def buildRequest(path: String): WSRequest = client.url(s"$rootPath$path").withFollowRedirects(false)
 
   def document(response: WSResponse): JsValue = Json.parse(response.body)
 }

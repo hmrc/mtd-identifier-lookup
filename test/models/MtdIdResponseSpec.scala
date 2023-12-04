@@ -14,15 +14,34 @@
  * limitations under the License.
  */
 
-package services
+package models
 
+import play.api.libs.json.Json
 import support.UnitSpec
-import uk.gov.hmrc.http.HeaderCarrier
 
-import scala.concurrent.ExecutionContext
+class MtdIdResponseSpec extends UnitSpec {
 
-trait ServiceBaseSpec extends UnitSpec {
-  implicit val hc: HeaderCarrier = HeaderCarrier()
-  implicit val correlationId = "X-123"
-  implicit val ec: ExecutionContext = scala.concurrent.ExecutionContext.global
+  private val mtdbsa: String   = "XAIT0000000000"
+  val reference: MtdIdResponse = MtdIdResponse(mtdbsa)
+
+  private val modelJson = Json.parse(
+    s"""
+      |{
+      |   "mtdbsa":"$mtdbsa"
+      |}
+     """.stripMargin
+  )
+
+  "MtdIdResponse" should {
+    "return the correct MtdId" in {
+      reference.mtdbsa shouldBe mtdbsa
+    }
+
+    "writes" should {
+      "return the correct Json in " in {
+        Json.toJson(reference) shouldBe modelJson
+      }
+    }
+  }
+
 }

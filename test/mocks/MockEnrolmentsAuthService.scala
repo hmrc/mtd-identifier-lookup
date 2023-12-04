@@ -16,25 +16,27 @@
 
 package mocks
 
-import models.{MtdIdCached}
+import models.ServiceResponse
+import models.errors.AuthError
 import org.scalamock.handlers.CallHandler
 import org.scalamock.scalatest.MockFactory
-import repositories.LookupRepository
+import services.EnrolmentsAuthService
+import uk.gov.hmrc.auth.core.authorise.Predicate
+import uk.gov.hmrc.http.HeaderCarrier
 
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContext}
 
-trait MockLookupRepository extends MockFactory {
+trait MockEnrolmentsAuthService extends MockFactory {
 
-  val mockLookupRepository: LookupRepository = mock[LookupRepository]
+  val mockEnrolmentsAuthService: EnrolmentsAuthService = mock[EnrolmentsAuthService]
 
-  object MockedLookupRepository {
+  object MockedEnrolmentsAuthService {
 
-    def save(reference: MtdIdCached): CallHandler[Future[Boolean]] = {
-      (mockLookupRepository.save(_:MtdIdCached)).expects(reference)
-    }
+    def authorised(predicate: Predicate): CallHandler[ServiceResponse[AuthError, Boolean]] = {
 
-    def getMtdReference(nino: String): CallHandler[Future[Option[MtdIdCached]]] = {
-      (mockLookupRepository.getMtdReference(_: String)).expects(nino)
+      (mockEnrolmentsAuthService
+        .authorised(_: Predicate)(_: HeaderCarrier, _: ExecutionContext))
+        .expects(predicate, *, *)
     }
 
   }
