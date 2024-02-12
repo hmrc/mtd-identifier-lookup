@@ -27,3 +27,7 @@ addSbtPlugin("org.scoverage"     % "sbt-scoverage"         % "1.9.3")
 addSbtPlugin("com.timushev.sbt"  % "sbt-updates"           % "0.6.1")
 
 addSbtPlugin("org.scalameta" % "sbt-scalafmt" % "2.4.6")
+
+addSbtPlugin("org.scalastyle" %% "scalastyle-sbt-plugin" % "1.0.0" exclude("org.scala-lang.modules", "scala-xml_2.12"))
+
+libraryDependencySchemes ++= Seq("org.scala-lang.modules" %% "scala-xml" % VersionScheme.Always)

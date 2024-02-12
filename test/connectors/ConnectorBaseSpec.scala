@@ -65,7 +65,7 @@ trait ConnectorBaseSpec extends UnitSpec with Status with MimeTypes with HeaderN
   )
 
   implicit val hc: HeaderCarrier    = HeaderCarrier()
-  implicit val correlationId        = "X-123"
+  implicit val correlationId: String        = "X-123"
   implicit val ec: ExecutionContext = scala.concurrent.ExecutionContext.global
 
   protected trait ConnectorTest extends MockHttpClient with MockAppConfig {

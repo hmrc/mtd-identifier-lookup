@@ -23,6 +23,6 @@ import scala.concurrent.ExecutionContext
 
 trait ServiceBaseSpec extends UnitSpec {
   implicit val hc: HeaderCarrier = HeaderCarrier()
-  implicit val correlationId = "X-123"
+  implicit val correlationId: String = "X-123"
   implicit val ec: ExecutionContext = scala.concurrent.ExecutionContext.global
 }

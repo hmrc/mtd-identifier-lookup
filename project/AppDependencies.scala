@@ -30,13 +30,13 @@ object AppDependencies {
   )
 
   def test(scope: String = "test, it"): Seq[sbt.ModuleID] = Seq(
-    "org.scalatest"         %% "scalatest"               % "3.2.15"             % scope,
-    "com.vladsch.flexmark"   % "flexmark-all"            % "0.64.6"             % scope,
-    "com.typesafe.play"     %% "play-test"               % PlayVersion.current  % scope,
-    "uk.gov.hmrc"           %% "bootstrap-test-play-28"  % bootstrap_28_version % scope,
-    "org.scalamock"         %% "scalamock"               % "5.2.0"              % scope,
-    "com.github.tomakehurst" % "wiremock-jre8"           % "2.35.0"             % scope,
-    "uk.gov.hmrc.mongo"     %% "hmrc-mongo-test-play-28" % "0.70.0"             % scope
+    "org.scalatest"       %% "scalatest"               % "3.2.15"             % scope,
+    "com.vladsch.flexmark" % "flexmark-all"            % "0.64.6"             % scope,
+    "com.typesafe.play"   %% "play-test"               % PlayVersion.current  % scope,
+    "uk.gov.hmrc"         %% "bootstrap-test-play-28"  % bootstrap_28_version % scope,
+    "org.scalamock"       %% "scalamock"               % "5.2.0"              % scope,
+    "org.wiremock"         % "wiremock"                % "3.0.4"              % scope,
+    "uk.gov.hmrc.mongo"   %% "hmrc-mongo-test-play-28" % "0.70.0"             % scope
   )
 
 }
