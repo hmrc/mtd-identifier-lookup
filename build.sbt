@@ -57,6 +57,8 @@ dependencyUpdatesFilter -= moduleFilter(name = "scala-library")
 dependencyUpdatesFilter -= moduleFilter(name = "flexmark-all")
 dependencyUpdatesFilter -= moduleFilter(name = "scalatestplus-play")
 dependencyUpdatesFilter -= moduleFilter(name = "scalatestplus-scalacheck")
+dependencyUpdatesFilter -= moduleFilter(name = "bootstrap-backend-play-30")
+dependencyUpdatesFilter -= moduleFilter(organization = "org.playframework")
 dependencyUpdatesFailBuild := true
 
 libraryDependencySchemes ++= Seq("org.scala-lang.modules" %% "scala-xml" % VersionScheme.Always)
