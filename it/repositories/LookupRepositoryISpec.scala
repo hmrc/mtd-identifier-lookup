@@ -25,12 +25,22 @@ class LookupRepositoryISpec extends IntegrationBaseSpec {
 
   val nino: String = "AA123456A"
   val reference    = MtdIdCached(nino, "id")
+  val invalidReference    = MtdIdCached(null, "id")
 
   "calling .save" when {
     "a valid nino and mtdId is passed" should {
       "return true" in {
         val result = target.save(reference)
         await(result) shouldBe true
+      }
+    }
+  }
+
+  "calling save" when {
+    "a invalid nino and mtdId is passed" should {
+      "return false" in {
+        val result = target.save(invalidReference)
+        await(result) shouldBe false
       }
     }
   }
