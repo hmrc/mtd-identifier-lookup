@@ -60,5 +60,3 @@ dependencyUpdatesFilter -= moduleFilter(name = "scalatestplus-scalacheck")
 dependencyUpdatesFilter -= moduleFilter(name = "bootstrap-backend-play-30")
 dependencyUpdatesFilter -= moduleFilter(organization = "org.playframework")
 dependencyUpdatesFailBuild := true
-
-libraryDependencySchemes ++= Seq("org.scala-lang.modules" %% "scala-xml" % VersionScheme.Always)
