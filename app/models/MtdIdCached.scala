@@ -16,10 +16,15 @@
 
 package models
 
-import play.api.libs.json.{Json, OFormat}
+import play.api.libs.json.{Format, Json, OFormat}
+import uk.gov.hmrc.mongo.play.json.formats.MongoJavatimeFormats
 
-case class MtdIdCached(nino: String, mtdRef: String)
+import java.time.Instant
+
+//todo: is this the best way to use the current time?
+case class MtdIdCached(nino: String, mtdRef: String, createdAt: Instant = Instant.now())
 
 object MtdIdCached {
+  implicit val mongoDateTimeFormat: Format[Instant] = MongoJavatimeFormats.instantFormat
   implicit val format: OFormat[MtdIdCached] = Json.format[MtdIdCached]
 }

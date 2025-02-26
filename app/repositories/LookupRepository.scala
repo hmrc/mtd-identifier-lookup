@@ -26,6 +26,7 @@ import uk.gov.hmrc.mongo.MongoComponent
 import uk.gov.hmrc.mongo.play.json.PlayMongoRepository
 import utils.Logging
 
+import java.util.concurrent.TimeUnit.MINUTES
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -43,7 +44,9 @@ class LookupRepositoryImpl @Inject() (mongo: MongoComponent)(implicit ec: Execut
       mongoComponent = mongo,
       domainFormat = MtdIdCached.format,
       indexes = Seq(
-        IndexModel(ascending("nino"), IndexOptions().name("mtd-nino").unique(true).background(true))
+        IndexModel(ascending("nino"), IndexOptions().name("mtd-nino").unique(true).background(true)),
+        //todo: set the ttl here through config
+        IndexModel(ascending("createdAt"), IndexOptions().name("ttl").expireAfter(1, MINUTES))
       ),
       replaceIndexes = false
     )
