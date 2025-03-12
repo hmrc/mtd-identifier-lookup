@@ -19,15 +19,12 @@ package repositories
 import models.MtdIdCached
 import support.IntegrationBaseSpec
 
-import java.time.Instant
-
 class LookupRepositoryISpec extends IntegrationBaseSpec {
 
   override def servicesConfig: Map[String, Any] = Map()
   val target: LookupRepositoryImpl              = repository
 
   val nino: String = "AA123456A"
-  val fixedInstant: Instant  = Instant.parse("2025-01-02T00:00:00.000Z")
   val reference    = MtdIdCached(nino, "id", fixedInstant)
 
   "calling .save" when {
