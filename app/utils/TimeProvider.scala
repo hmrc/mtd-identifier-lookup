@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 HM Revenue & Customs
+ * Copyright 2025 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,17 +14,11 @@
  * limitations under the License.
  */
 
-package models
-
-import play.api.libs.json.{Format, Json, OFormat}
-import uk.gov.hmrc.mongo.play.json.formats.MongoJavatimeFormats
+package utils
 
 import java.time.Instant
+import javax.inject.Inject
 
-case class MtdIdCached(nino: String, mtdRef: String, lastUpdated: Instant)
-
-object MtdIdCached {
-  implicit val mongoDateTimeFormat: Format[Instant] = MongoJavatimeFormats.instantFormat
-  implicit val format: OFormat[MtdIdCached] = Json.format[MtdIdCached]
+class TimeProvider @Inject() {
+  def now(): Instant = Instant.now()
 }
-

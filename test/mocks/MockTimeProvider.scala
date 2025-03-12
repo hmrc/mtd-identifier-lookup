@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 HM Revenue & Customs
+ * Copyright 2025 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,17 +14,24 @@
  * limitations under the License.
  */
 
-package models
+package mocks
 
-import play.api.libs.json.{Format, Json, OFormat}
-import uk.gov.hmrc.mongo.play.json.formats.MongoJavatimeFormats
+import org.scalamock.handlers.CallHandler
+import org.scalamock.scalatest.MockFactory
+import utils.TimeProvider
 
 import java.time.Instant
 
-case class MtdIdCached(nino: String, mtdRef: String, lastUpdated: Instant)
+trait MockTimeProvider extends MockFactory {
 
-object MtdIdCached {
-  implicit val mongoDateTimeFormat: Format[Instant] = MongoJavatimeFormats.instantFormat
-  implicit val format: OFormat[MtdIdCached] = Json.format[MtdIdCached]
+  val mockTimeProvider: TimeProvider = mock[TimeProvider]
+
+  object MockTimeProvider {
+
+    def now(): CallHandler[Instant] = {
+      (() => mockTimeProvider.now())
+        .expects()
+    }
+  }
+
 }
-

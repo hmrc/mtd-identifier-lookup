@@ -16,12 +16,13 @@
 
 package services
 
-import mocks.{MockAppConfig, MockBusinessDetailsConnector, MockLookupRepository}
+import mocks.{MockAppConfig, MockBusinessDetailsConnector, MockLookupRepository, MockTimeProvider}
 import models.{MtdIdCached, MtdIdDesReference, MtdIdIfsReference, MtdIdResponse}
 import models.errors._
 import models.outcomes.ResponseWrapper
 import play.api.Configuration
 
+import java.time.Instant
 import scala.concurrent.Future
 
 class LookupServiceSpec extends ServiceBaseSpec with MockAppConfig {
@@ -31,12 +32,13 @@ class LookupServiceSpec extends ServiceBaseSpec with MockAppConfig {
   val ifsReference: MtdIdIfsReference          = MtdIdIfsReference(mtdId)
   val desReference: MtdIdDesReference          = MtdIdDesReference(mtdId)
   val reference: MtdIdResponse                 = MtdIdResponse(mtdId)
-  val cached: MtdIdCached                      = MtdIdCached(nino, mtdId)
+  val fixedInstant: Instant                    = Instant.parse("2025-01-02T00:00:00.000Z")
+  val cached: MtdIdCached                      = MtdIdCached(nino, mtdId, fixedInstant)
   val lookupCacheResponse: Option[MtdIdCached] = None
   val isCachedResponse: Boolean                = true
 
-  trait Test extends MockBusinessDetailsConnector with MockLookupRepository {
-    lazy val target = new LookupService(mockBusinessDetailsConnector, mockLookupRepository, mockAppConfig)
+  trait Test extends MockBusinessDetailsConnector with MockLookupRepository with MockTimeProvider {
+    lazy val target = new LookupService(mockBusinessDetailsConnector, mockLookupRepository, mockAppConfig, mockTimeProvider)
 
   }
 
@@ -50,6 +52,7 @@ class LookupServiceSpec extends ServiceBaseSpec with MockAppConfig {
         MockedLookupRepository.getMtdReference(nino).returns(Future.successful(lookupCacheResponse))
         mockGetMtdIdFromDes(nino).returns(Future.successful(Right(ResponseWrapper(correlationId, desReference))))
         MockedLookupRepository.save(cached).returns(Future.successful(isCachedResponse))
+        MockTimeProvider.now().returns(fixedInstant)
 
         private val result = await(target.getMtdId(nino))
 
@@ -70,6 +73,7 @@ class LookupServiceSpec extends ServiceBaseSpec with MockAppConfig {
         MockedLookupRepository.getMtdReference(nino).returns(Future.successful(lookupCacheResponse))
         mockGetMtdIdFromIfs(nino).returns(Future.successful(Right(ResponseWrapper(correlationId, ifsReference))))
         MockedLookupRepository.save(cached).returns(Future.successful(isCachedResponse))
+        MockTimeProvider.now().returns(fixedInstant)
 
         private val result = await(target.getMtdId(nino))
 

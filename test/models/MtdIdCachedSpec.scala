@@ -19,15 +19,19 @@ package models
 import play.api.libs.json.Json
 import support.UnitSpec
 
+import java.time.Instant
+
 class MtdIdCachedSpec extends UnitSpec {
 
   private val nino: String = "NS123456A"
   private val mtdRef: String = "1234567890"
-  private val reference: MtdIdCached = MtdIdCached(nino, mtdRef)
+  private val fixedInstant: Instant  = Instant.parse("2025-01-02T00:00:00.000Z")
+  private val reference: MtdIdCached = MtdIdCached(nino, mtdRef, fixedInstant)
   private val cachedJson = Json.parse(s"""
       |{
       |   "nino":"$nino",
-      |   "mtdRef":"$mtdRef"
+      |   "mtdRef":"$mtdRef",
+      |   "lastUpdated": { "$$date": { "$$numberLong": "${fixedInstant.toEpochMilli}" } }
       |}
     """.stripMargin)
 
@@ -35,6 +39,7 @@ class MtdIdCachedSpec extends UnitSpec {
     "return the correct MtdId" in {
       reference.mtdRef shouldBe mtdRef
       reference.nino shouldBe nino
+      reference.lastUpdated shouldBe fixedInstant
     }
     "reads" should {
         "return the correct model in " in {

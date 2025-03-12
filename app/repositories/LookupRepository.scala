@@ -17,16 +17,19 @@
 package repositories
 
 import com.mongodb.BasicDBObject
+import config.AppConfig
 import models.MtdIdCached
 import org.mongodb.scala.model.Filters.equal
 import org.mongodb.scala.model.Indexes.ascending
-import org.mongodb.scala.model.{IndexModel, IndexOptions}
+import org.mongodb.scala.model.ReturnDocument.AFTER
+import org.mongodb.scala.model.{FindOneAndUpdateOptions, IndexModel, IndexOptions, Updates}
 import org.mongodb.scala.result.DeleteResult
 import uk.gov.hmrc.mongo.MongoComponent
 import uk.gov.hmrc.mongo.play.json.PlayMongoRepository
-import utils.Logging
+import utils.{Logging, TimeProvider}
 
 import javax.inject.{Inject, Singleton}
+import scala.concurrent.duration.MINUTES
 import scala.concurrent.{ExecutionContext, Future}
 
 trait LookupRepository extends Logging {
@@ -37,13 +40,14 @@ trait LookupRepository extends Logging {
 }
 
 @Singleton
-class LookupRepositoryImpl @Inject() (mongo: MongoComponent)(implicit ec: ExecutionContext)
+class LookupRepositoryImpl @Inject() (mongo: MongoComponent, timeProvider: TimeProvider)(implicit ec: ExecutionContext, implicit val appConfig: AppConfig)
     extends PlayMongoRepository[MtdIdCached](
       collectionName = "mtdIdLookup",
       mongoComponent = mongo,
       domainFormat = MtdIdCached.format,
       indexes = Seq(
-        IndexModel(ascending("nino"), IndexOptions().name("mtd-nino").unique(true).background(true))
+        IndexModel(ascending("nino"), IndexOptions().name("mtd-nino").unique(true).background(true)),
+        IndexModel(ascending("lastUpdated"), IndexOptions().name("ttl").expireAfter(appConfig.ttl.toMinutes, MINUTES))
       ),
       replaceIndexes = false
     )
@@ -63,9 +67,14 @@ class LookupRepositoryImpl @Inject() (mongo: MongoComponent)(implicit ec: Execut
 
   def getMtdReference(nino: String): Future[Option[MtdIdCached]] =
     collection
-      .find(equal("nino", nino))
-      .toFuture()
-      .map(_.headOption)
+      .findOneAndUpdate(
+        filter = equal("nino", nino),
+        update = Updates.set("lastUpdated", timeProvider.now()),
+        FindOneAndUpdateOptions()
+          .upsert(false)
+          .returnDocument(AFTER)
+      )
+      .toFutureOption()
       .recover { case e =>
         logger.warn("Error retrieving cached reference", e)
         None

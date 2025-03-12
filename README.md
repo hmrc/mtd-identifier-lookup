@@ -61,12 +61,12 @@ This service is written in [Scala](http://www.scala-lang.org/) and [Play](http:/
 ### Running from Nexus/Bintray
 To update from Nexus and start all services from the RELEASE version instead of snapshot
 ```
-sm --start MTD_ID_LOOKUP -f
+sm2 --start MTD_ID_LOOKUP
 ```
 
 ### To manually run the application locally:
 
-Kill the service ```sm --stop MTD_ID_LOOKUP``` *(if it's already running)*. Then run:
+Kill the service ```sm2 --stop MTD_ID_LOOKUP``` *(if it's already running)*. Then run:
 ```
 sbt 'run 9769'
 ```
