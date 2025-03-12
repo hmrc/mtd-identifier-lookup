@@ -24,8 +24,11 @@ import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.libs.json.{Format, JsValue, Json}
 import play.api.libs.ws.{WSClient, WSRequest, WSResponse}
 import play.api.test.{DefaultAwaitTimeout, FutureAwaits}
-import play.api.{Application, Environment, Mode}
+import play.api.{Application, Environment, Mode, inject}
 import repositories.LookupRepositoryImpl
+import utils.TimeProvider
+
+import java.time.Instant
 
 trait IntegrationBaseSpec
     extends AnyWordSpec
@@ -40,6 +43,12 @@ trait IntegrationBaseSpec
   val mockHost: String = WireMockHelper.host
   val mockPort: String = WireMockHelper.wireMockPort.toString
 
+  val fixedInstant: Instant  = Instant.parse("2025-01-02T00:00:00.000Z")
+
+  class FixedTimeProvider extends TimeProvider {
+    override def now(): Instant = fixedInstant
+  }
+
   lazy val client: WSClient                 = app.injector.instanceOf[WSClient]
   lazy val repository: LookupRepositoryImpl = app.injector.instanceOf[LookupRepositoryImpl]
 
@@ -50,6 +59,7 @@ trait IntegrationBaseSpec
   override implicit lazy val app: Application = new GuiceApplicationBuilder()
     .in(Environment.simple(mode = Mode.Dev))
     .configure(servicesConfig)
+    .overrides(inject.bind[TimeProvider].toInstance(new FixedTimeProvider))
     .build()
 
   override def beforeEach(): Unit = {
