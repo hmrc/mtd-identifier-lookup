@@ -28,10 +28,7 @@ trait MockTimeProvider extends MockFactory {
 
   object MockTimeProvider {
 
-    def now(): CallHandler[Instant] = {
-      (() => mockTimeProvider.now())
-        .expects()
-    }
+    def now(): CallHandler[Instant] = (() => mockTimeProvider.now()).expects()
   }
 
 }

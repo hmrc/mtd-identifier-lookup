@@ -17,8 +17,9 @@
 package utils
 
 import java.time.Instant
-import javax.inject.Inject
+import javax.inject.Singleton
 
-class TimeProvider @Inject() {
+@Singleton
+class TimeProvider {
   def now(): Instant = Instant.now()
 }

@@ -40,7 +40,7 @@ trait LookupRepository extends Logging {
 }
 
 @Singleton
-class LookupRepositoryImpl @Inject() (mongo: MongoComponent, timeProvider: TimeProvider)(implicit ec: ExecutionContext, implicit val appConfig: AppConfig)
+class LookupRepositoryImpl @Inject() (mongo: MongoComponent, timeProvider: TimeProvider)(implicit ec: ExecutionContext,  appConfig: AppConfig)
     extends PlayMongoRepository[MtdIdCached](
       collectionName = "mtdIdLookup",
       mongoComponent = mongo,
