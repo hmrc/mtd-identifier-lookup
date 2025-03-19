@@ -20,6 +20,8 @@ import javax.inject.{Inject, Singleton}
 import play.api.Configuration
 import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
 
+import scala.concurrent.duration.Duration
+
 trait AppConfig {
   def featureSwitches: Configuration
 
@@ -46,6 +48,7 @@ trait AppConfig {
   lazy val ifsDownstreamConfig: DownstreamConfig =
     DownstreamConfig(baseUrl = ifsBaseUrl, env = ifsEnv, token = ifsToken, environmentHeaders = ifsEnvironmentHeaders)
 
+  def ttl: Duration
 }
 
 @Singleton
@@ -69,4 +72,5 @@ class AppConfigImpl @Inject() (config: ServicesConfig, configuration: Configurat
 
   def featureSwitches: Configuration = configuration.getOptional[Configuration](s"feature-switch").getOrElse(Configuration.empty)
 
+  def ttl: Duration = config.getDuration("mongodb.ttl")
 }

@@ -16,7 +16,7 @@
 
 package mocks
 
-import models.{MtdIdCached}
+import models.MtdIdCached
 import org.scalamock.handlers.CallHandler
 import org.scalamock.scalatest.MockFactory
 import repositories.LookupRepository

@@ -20,17 +20,21 @@ import com.google.inject.{Inject, Singleton}
 import config.{AppConfig, FeatureSwitches}
 import connectors.BusinessDetailsConnector
 import models.connectors.DownstreamOutcome
-import models.{MtdIdCached, MtdIdDesReference, MtdIdIfsReference, MtdIdResponse, MtdIdentifier}
 import models.errors.{ForbiddenError, InternalError, MtdError, NotFoundError}
 import models.outcomes.ResponseWrapper
+import models._
 import repositories.LookupRepository
 import uk.gov.hmrc.http.HeaderCarrier
-import utils.Logging
+import utils.{Logging, TimeProvider}
 
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
-class LookupService @Inject() (connector: BusinessDetailsConnector, repository: LookupRepository, appConfig: AppConfig) extends Logging {
+class LookupService @Inject() (connector: BusinessDetailsConnector,
+                               repository: LookupRepository,
+                               appConfig: AppConfig,
+                               timeProvider: TimeProvider
+                              ) extends Logging {
 
   private lazy val isIfsEnabled: Boolean = FeatureSwitches()(appConfig).isIfsEnabled()
 
@@ -64,7 +68,7 @@ class LookupService @Inject() (connector: BusinessDetailsConnector, repository: 
     responseFuture
       .map {
         case Right(response) =>
-          repository.save(MtdIdCached(nino, response.responseData.mtdbsa))
+          repository.save(MtdIdCached(nino, response.responseData.mtdbsa, timeProvider.now()))
           Right(MtdIdResponse(response.responseData.mtdbsa))
 
         case Left(ResponseWrapper(_, NotFoundError))  => Left(ForbiddenError)

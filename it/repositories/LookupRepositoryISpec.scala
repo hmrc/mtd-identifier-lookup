@@ -20,11 +20,12 @@ import models.MtdIdCached
 import support.IntegrationBaseSpec
 
 class LookupRepositoryISpec extends IntegrationBaseSpec {
+
   override def servicesConfig: Map[String, Any] = Map()
   val target: LookupRepositoryImpl              = repository
 
   val nino: String = "AA123456A"
-  val reference    = MtdIdCached(nino, "id")
+  val reference    = MtdIdCached(nino, "id", fixedInstant)
 
   "calling .save" when {
     "a valid nino and mtdId is passed" should {
@@ -38,7 +39,7 @@ class LookupRepositoryISpec extends IntegrationBaseSpec {
   "calling save" when {
     "the save fails" should {
       "return false" in {
-        val invalidReference    = MtdIdCached(null, "id")
+        val invalidReference    = MtdIdCached(null, "id", fixedInstant)
         val result = target.save(invalidReference)
         await(result) shouldBe false
       }
