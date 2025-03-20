@@ -37,6 +37,8 @@ trait MockLookupRepository extends MockFactory {
       (mockLookupRepository.getMtdReference(_: String)).expects(nino)
     }
 
+    def drop(): CallHandler[Future[Long]] = (() => mockLookupRepository.drop()).expects()
+
   }
 
 }

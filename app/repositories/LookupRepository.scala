@@ -37,6 +37,8 @@ trait LookupRepository extends Logging {
 
   def getMtdReference(nino: String): Future[Option[MtdIdCached]]
 
+  def drop(): Future[Long]
+
 }
 
 @Singleton
@@ -65,7 +67,12 @@ class LookupRepositoryImpl @Inject() (mongo: MongoComponent, timeProvider: TimeP
 
   def removeAll(): Future[DeleteResult] = collection.deleteMany(new BasicDBObject()).toFuture()
 
-  def getMtdReference(nino: String): Future[Option[MtdIdCached]] =
+  def drop(): Future[Long] = {
+    collection.drop().toFuture()
+    collection.countDocuments().toFuture()
+  }
+
+  def getMtdReference(nino: String): Future[Option[MtdIdCached]] = {
     collection
       .findOneAndUpdate(
         filter = equal("nino", nino),
@@ -79,5 +86,6 @@ class LookupRepositoryImpl @Inject() (mongo: MongoComponent, timeProvider: TimeP
         logger.warn("Error retrieving cached reference", e)
         None
       }
+  }
 
 }

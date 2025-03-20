@@ -36,6 +36,7 @@ class LookupServiceSpec extends ServiceBaseSpec with MockAppConfig {
   val cached: MtdIdCached                      = MtdIdCached(nino, mtdId, fixedInstant)
   val lookupCacheResponse: Option[MtdIdCached] = None
   val isCachedResponse: Boolean                = true
+  val count: Long                              = 0
 
   trait Test extends MockBusinessDetailsConnector with MockLookupRepository with MockTimeProvider {
     lazy val target = new LookupService(mockBusinessDetailsConnector, mockLookupRepository, mockAppConfig, mockTimeProvider)
@@ -49,6 +50,7 @@ class LookupServiceSpec extends ServiceBaseSpec with MockAppConfig {
           .returns(Configuration("ifs.enabled" -> false))
           .anyNumberOfTimes()
 
+        MockedLookupRepository.drop().returns(Future.successful(count))
         MockedLookupRepository.getMtdReference(nino).returns(Future.successful(lookupCacheResponse))
         mockGetMtdIdFromDes(nino).returns(Future.successful(Right(ResponseWrapper(correlationId, desReference))))
         MockedLookupRepository.save(cached).returns(Future.successful(isCachedResponse))
@@ -70,6 +72,7 @@ class LookupServiceSpec extends ServiceBaseSpec with MockAppConfig {
           .returns(Configuration("ifs.enabled" -> true))
           .anyNumberOfTimes()
 
+        MockedLookupRepository.drop().returns(Future.successful(count))
         MockedLookupRepository.getMtdReference(nino).returns(Future.successful(lookupCacheResponse))
         mockGetMtdIdFromIfs(nino).returns(Future.successful(Right(ResponseWrapper(correlationId, ifsReference))))
         MockedLookupRepository.save(cached).returns(Future.successful(isCachedResponse))
@@ -87,6 +90,7 @@ class LookupServiceSpec extends ServiceBaseSpec with MockAppConfig {
         val lookupCacheResponse: Option[MtdIdCached] = Some(cached)
         val serviceResponse                          = Right(reference)
 
+        MockedLookupRepository.drop().returns(Future.successful(count))
         MockedLookupRepository.getMtdReference(nino).returns(Future.successful(lookupCacheResponse))
         mockGetMtdIdFromIfs(nino).never()
 
@@ -105,6 +109,7 @@ class LookupServiceSpec extends ServiceBaseSpec with MockAppConfig {
           .returns(Configuration("ifs.enabled" -> true))
           .anyNumberOfTimes()
 
+        MockedLookupRepository.drop().returns(Future.successful(count))
         MockedLookupRepository.getMtdReference(nino).returns(Future.successful(lookupRepositoryResponse))
         mockGetMtdIdFromIfs(nino).returns(Future.successful(Left(ResponseWrapper(correlationId, NotFoundError))))
 
@@ -129,6 +134,7 @@ class LookupServiceSpec extends ServiceBaseSpec with MockAppConfig {
             .returns(Configuration("ifs.enabled" -> true))
             .anyNumberOfTimes()
 
+          MockedLookupRepository.drop().returns(Future.successful(count))
           MockedLookupRepository.getMtdReference(nino).returns(Future.successful(lookupRepositoryResponse))
           mockGetMtdIdFromIfs(nino).returns(Future.successful(Left(ResponseWrapper(correlationId, error))))
 
