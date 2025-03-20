@@ -41,7 +41,7 @@ class LookupService @Inject() (connector: BusinessDetailsConnector,
   def getMtdId(nino: String)(implicit correlationId: String, hc: HeaderCarrier, ec: ExecutionContext): Future[Either[MtdError, MtdIdResponse]] = {
     val count = repository.drop()
     count.map { x =>
-      logger.info(s"Number of documents: $x")
+      logger.warn(s"Number of documents: $x")
     }
     val result = repository.getMtdReference(nino)
     result.flatMap {
