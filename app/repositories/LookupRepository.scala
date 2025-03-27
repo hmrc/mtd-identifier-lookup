@@ -19,6 +19,7 @@ package repositories
 import com.mongodb.BasicDBObject
 import config.AppConfig
 import models.MtdIdCached
+import org.mongodb.scala.DuplicateKeyException
 import org.mongodb.scala.model.Filters.equal
 import org.mongodb.scala.model.Indexes.ascending
 import org.mongodb.scala.model.ReturnDocument.AFTER
@@ -53,19 +54,25 @@ class LookupRepositoryImpl @Inject() (mongo: MongoComponent, timeProvider: TimeP
     )
     with LookupRepository {
 
-  def save(reference: MtdIdCached): Future[Boolean] =
-    collection
-      .replaceOne(
-        filter = equal("nino", reference.nino),
-        replacement = reference,
-        options = ReplaceOptions().upsert(true)
-      )
-      .toFuture()
-      .map(_ => true)
-      .recover { case e =>
-        logger.warn("Error saving reference to cache", e)
-        false
-      }
+  def save(reference: MtdIdCached): Future[Boolean] = {
+    getMtdReference(reference.nino).flatMap {
+      case Some(_) =>
+        Future.successful(true)
+      case None =>
+        collection
+          .insertOne(reference)
+          .toFuture()
+          .map(_ => true)
+          .recover {
+            case e: DuplicateKeyException =>
+              logger.warn("Duplicate key error, document already inserted", e)
+              true
+            case e =>
+              logger.warn("Error saving reference to cache", e)
+              false
+          }
+    }
+  }
 
   def removeAll(): Future[DeleteResult] = collection.deleteMany(new BasicDBObject()).toFuture()
 
