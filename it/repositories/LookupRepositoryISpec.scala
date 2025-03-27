@@ -19,13 +19,18 @@ package repositories
 import models.MtdIdCached
 import support.IntegrationBaseSpec
 
+import scala.concurrent.{ExecutionContextExecutor, Future}
+import scala.util.Success
+
 class LookupRepositoryISpec extends IntegrationBaseSpec {
+
+  implicit val ec: ExecutionContextExecutor = scala.concurrent.ExecutionContext.global
 
   override def servicesConfig: Map[String, Any] = Map()
   val target: LookupRepositoryImpl              = repository
 
   val nino: String = "AA123456A"
-  val reference    = MtdIdCached(nino, "id", fixedInstant)
+  val reference: MtdIdCached = MtdIdCached(nino, "id", fixedInstant)
 
   "calling .save" when {
     "a valid nino and mtdId is passed" should {
@@ -39,14 +44,24 @@ class LookupRepositoryISpec extends IntegrationBaseSpec {
   "calling save" when {
     "the save fails" should {
       "return false" in {
-        val invalidReference    = MtdIdCached(null, "id", fixedInstant)
+        val invalidReference = MtdIdCached(null, "id", fixedInstant)
         val result = target.save(invalidReference)
         await(result) shouldBe false
       }
     }
   }
 
-  "calling .getMtdId" when {
+  "calling save" when {
+    "a nino already exists" should {
+      "return true" in {
+        await(target.save(reference))
+        val result = target.save(reference)
+        await(result) shouldBe true
+      }
+    }
+  }
+
+  "calling .getMtdReference" when {
     "a valid nino is passed " should {
       "return a mtdId if exists" in {
         await(target.save(reference))
@@ -56,7 +71,7 @@ class LookupRepositoryISpec extends IntegrationBaseSpec {
     }
   }
 
-  "calling .getMtdId" when {
+  "calling .getMtdReference" when {
     "a valid nino is passed " should {
       "return a none if not exists" in {
         val result = target.getMtdReference("AA123456A")
@@ -65,4 +80,21 @@ class LookupRepositoryISpec extends IntegrationBaseSpec {
     }
   }
 
+  "calling .getMtdReference multiple times" when {
+    "a valid nino is passed" should {
+      "return None" in {
+
+        val futures = (1 to 10).map { _ =>
+          target.getMtdReference(nino)
+        }
+
+        Future.sequence(futures).onComplete {
+          case Success(results) =>
+            results shouldBe Vector(None, None, None, None, None, None, None, None, None, None)
+          case _ =>
+            None
+        }
+      }
+    }
+  }
 }
