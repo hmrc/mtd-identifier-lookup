@@ -49,7 +49,7 @@ class LookupRepositoryISpec extends IntegrationBaseSpec {
   "calling .getMtdId" when {
     "a valid nino is passed " should {
       "return a mtdId if exists" in {
-        target.save(reference)
+        await(target.save(reference))
         val result = target.getMtdReference("AA123456A")
         await(result) shouldBe Some(reference)
       }
