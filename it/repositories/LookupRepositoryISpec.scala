@@ -39,19 +39,15 @@ class LookupRepositoryISpec extends IntegrationBaseSpec {
         await(result) shouldBe true
       }
     }
-  }
 
-  "calling save" when {
     "the save fails" should {
       "return false" in {
-        val invalidReference = MtdIdCached(null, "id", fixedInstant)
+        val invalidReference = MtdIdCached(None.orNull, "id", fixedInstant)
         val result = target.save(invalidReference)
         await(result) shouldBe false
       }
     }
-  }
 
-  "calling save" when {
     "a nino already exists" should {
       "return true" in {
         await(target.save(reference))
@@ -68,13 +64,17 @@ class LookupRepositoryISpec extends IntegrationBaseSpec {
         val result = target.getMtdReference("AA123456A")
         await(result) shouldBe Some(reference)
       }
-    }
-  }
 
-  "calling .getMtdReference" when {
-    "a valid nino is passed " should {
       "return a none if not exists" in {
         val result = target.getMtdReference("AA123456A")
+        await(result) shouldBe None
+      }
+    }
+
+    "an unexpected database error occurs" should {
+      "return None" in {
+        val result = target.getMtdReference(None.orNull)
+
         await(result) shouldBe None
       }
     }
