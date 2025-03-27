@@ -22,7 +22,7 @@ import models.MtdIdCached
 import org.mongodb.scala.model.Filters.equal
 import org.mongodb.scala.model.Indexes.ascending
 import org.mongodb.scala.model.ReturnDocument.AFTER
-import org.mongodb.scala.model.{FindOneAndUpdateOptions, IndexModel, IndexOptions, Updates}
+import org.mongodb.scala.model._
 import org.mongodb.scala.result.DeleteResult
 import uk.gov.hmrc.mongo.MongoComponent
 import uk.gov.hmrc.mongo.play.json.PlayMongoRepository
@@ -55,7 +55,11 @@ class LookupRepositoryImpl @Inject() (mongo: MongoComponent, timeProvider: TimeP
 
   def save(reference: MtdIdCached): Future[Boolean] =
     collection
-      .insertOne(reference)
+      .replaceOne(
+        filter = equal("nino", reference.nino),
+        replacement = reference,
+        options = ReplaceOptions().upsert(true)
+      )
       .toFuture()
       .map(_ => true)
       .recover { case e =>
