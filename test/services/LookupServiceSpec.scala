@@ -46,7 +46,7 @@ class LookupServiceSpec extends ServiceBaseSpec with MockAppConfig {
     "a known MTD Nino is passed" should {
       "return a valid mtdId" in new Test {
         MockedAppConfig.featureSwitches
-          .returns(Configuration("ifs.enabled" -> false))
+          .returns(Configuration("ifs.enabled" -> false, "mongo-lookup.enabled" -> true))
           .anyNumberOfTimes()
 
         MockedLookupRepository.getMtdReference(nino).returns(Future.successful(lookupCacheResponse))
@@ -67,7 +67,7 @@ class LookupServiceSpec extends ServiceBaseSpec with MockAppConfig {
       "save a valid mtdId in the lookup cache and return" in new Test {
 
         MockedAppConfig.featureSwitches
-          .returns(Configuration("ifs.enabled" -> true))
+          .returns(Configuration("ifs.enabled" -> true, "mongo-lookup.enabled" -> true))
           .anyNumberOfTimes()
 
         MockedLookupRepository.getMtdReference(nino).returns(Future.successful(lookupCacheResponse))
@@ -87,8 +87,32 @@ class LookupServiceSpec extends ServiceBaseSpec with MockAppConfig {
         val lookupCacheResponse: Option[MtdIdCached] = Some(cached)
         val serviceResponse                          = Right(reference)
 
+        MockedAppConfig.featureSwitches
+          .returns(Configuration("ifs.enabled" -> true, "mongo-lookup.enabled" -> true))
+          .anyNumberOfTimes()
+
         MockedLookupRepository.getMtdReference(nino).returns(Future.successful(lookupCacheResponse))
         mockGetMtdIdFromIfs(nino).never()
+
+        private val result = await(target.getMtdId(nino))
+
+        result shouldBe serviceResponse
+      }
+    }
+
+    "the mongo lookup repository is switched off" should {
+      "call IFS and return the mtdId" in new Test {
+
+        val serviceResponse = Right(reference)
+
+        MockedAppConfig.featureSwitches
+          .returns(Configuration("ifs.enabled" -> true, "mongo-lookup.enabled" -> false))
+          .anyNumberOfTimes()
+
+        MockedLookupRepository.getMtdReference(nino).never()
+        mockGetMtdIdFromIfs(nino).returns(Future.successful(Right(ResponseWrapper(correlationId, ifsReference))))
+        MockedLookupRepository.save(cached).never()
+        MockTimeProvider.now().returns(fixedInstant).never()
 
         private val result = await(target.getMtdId(nino))
 
@@ -102,7 +126,7 @@ class LookupServiceSpec extends ServiceBaseSpec with MockAppConfig {
         val lookupRepositoryResponse = None
 
         MockedAppConfig.featureSwitches
-          .returns(Configuration("ifs.enabled" -> true))
+          .returns(Configuration("ifs.enabled" -> true, "mongo-lookup.enabled" -> true))
           .anyNumberOfTimes()
 
         MockedLookupRepository.getMtdReference(nino).returns(Future.successful(lookupRepositoryResponse))
@@ -120,13 +144,14 @@ class LookupServiceSpec extends ServiceBaseSpec with MockAppConfig {
       InternalError,
       UnAuthorisedError
     ).foreach { error =>
-      s"a ${error.code.toString} is returned" should {
+      s"a ${error.code} is returned" should {
         "transform the error into an internal server error" in new Test {
 
           val serviceResponse          = Left(InternalError)
           val lookupRepositoryResponse = None
+
           MockedAppConfig.featureSwitches
-            .returns(Configuration("ifs.enabled" -> true))
+            .returns(Configuration("ifs.enabled" -> true, "mongo-lookup.enabled" -> true))
             .anyNumberOfTimes()
 
           MockedLookupRepository.getMtdReference(nino).returns(Future.successful(lookupRepositoryResponse))

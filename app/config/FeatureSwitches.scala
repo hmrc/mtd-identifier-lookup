@@ -20,7 +20,8 @@ import play.api.Configuration
 
 case class FeatureSwitches(featureSwitchConfig: Configuration) {
   def isIfsEnabled(): Boolean         = isEnabled("ifs")
-  def isEnabled(key: String): Boolean = featureSwitchConfig.getOptional[Boolean](key+ ".enabled").getOrElse(true)
+  def isMongoLookupEnabled(): Boolean = isEnabled("mongo-lookup")
+  def isEnabled(key: String): Boolean = featureSwitchConfig.getOptional[Boolean](key + ".enabled").getOrElse(true)
 }
 
 object FeatureSwitches {
