@@ -112,7 +112,7 @@ class LookupServiceSpec extends ServiceBaseSpec with MockAppConfig {
         MockedLookupRepository.getMtdReference(nino).never()
         mockGetMtdIdFromIfs(nino).returns(Future.successful(Right(ResponseWrapper(correlationId, ifsReference))))
         MockedLookupRepository.save(cached).never()
-        MockTimeProvider.now().returns(fixedInstant)
+        MockTimeProvider.now().returns(fixedInstant).never()
 
         private val result = await(target.getMtdId(nino))
 
@@ -144,7 +144,7 @@ class LookupServiceSpec extends ServiceBaseSpec with MockAppConfig {
       InternalError,
       UnAuthorisedError
     ).foreach { error =>
-      s"a ${error.code.toString} is returned" should {
+      s"a ${error.code} is returned" should {
         "transform the error into an internal server error" in new Test {
 
           val serviceResponse          = Left(InternalError)
