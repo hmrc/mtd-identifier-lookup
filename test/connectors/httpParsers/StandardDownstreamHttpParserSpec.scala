@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 HM Revenue & Customs
+ * Copyright 2025 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -65,11 +65,12 @@ class StandardDownstreamHttpParserSpec extends UnitSpec {
 
         httpReads.read(method, url, httpResponse) shouldBe Left(expected)
       }
-
-      handleErrorsCorrectly(httpReads)
-      handleInternalErrorsCorrectly(httpReads)
-      handleUnexpectedResponse(httpReads)
     }
+
+    handleErrorsCorrectly(httpReads)
+    handleInternalErrorsCorrectly(httpReads)
+    handleUnexpectedResponse(httpReads)
+    handleHipErrorsCorrectly(httpReads)
   }
 
   "The generic HTTP parser for empty response" when {
@@ -83,10 +84,6 @@ class StandardDownstreamHttpParserSpec extends UnitSpec {
           httpReads.read(method, url, httpResponse) shouldBe Right(ResponseWrapper(correlationId, ()))
         }
       }
-
-      handleErrorsCorrectly(httpReads)
-      handleInternalErrorsCorrectly(httpReads)
-      handleUnexpectedResponse(httpReads)
     }
 
     "a success code is specified" must {
@@ -99,6 +96,11 @@ class StandardDownstreamHttpParserSpec extends UnitSpec {
         httpReads.read(method, url, httpResponse) shouldBe Right(ResponseWrapper(correlationId, ()))
       }
     }
+
+    handleErrorsCorrectly(httpReads)
+    handleInternalErrorsCorrectly(httpReads)
+    handleUnexpectedResponse(httpReads)
+    handleHipErrorsCorrectly(httpReads)
   }
 
   "validateJson" when {
@@ -175,4 +177,36 @@ class StandardDownstreamHttpParserSpec extends UnitSpec {
 
     }
 
+  def singleHipErrorJson(code: String): JsValue = Json.parse(
+    s"""
+      |{
+      |  "errors": {
+      |    "processingDate": "2024-07-15T09:45:17Z",
+      |    "code": "$code",
+      |    "text": "some text"
+      |  }
+      |}
+    """.stripMargin
+  )
+
+  private def handleHipErrorsCorrectly[A](httpReads: HttpReads[DownstreamOutcome[A]]): Unit = {
+    Seq(
+      ("001", InternalError),
+      ("006", NotFoundError),
+      ("007", InternalError),
+      ("008", NotFoundError)
+    ).foreach { case (code, expectedError) =>
+      s"receiving a 422 response with an errors object containing code $code" should {
+        s"return a Left ResponseWrapper containing $expectedError" in {
+          val httpResponse = HttpResponse(
+            UNPROCESSABLE_ENTITY,
+            singleHipErrorJson(code),
+            Map("CorrelationId" -> List(correlationId))
+          )
+
+          httpReads.read(method, url, httpResponse) shouldBe Left(ResponseWrapper(correlationId, expectedError))
+        }
+      }
+    }
+  }
 }

@@ -19,43 +19,28 @@ package models
 import play.api.libs.json.{JsValue, Json}
 import support.UnitSpec
 
-class MtdIdIfsReferenceSpec extends UnitSpec {
+class MtdIdHipReferenceSpec extends UnitSpec {
 
-  private val nino: String = "NS112233A"
   private val mtdId: String = "XAIT0000000000"
 
-  private val desSimJson: JsValue = Json.parse(
+  private val downstreamJson: JsValue = Json.parse(
     s"""
       |{
-      |  "nino": "$nino",
-      |  "mtdbsa": "$mtdId"
-      |}
-    """.stripMargin
-  )
-
-  private val ifsJson: JsValue = Json.parse(
-    s"""
-      |{
-      |  "taxPayerDisplayResponse": {
-      |    "nino": "$nino",
-      |    "mtdId": "$mtdId"
+      |  "success": {
+      |    "taxPayerDisplayResponse": {
+      |      "mtdId": "$mtdId"
+      |    }
       |  }
       |}
     """.stripMargin
   )
 
-  private val reference: MtdIdIfsReference = MtdIdIfsReference(mtdId)
+  private val reference: MtdIdHipReference = MtdIdHipReference(mtdId)
 
-  "MtdIdIfsReference" when {
+  "MtdIdHipReference" when {
     ".reads" should {
-      "return the correct MtdIdIfsReference model" when {
-        "downstream is IFS" in {
-          ifsJson.as[MtdIdIfsReference] shouldBe reference
-        }
-
-        "downstream is the des-simulator stub" in {
-          desSimJson.as[MtdIdIfsReference] shouldBe reference
-        }
+      "return the correct MtdIdHipReference model" in {
+        downstreamJson.as[MtdIdHipReference] shouldBe reference
       }
     }
 

@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 HM Revenue & Customs
+ * Copyright 2025 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,7 +20,7 @@ import models.connectors.DownstreamOutcome
 import models.errors.{ForbiddenError, InternalError, NotFoundError}
 import models.outcomes.ResponseWrapper
 import play.api.http.Status._
-import play.api.libs.json.Reads
+import play.api.libs.json.{JsObject, Reads}
 import uk.gov.hmrc.http.{HttpReads, HttpResponse}
 
 object StandardDownstreamHttpParser extends HttpParser {
@@ -64,15 +64,23 @@ object StandardDownstreamHttpParser extends HttpParser {
     }
 
     if (success) { successOutcomeFactory() }
-    else { handleErrorResponse(correlationId, response.status) }
+    else { handleErrorResponse(correlationId, response.status, response) }
   }
 
-  private def handleErrorResponse(correlationId: String, status: Int): DownstreamOutcome[Nothing] = {
+  private def extractErrorCode(response: HttpResponse): Option[String] =
+    response.validateJson[JsObject].flatMap { jsonObject =>
+      response.parseResult((jsonObject \ "errors" \ "code").validate[String])
+    }
+
+  private def handleErrorResponse(correlationId: String, status: Int, response: HttpResponse): DownstreamOutcome[Nothing] =
     status match {
+      case UNPROCESSABLE_ENTITY =>
+        extractErrorCode(response) match {
+          case Some("006") | Some("008") => Left(ResponseWrapper(correlationId, NotFoundError))
+          case _ => Left(ResponseWrapper(correlationId, InternalError))
+        }
       case NOT_FOUND => Left(ResponseWrapper(correlationId, NotFoundError))
       case FORBIDDEN => Left(ResponseWrapper(correlationId, ForbiddenError))
       case _         => Left(ResponseWrapper(correlationId, InternalError))
     }
-  }
-
 }

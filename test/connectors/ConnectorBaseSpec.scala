@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 HM Revenue & Customs
+ * Copyright 2025 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,17 +16,23 @@
 
 package connectors
 
+import com.google.common.base.Charsets
 import mocks.{MockAppConfig, MockHttpClient}
 import org.scalamock.handlers.CallHandler
 import play.api.http.{HeaderNames, MimeTypes, Status}
 import support.UnitSpec
 import uk.gov.hmrc.http.HeaderCarrier
 
+import java.util.Base64
 import scala.concurrent.{ExecutionContext, Future}
 
 trait ConnectorBaseSpec extends UnitSpec with Status with MimeTypes with HeaderNames {
 
   lazy val baseUrl: String = "http://business-details"
+
+  implicit val hc: HeaderCarrier     = HeaderCarrier()
+  implicit val correlationId: String = "X-123"
+  implicit val ec: ExecutionContext  = scala.concurrent.ExecutionContext.global
 
   val otherHeaders: Seq[(String, String)] = Seq(
     "Gov-Test-Scenario" -> "DEFAULT",
@@ -40,23 +46,8 @@ trait ConnectorBaseSpec extends UnitSpec with Status with MimeTypes with HeaderN
       Some("mtd-identifier-lookup")
     )
 
-  val requiredDesBusinessDetailsHeaders: Seq[(String, String)] = Seq(
-    "Environment"       -> "des-environment",
-    "Authorization"     -> "Bearer des-token",
-    "User-Agent"        -> "mtd-identifier-lookup",
-    "Gov-Test-Scenario" -> "DEFAULT"
-  )
-
-  val requiredIfsBusinessDetailsHeaders: Seq[(String, String)] = Seq(
-    "Environment"       -> "ifs-environment",
-    "Authorization"     -> "Bearer ifs-token",
-    "User-Agent"        -> "mtd-identifier-lookup",
-    "Gov-Test-Scenario" -> "DEFAULT"
-  )
-
   val allowedBusinessDetailsHeaders: Seq[String] = Seq(
     "Accept",
-    "Originator-Id",
     "Gov-Test-Scenario",
     "Content-Type",
     "Location",
@@ -64,15 +55,9 @@ trait ConnectorBaseSpec extends UnitSpec with Status with MimeTypes with HeaderN
     "X-Session-Id"
   )
 
-  implicit val hc: HeaderCarrier    = HeaderCarrier()
-  implicit val correlationId: String        = "X-123"
-  implicit val ec: ExecutionContext = scala.concurrent.ExecutionContext.global
-
   protected trait ConnectorTest extends MockHttpClient with MockAppConfig {
 
-    val target: BusinessDetailsConnector = {
-      new BusinessDetailsConnector(mockHttpClient, mockAppConfig)
-    }
+    val target: BusinessDetailsConnector = new BusinessDetailsConnector(mockHttpClient, mockAppConfig)
 
     implicit protected val hc: HeaderCarrier = HeaderCarrier(otherHeaders = otherHeaders)
 
@@ -86,16 +71,19 @@ trait ConnectorBaseSpec extends UnitSpec with Status with MimeTypes with HeaderN
           url = url,
           parameters = parameters,
           config = dummyBusinessDetailsHeaderCarrierConfig,
-          requiredHeaders = requiredIfsBusinessDetailsHeaders,
+          requiredHeaders = requiredHeaders,
           excludedHeaders = excludedHeaders
         )
     }
-
   }
 
   protected trait IfsTest extends ConnectorTest {
-
-    protected lazy val requiredHeaders: Seq[(String, String)] = requiredDesBusinessDetailsHeaders
+    protected lazy val requiredHeaders: Seq[(String, String)] = Seq(
+      "Authorization"     -> "Bearer ifs-token",
+      "Environment"       -> "ifs-environment",
+      "User-Agent"        -> "mtd-identifier-lookup",
+      "Gov-Test-Scenario" -> "DEFAULT"
+    )
 
     MockedAppConfig.ifsBaseUrl returns baseUrl
     MockedAppConfig.ifsToken returns "ifs-token"
@@ -103,14 +91,23 @@ trait ConnectorBaseSpec extends UnitSpec with Status with MimeTypes with HeaderN
     MockedAppConfig.ifsEnvironmentHeaders returns Some(allowedBusinessDetailsHeaders)
   }
 
-  protected trait DesTest extends ConnectorTest {
+  protected trait HipTest extends ConnectorTest {
+    private val clientId: String = "clientId"
+    private val clientSecret: String = "clientSecret"
 
-    protected lazy val requiredHeaders: Seq[(String, String)] = requiredDesBusinessDetailsHeaders
+    private val token: String = Base64.getEncoder.encodeToString(s"$clientId:$clientSecret".getBytes(Charsets.UTF_8))
 
-    MockedAppConfig.desBaseUrl returns baseUrl
-    MockedAppConfig.desToken returns "des-token"
-    MockedAppConfig.desEnv returns "des-environment"
-    MockedAppConfig.desEnvironmentHeaders returns Some(allowedBusinessDetailsHeaders)
+    MockedAppConfig.hipBaseUrl returns baseUrl
+    MockedAppConfig.hipEnv returns "hip-environment"
+    MockedAppConfig.hipClientId returns clientId
+    MockedAppConfig.hipClientSecret returns clientSecret
+    MockedAppConfig.hipEnvironmentHeaders returns Some(allowedBusinessDetailsHeaders.filterNot(_ == "Content-Type"))
+
+    protected lazy val requiredHeaders: Seq[(String, String)] = Seq(
+      "Authorization"     -> s"Basic $token",
+      "Environment"       -> "hip-environment",
+      "User-Agent"        -> "mtd-identifier-lookup",
+      "Gov-Test-Scenario" -> "DEFAULT"
+    )
   }
-
 }

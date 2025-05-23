@@ -1,5 +1,5 @@
 /*
- * Copyright 2022 HM Revenue & Customs
+ * Copyright 2025 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,28 +16,39 @@
 package endpoints
 
 import models.MtdIdResponse
-import play.api.http.Status
-import play.api.libs.json.JsValue
+import models.errors.MtdError
+import play.api.libs.json.{JsValue, Json}
 import play.api.libs.ws.{WSRequest, WSResponse}
-import play.api.test.Helpers.{ACCEPT, AUTHORIZATION}
+import play.api.test.Helpers.{ACCEPT, AUTHORIZATION, OK, UNAUTHORIZED}
 import stubs.{AuthStub, DownstreamStub}
 import support.IntegrationBaseSpec
 
 trait BaseControllerISpec extends IntegrationBaseSpec {
-  val nino: String
-  val connectorResponseJson: JsValue
-  val responseJson: JsValue
-  val reference: MtdIdResponse
+
+  val downstreamResponseJson: JsValue
+  val downstreamUrl: String
+  val downstreamQueryParam: Map[String, String]
+
+  val nino: String = "AA123456A"
+  val mtdId: String = "1234567890"
+  val reference: MtdIdResponse = MtdIdResponse(mtdId)
+
+  val responseJson: JsValue = Json.parse(
+    s"""
+      |{
+      |  "mtdbsa": "$mtdId"
+      |}
+    """.stripMargin
+  )
 
   def servicesConfig: Map[String, Any] = Map(
-    "microservice.services.des.host"  -> mockHost,
-    "microservice.services.des.port"  -> mockPort,
     "microservice.services.ifs.host"  -> mockHost,
     "microservice.services.ifs.port"  -> mockPort,
+    "microservice.services.hip.host"  -> mockHost,
+    "microservice.services.hip.port"  -> mockPort,
     "microservice.services.auth.host" -> mockHost,
     "microservice.services.auth.port" -> mockPort,
-    "auditing.consumer.baseUri.port"  -> mockPort,
-    "feature-switch.ifs.enabled"      -> false
+    "auditing.consumer.baseUri.port"  -> mockPort
   )
 
   def request(nino: String): WSRequest = {
@@ -48,58 +59,52 @@ trait BaseControllerISpec extends IntegrationBaseSpec {
       )
   }
 
-  def responseSuccessful(): Unit = {
+  def responseSuccessful(): Unit =
     "the user is authorised" should {
       "return 200" in {
         AuthStub.authorised()
-        DownstreamStub.onSuccess(DownstreamStub.GET, s"/registration/business-details/nino/$nino", Status.OK, connectorResponseJson)
+        DownstreamStub.onSuccess(DownstreamStub.GET, downstreamUrl, downstreamQueryParam, OK, downstreamResponseJson)
+
         val response: WSResponse = await(request(nino).get())
-        response.status shouldBe Status.OK
+        response.status shouldBe OK
         response.json shouldBe responseJson
       }
     }
-  }
 
-  def notLoggedIn(): Unit = {
+  def notLoggedIn(): Unit =
     "the user is NOT logged in" should {
       "return 401" in {
         AuthStub.unauthorisedNotLoggedIn()
+
         val response: WSResponse = await(request(nino).get())
-        response.status shouldBe Status.UNAUTHORIZED
+        response.status shouldBe UNAUTHORIZED
       }
     }
-  }
 
-  def unauthorised(): Unit = {
+  def unauthorised(): Unit =
     "the user is NOT authorised" should {
       "return 401" in {
         AuthStub.unauthorisedOther()
 
         val response: WSResponse = await(request(nino).get())
-        response.status shouldBe Status.UNAUTHORIZED
+        response.status shouldBe UNAUTHORIZED
       }
     }
-  }
 
-  def nonMtdNino(): Unit = {
-    "the user is authorised but non-MTD nino" should {
-      "return 403" in {
+  def responseFailures(downstreamStatus: Int,
+                       downstreamCode: String,
+                       errorBody: String,
+                       expectedStatus: Int,
+                       expectedBody: MtdError): Unit =
+    s"the user is authorised but downstream returns a code $downstreamCode error and status $downstreamStatus" should {
+      s"return the expected status $expectedStatus and error $expectedBody according to spec" in {
         AuthStub.authorised()
         repository.removeAll()
-        DownstreamStub.onError(DownstreamStub.GET, s"/registration/business-details/nino/$nino", Status.NOT_FOUND, errorBody("NOT_FOUND"))
+        DownstreamStub.onError(DownstreamStub.GET, downstreamUrl, downstreamQueryParam, downstreamStatus, errorBody)
 
         val response: WSResponse = await(request(nino).get())
-        response.status shouldBe Status.FORBIDDEN
+        response.status shouldBe expectedStatus
+        response.json shouldBe Json.toJson(expectedBody)
       }
     }
-  }
-
-  def errorBody(code: String): String =
-    s"""
-       |{
-       |  "code": "$code",
-       |  "reason": "error message from downstream"
-       |}
-     """.stripMargin
-
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 HM Revenue & Customs
+ * Copyright 2025 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,10 +16,8 @@
 
 package connectors
 
-import connectors.DownstreamUri.DesUri
 import config.{AppConfig, FeatureSwitches}
 import models.connectors.DownstreamOutcome
-import play.api.Logger
 import uk.gov.hmrc.http.{HeaderCarrier, HttpClient, HttpReads}
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -28,56 +26,45 @@ trait BaseDownstreamConnector {
   val http: HttpClient
   val appConfig: AppConfig
 
-  protected val logger: Logger = Logger(this.getClass)
+  // This is to provide an implicit AppConfig in existing connector implementations (which
+  // typically declare the abstract `appConfig` field non-implicitly) without having to change them.
+  implicit protected lazy val _appConfig: AppConfig = appConfig
 
   implicit protected lazy val featureSwitches: FeatureSwitches = FeatureSwitches(appConfig.featureSwitches)
 
-  def get[Resp](uri: DownstreamUri[Resp])(implicit
-      ec: ExecutionContext,
-      hc: HeaderCarrier,
-      httpReads: HttpReads[DownstreamOutcome[Resp]],
-      correlationId: String): Future[DownstreamOutcome[Resp]] = {
+  def get[Resp](uri: DownstreamUri[Resp], queryParams: Seq[(String, String)] = Seq.empty)(implicit
+                                                                                          ec: ExecutionContext,
+                                                                                          hc: HeaderCarrier,
+                                                                                          httpReads: HttpReads[DownstreamOutcome[Resp]],
+                                                                                          correlationId: String): Future[DownstreamOutcome[Resp]] = {
 
-    def doGet(implicit hc: HeaderCarrier): Future[DownstreamOutcome[Resp]] = {
-      http.GET(getBackendUri(uri))
+    val strategy: DownstreamStrategy = uri.strategy
 
-    }
-    doGet(getBackendHeaders(uri, hc, correlationId))
+    def doGet(implicit hc: HeaderCarrier): Future[DownstreamOutcome[Resp]] =
+      http.GET(s"${strategy.baseUrl}/${uri.path}", queryParams)
+
+    for {
+      headers <- getBackendHeaders(strategy)
+      result  <- doGet(headers)
+    } yield result
   }
 
-  private def getBackendUri[Resp](uri: DownstreamUri[Resp]): String =
-    s"${configFor(uri).baseUrl}/${uri.value}"
+  private def getBackendHeaders(strategy: DownstreamStrategy,
+                                additionalHeaders: Seq[(String, String)] = Seq.empty)(implicit
+                                                                                      ec: ExecutionContext,
+                                                                                      hc: HeaderCarrier,
+                                                                                      correlationId: String): Future[HeaderCarrier] = {
 
-  private def getBackendHeaders[Resp](
-      uri: DownstreamUri[Resp],
-      hc: HeaderCarrier,
-      correlationId: String,
-      additionalHeaders: (String, String)*
-  ): HeaderCarrier = {
-    val downstreamConfig = configFor(uri)
+    for {
+      contractHeaders <- strategy.contractHeaders(correlationId)
+    } yield {
+      val apiHeaders: Seq[(String, String)] = hc.extraHeaders ++ contractHeaders ++ additionalHeaders
 
-    val passThroughHeaders = hc
-      .headers(downstreamConfig.environmentHeaders.getOrElse(Seq.empty))
-      .filterNot(hdr => additionalHeaders.exists(_._1.equalsIgnoreCase(hdr._1)))
+      val passThroughHeaders: Seq[(String, String)] = hc
+        .headers(strategy.environmentHeaders)
+        .filterNot(hdr => apiHeaders.exists(_._1.equalsIgnoreCase(hdr._1)))
 
-    val downstreamHeader: Option[Seq[(String, String)]] =
-      if (!featureSwitches.isIfsEnabled()) {
-        Some(Seq(("Originator-Id" -> "DA_SDI"), ("Accept" -> "application/json")))
-      } else { None }
-
-    val headersToAdd: Seq[(String, String)] = Seq(
-      "Authorization" -> s"Bearer ${downstreamConfig.token}",
-      "Environment"   -> downstreamConfig.env,
-      "CorrelationId" -> correlationId
-    ) ++ additionalHeaders ++ passThroughHeaders ++ downstreamHeader.getOrElse(Seq.empty)
-
-    HeaderCarrier(extraHeaders = hc.extraHeaders ++ headersToAdd)
-  }
-
-  private def configFor[Resp](uri: DownstreamUri[Resp]) =
-    uri match {
-      case DesUri(_) => appConfig.desDownstreamConfig
-      case _         => appConfig.ifsDownstreamConfig
+      HeaderCarrier(extraHeaders = apiHeaders ++ passThroughHeaders)
     }
-
+  }
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 HM Revenue & Customs
+ * Copyright 2025 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,9 +17,9 @@
 package connectors
 
 import config.AppConfig
-import connectors.DownstreamUri.{DesUri, IfsUri}
+import connectors.DownstreamUri.{HipUri, IfsUri}
 import connectors.httpParsers.StandardDownstreamHttpParser._
-import models.{MtdIdDesReference, MtdIdIfsReference}
+import models.{MtdIdHipReference, MtdIdIfsReference}
 import models.connectors.DownstreamOutcome
 import uk.gov.hmrc.http.{HeaderCarrier, HttpClient}
 
@@ -29,16 +29,15 @@ import scala.concurrent.{ExecutionContext, Future}
 @Singleton
 class BusinessDetailsConnector @Inject() (val http: HttpClient, val appConfig: AppConfig) extends BaseDownstreamConnector {
 
-  def getMtdIdFromDes(
-      nino: String)(implicit hc: HeaderCarrier, ec: ExecutionContext, correlationId: String): Future[DownstreamOutcome[MtdIdDesReference]] = {
-    val url = DesUri[MtdIdDesReference](s"registration/business-details/nino/$nino")
-    get(url)
-  }
+  def getMtdIdFromIfs(nino: String)(implicit
+                                    hc: HeaderCarrier,
+                                    ec: ExecutionContext,
+                                    correlationId: String): Future[DownstreamOutcome[MtdIdIfsReference]] =
+    get(IfsUri[MtdIdIfsReference](s"registration/business-details/nino/$nino"))
 
-  def getMtdIdFromIfs(
-      nino: String)(implicit hc: HeaderCarrier, ec: ExecutionContext, correlationId: String): Future[DownstreamOutcome[MtdIdIfsReference]] = {
-    val url = IfsUri[MtdIdIfsReference](s"registration/business-details/nino/$nino")
-    get(url)
-  }
-
+  def getMtdIdFromHip(nino: String)(implicit
+                                    hc: HeaderCarrier,
+                                    ec: ExecutionContext,
+                                    correlationId: String): Future[DownstreamOutcome[MtdIdHipReference]] =
+    get(HipUri[MtdIdHipReference](s"etmp/RESTAdapter/itsa/taxpayer/business-details?nino=$nino"))
 }

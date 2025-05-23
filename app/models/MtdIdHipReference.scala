@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 HM Revenue & Customs
+ * Copyright 2025 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,11 +18,9 @@ package models
 
 import play.api.libs.json.{JsPath, Reads}
 
-case class MtdIdIfsReference(mtdbsa: String) extends MtdIdentifier
+case class MtdIdHipReference(mtdbsa: String) extends MtdIdentifier
 
-object MtdIdIfsReference {
-  implicit val reads: Reads[MtdIdIfsReference] =
-    (JsPath \ "taxPayerDisplayResponse" \ "mtdId").read[String]
-      .orElse((JsPath \ "mtdbsa").read[String])
-      .map(MtdIdIfsReference.apply)
+object MtdIdHipReference {
+  implicit val reads: Reads[MtdIdHipReference] =
+    (JsPath \ "success" \ "taxPayerDisplayResponse" \ "mtdId").read[String].map(MtdIdHipReference.apply)
 }

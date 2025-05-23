@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 HM Revenue & Customs
+ * Copyright 2025 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,71 +16,38 @@
 
 package connectors
 
-import models.{MtdIdDesReference, MtdIdIfsReference}
+import models.{MtdIdHipReference, MtdIdIfsReference}
 import play.api.Configuration
 
 import scala.concurrent.Future
 
 class BusinessDetailsConnectorSpec extends ConnectorBaseSpec {
 
+  private val expectedId: String = "an expected Id"
+  private val nino: String = "AA123456A"
+  private def config(isHipEnabled: Boolean): Configuration = Configuration(
+    "ifs_hip_migration_1171.enabled" -> isHipEnabled
+  )
+
   "Calling getMtdIdFromIfs with a NINO" should {
-    "call the business details microservice using the correct URL" in new IfsTest with ConnectorTest {
-      val expectedId = "an expected Id"
-      val nino       = "AA123456A"
-      val reference  = MtdIdIfsReference(expectedId)
-      val config     = Configuration("IFSEndpoint.enabled" -> true)
-      MockedAppConfig.featureSwitches.returns(config)
+    "send a request and return the expected response when downstream is IFS" in new IfsTest {
+      val outcome: Right[Nothing, MtdIdIfsReference] = Right(MtdIdIfsReference(expectedId))
+      MockedAppConfig.featureSwitches.returns(config(false))
 
-      MockHttpClient
-        .get(
-          s"$baseUrl/registration/business-details/nino/$nino",
-          config = dummyBusinessDetailsHeaderCarrierConfig,
-          requiredHeaders = requiredIfsBusinessDetailsHeaders,
-          excludedHeaders = Seq("AnotherHeader" -> "HeaderValue")
-        )
-        .returns(Future.successful(Right(reference)))
+      willGet(s"$baseUrl/registration/business-details/nino/$nino").returns(Future.successful(outcome))
 
-      await(target.getMtdIdFromIfs(nino))
+      await(target.getMtdIdFromIfs(nino)) shouldBe outcome
     }
-
-    "call the business details microservice using the correct URL return an empty result" in new IfsTest with ConnectorTest {
-      val nino = "AA123456A"
-
-      val config = Configuration("IFSEndpoint.enabled" -> true)
-      MockedAppConfig.featureSwitches.returns(config)
-
-      MockHttpClient
-        .get(
-          s"$baseUrl/registration/business-details/nino/$nino",
-          config = dummyBusinessDetailsHeaderCarrierConfig,
-          requiredHeaders = requiredIfsBusinessDetailsHeaders,
-          excludedHeaders = Seq("AnotherHeader" -> "HeaderValue")
-        )
-        .returns(Future.successful(Right(None)))
-
-      (await(target.getMtdIdFromIfs(nino))) shouldBe Right(None)
-    }
-
   }
 
-  "Calling getMtdIdFromDes with a NINO" should {
-    "call the business details microservice using the correct URL" in new DesTest with ConnectorTest {
-      val expectedId = "an expected Id"
-      val nino       = "AA123456A"
-      val reference  = MtdIdDesReference(expectedId)
-      val config     = Configuration("IFSEndpoint.enabled" -> false)
-      MockedAppConfig.featureSwitches.returns(config)
+  "Calling getMtdIdFromHip with a NINO" should {
+    "send a request and return the expected response when downstream is HIP" in new HipTest {
+      val outcome: Right[Nothing, MtdIdHipReference] = Right(MtdIdHipReference(expectedId))
+      MockedAppConfig.featureSwitches.returns(config(true))
 
-      MockHttpClient
-        .get(
-          s"$baseUrl/registration/business-details/nino/$nino",
-          config = dummyBusinessDetailsHeaderCarrierConfig,
-          requiredHeaders = requiredDesBusinessDetailsHeaders,
-          excludedHeaders = Seq("AnotherHeader" -> "HeaderValue")
-        )
-        .returns(Future.successful(Right(reference)))
+      willGet(s"$baseUrl/etmp/RESTAdapter/itsa/taxpayer/business-details?nino=$nino").returns(Future.successful(outcome))
 
-      await(target.getMtdIdFromDes(nino))
+      await(target.getMtdIdFromHip(nino)) shouldBe outcome
     }
   }
 

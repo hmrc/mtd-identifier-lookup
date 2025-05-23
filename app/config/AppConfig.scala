@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 HM Revenue & Customs
+ * Copyright 2025 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,17 +25,6 @@ import scala.concurrent.duration.Duration
 trait AppConfig {
   def featureSwitches: Configuration
 
-  def desBaseUrl: String
-
-  def desEnv: String
-
-  def desToken: String
-
-  def desEnvironmentHeaders: Option[Seq[String]]
-
-  lazy val desDownstreamConfig: DownstreamConfig =
-    DownstreamConfig(baseUrl = desBaseUrl, env = desEnv, token = desToken,environmentHeaders = desEnvironmentHeaders)
-
   // IFS Config
   def ifsBaseUrl: String
 
@@ -45,22 +34,37 @@ trait AppConfig {
 
   def ifsEnvironmentHeaders: Option[Seq[String]]
 
-  lazy val ifsDownstreamConfig: DownstreamConfig =
-    DownstreamConfig(baseUrl = ifsBaseUrl, env = ifsEnv, token = ifsToken, environmentHeaders = ifsEnvironmentHeaders)
+  lazy val ifsDownstreamConfig: DownstreamConfig = DownstreamConfig(
+    baseUrl = ifsBaseUrl,
+    env = ifsEnv,
+    token = ifsToken,
+    environmentHeaders = ifsEnvironmentHeaders
+  )
+
+  // HIP Config
+  def hipBaseUrl: String
+
+  def hipEnv: String
+
+  def hipClientId: String
+
+  def hipClientSecret: String
+
+  def hipEnvironmentHeaders: Option[Seq[String]]
+
+  lazy val hipDownstreamConfig: BasicAuthDownstreamConfig = BasicAuthDownstreamConfig(
+    baseUrl = hipBaseUrl,
+    env = hipEnv,
+    clientId = hipClientId,
+    clientSecret = hipClientSecret,
+    environmentHeaders = hipEnvironmentHeaders
+  )
 
   def ttl: Duration
 }
 
 @Singleton
 class AppConfigImpl @Inject() (config: ServicesConfig, configuration: Configuration) extends AppConfig {
-
-  def desBaseUrl: String = config.baseUrl("des")
-
-  def desEnv: String = config.getString("microservice.services.des.env")
-
-  def desToken: String              = config.getString("microservice.services.des.token")
-
-  def desEnvironmentHeaders: Option[Seq[String]] = configuration.getOptional[Seq[String]]("microservice.services.des.environmentHeaders")
 
   def ifsBaseUrl: String = config.baseUrl("ifs")
 
@@ -69,6 +73,16 @@ class AppConfigImpl @Inject() (config: ServicesConfig, configuration: Configurat
   def ifsToken: String = config.getString("microservice.services.ifs.token")
 
   def ifsEnvironmentHeaders: Option[Seq[String]] = configuration.getOptional[Seq[String]]("microservice.services.ifs.environmentHeaders")
+
+  def hipBaseUrl: String = config.baseUrl("hip")
+
+  def hipEnv: String = config.getString("microservice.services.hip.env")
+
+  def hipClientId: String = config.getString("microservice.services.hip.clientId")
+
+  def hipClientSecret: String = config.getString("microservice.services.hip.clientSecret")
+
+  def hipEnvironmentHeaders: Option[Seq[String]] = configuration.getOptional[Seq[String]]("microservice.services.hip.environmentHeaders")
 
   def featureSwitches: Configuration = configuration.getOptional[Configuration](s"feature-switch").getOrElse(Configuration.empty)
 

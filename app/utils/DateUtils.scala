@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 HM Revenue & Customs
+ * Copyright 2025 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,16 +14,13 @@
  * limitations under the License.
  */
 
-package models
+package utils
 
-import play.api.libs.json.{JsPath, Reads}
+import java.time.format.DateTimeFormatter
+import java.time.{ZoneId, ZonedDateTime}
 
-case class MtdIdDesReference(mtdbsa: String) extends MtdIdentifier
+object DateUtils {
+  private val iso8601UtcDateTimeFormatter: DateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss'Z'")
 
-object MtdIdDesReference {
-
-  implicit val reads: Reads[MtdIdDesReference] = (
-    (JsPath \ "mtdbsa").read[String]
-  ).map(MtdIdDesReference.apply _)
-
+  def nowAsUtc: String = ZonedDateTime.now(ZoneId.of("UTC")).format(iso8601UtcDateTimeFormatter)
 }

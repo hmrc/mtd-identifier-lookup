@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 HM Revenue & Customs
+ * Copyright 2025 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,7 +25,7 @@ import models.outcomes.ResponseWrapper
 import models._
 import repositories.LookupRepository
 import uk.gov.hmrc.http.HeaderCarrier
-import utils.{Logging, TimeProvider}
+import utils.TimeProvider
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -33,13 +33,15 @@ import scala.concurrent.{ExecutionContext, Future}
 class LookupService @Inject() (connector: BusinessDetailsConnector,
                                repository: LookupRepository,
                                appConfig: AppConfig,
-                               timeProvider: TimeProvider
-                              ) extends Logging {
+                               timeProvider: TimeProvider) {
 
-  private lazy val isIfsEnabled: Boolean = FeatureSwitches()(appConfig).isIfsEnabled()
-  private lazy val isMongoLookupEnabled: Boolean = FeatureSwitches()(appConfig).isMongoLookupEnabled()
+  private lazy val isHipEnabled: Boolean = FeatureSwitches()(appConfig).isHipEnabled
+  private lazy val isMongoLookupEnabled: Boolean = FeatureSwitches()(appConfig).isMongoLookupEnabled
 
-  def getMtdId(nino: String)(implicit correlationId: String, hc: HeaderCarrier, ec: ExecutionContext): Future[Either[MtdError, MtdIdResponse]] = {
+  def getMtdId(nino: String)(implicit
+                             correlationId: String,
+                             hc: HeaderCarrier,
+                             ec: ExecutionContext): Future[Either[MtdError, MtdIdResponse]] =
     if (isMongoLookupEnabled) {
       repository.getMtdReference(nino).flatMap {
         case Some(mongoReference) => Future.successful(Right(MtdIdResponse(mongoReference.mtdRef)))
@@ -49,35 +51,32 @@ class LookupService @Inject() (connector: BusinessDetailsConnector,
     } else {
       getMtdIdFromService(nino)
     }
-  }
 
-  private def getMtdIdFromService(
-                                   nino: String)(implicit correlationId: String, hc: HeaderCarrier, ec: ExecutionContext): Future[Either[MtdError, MtdIdResponse]] = {
+  private def getMtdIdFromService(nino: String)(implicit
+                                                correlationId: String,
+                                                hc: HeaderCarrier, ec: ExecutionContext): Future[Either[MtdError, MtdIdResponse]] =
+    if (isHipEnabled) getMtdIdFromHip(nino) else getMtdIdFromIfs(nino)
 
-    if (isIfsEnabled) getMtdIdFromIfs(nino)  else getMtdIdFromDes(nino)
-
-  }
-
-  private def getMtdIdFromDes(
-                               nino: String)(implicit correlationId: String, hc: HeaderCarrier, ec: ExecutionContext): Future[Either[MtdError, MtdIdResponse]] =
-    processConnectorResponse[MtdIdDesReference](connector.getMtdIdFromDes(nino), nino)
-
-  private def getMtdIdFromIfs(
-                               nino: String)(implicit correlationId: String, hc: HeaderCarrier, ec: ExecutionContext): Future[Either[MtdError, MtdIdResponse]] =
+  private def getMtdIdFromIfs(nino: String)(implicit
+                                            correlationId: String,
+                                            hc: HeaderCarrier,
+                                            ec: ExecutionContext): Future[Either[MtdError, MtdIdResponse]] =
     processConnectorResponse[MtdIdIfsReference](connector.getMtdIdFromIfs(nino), nino)
 
-  private def processConnectorResponse[T <: MtdIdentifier](responseFuture: Future[DownstreamOutcome[T]], nino: String)(implicit
-                                                                                                                       ec: ExecutionContext): Future[Either[MtdError, MtdIdResponse]] = {
+  private def getMtdIdFromHip(nino: String)(implicit
+                                            correlationId: String,
+                                            hc: HeaderCarrier,
+                                            ec: ExecutionContext): Future[Either[MtdError, MtdIdResponse]] =
+    processConnectorResponse[MtdIdHipReference](connector.getMtdIdFromHip(nino), nino)
 
+  private def processConnectorResponse[T <: MtdIdentifier](responseFuture: Future[DownstreamOutcome[T]],
+                                                           nino: String)(implicit ec: ExecutionContext): Future[Either[MtdError, MtdIdResponse]] =
     responseFuture
       .map {
         case Right(response) =>
           if (isMongoLookupEnabled) repository.save(MtdIdCached(nino, response.responseData.mtdbsa, timeProvider.now()))
           Right(MtdIdResponse(response.responseData.mtdbsa))
         case Left(ResponseWrapper(_, NotFoundError))  => Left(ForbiddenError)
-        case Left(ResponseWrapper(_, ForbiddenError)) => Left(InternalError)
         case _                                        => Left(InternalError)
       }
-  }
-
 }
