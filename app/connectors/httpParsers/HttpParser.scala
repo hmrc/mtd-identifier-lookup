@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 HM Revenue & Customs
+ * Copyright 2025 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,13 +28,12 @@ trait HttpParser extends Logging {
 
     def validateJson[T](implicit reads: Reads[T]): Option[T] = {
       Try(response.json) match {
-        case Success(json: JsValue) => parseResult(json)
+        case Success(json: JsValue) => parseResult(json.validate[T])
         case _                      => None
       }
     }
 
-    def parseResult[T](json: JsValue)(implicit reads: Reads[T]): Option[T] = json.validate[T] match {
-
+    def parseResult[T](result: JsResult[T]): Option[T] = result match {
       case JsSuccess(value, _) => Some(value)
       case JsError(error) =>
         logger.warn(s"[KnownJsonResponse][validateJson] Unable to parse JSON: $error")

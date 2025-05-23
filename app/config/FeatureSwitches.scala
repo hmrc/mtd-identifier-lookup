@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 HM Revenue & Customs
+ * Copyright 2025 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,8 +19,8 @@ package config
 import play.api.Configuration
 
 case class FeatureSwitches(featureSwitchConfig: Configuration) {
-  def isIfsEnabled(): Boolean         = isEnabled("ifs")
-  def isMongoLookupEnabled(): Boolean = isEnabled("mongo-lookup")
+  def isHipEnabled: Boolean           = isEnabled("ifs_hip_migration_1171")
+  def isMongoLookupEnabled: Boolean   = isEnabled("mongo-lookup")
   def isEnabled(key: String): Boolean = featureSwitchConfig.getOptional[Boolean](key + ".enabled").getOrElse(true)
 }
 

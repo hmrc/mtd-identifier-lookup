@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 HM Revenue & Customs
+ * Copyright 2025 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,13 +16,14 @@
 
 package connectors
 
-sealed trait DownstreamUri[Resp] {
-  val value: String
-}
+import config.AppConfig
+
+case class DownstreamUri[+Resp](path: String, strategy: DownstreamStrategy)
 
 object DownstreamUri {
-  final case class DesUri[Resp](value: String) extends DownstreamUri[Resp]
+  def IfsUri[Resp](path: String)(implicit appConfig: AppConfig): DownstreamUri[Resp] =
+    DownstreamUri(path, DownstreamStrategy.standardStrategy(appConfig.ifsDownstreamConfig))
 
-  final case class IfsUri[Resp](value: String) extends DownstreamUri[Resp]
-
+  def HipUri[Resp](path: String)(implicit appConfig: AppConfig): DownstreamUri[Resp] =
+    DownstreamUri(path, DownstreamStrategy.basicAuthStrategy(appConfig.hipDownstreamConfig))
 }

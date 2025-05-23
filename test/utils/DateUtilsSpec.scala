@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 HM Revenue & Customs
+ * Copyright 2025 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,15 +14,21 @@
  * limitations under the License.
  */
 
-package models
+package utils
 
-import play.api.libs.json.{JsPath, Reads}
+import support.UnitSpec
 
-case class MtdIdIfsReference(mtdbsa: String) extends MtdIdentifier
+import java.time.{ZoneOffset, ZonedDateTime}
 
-object MtdIdIfsReference {
-  implicit val reads: Reads[MtdIdIfsReference] =
-    (JsPath \ "taxPayerDisplayResponse" \ "mtdId").read[String]
-      .orElse((JsPath \ "mtdbsa").read[String])
-      .map(MtdIdIfsReference.apply)
+class DateUtilsSpec extends UnitSpec {
+
+  "nowAsUtc" should {
+    "return Date/time in format [yyyy-MM-dd'T'HH:mm:ss'Z']" in {
+      val result: String = DateUtils.nowAsUtc
+
+      result should fullyMatch regex """\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z""".r
+
+      ZonedDateTime.parse(result).getOffset shouldBe ZoneOffset.UTC
+    }
+  }
 }

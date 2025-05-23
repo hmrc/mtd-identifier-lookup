@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 HM Revenue & Customs
+ * Copyright 2025 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +17,7 @@
 package mocks
 
 import connectors.BusinessDetailsConnector
-import models.{MtdIdDesReference, MtdIdIfsReference}
+import models.{MtdIdHipReference, MtdIdIfsReference}
 import models.connectors.DownstreamOutcome
 import org.scalamock.handlers.CallHandler
 import org.scalamock.scalatest.MockFactory
@@ -35,9 +35,9 @@ trait MockBusinessDetailsConnector extends MockFactory {
       .expects(nino, *, *, *)
   }
 
-  def mockGetMtdIdFromDes(nino: String): CallHandler[Future[DownstreamOutcome[MtdIdDesReference]]] = {
+  def mockGetMtdIdFromHip(nino: String): CallHandler[Future[DownstreamOutcome[MtdIdHipReference]]] = {
     (mockBusinessDetailsConnector
-      .getMtdIdFromDes(_: String)(_: HeaderCarrier, _: ExecutionContext, _: String))
+      .getMtdIdFromHip(_: String)(_: HeaderCarrier, _: ExecutionContext, _: String))
       .expects(nino, *, *, *)
   }
 

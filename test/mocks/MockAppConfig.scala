@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 HM Revenue & Customs
+ * Copyright 2025 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,49 +29,24 @@ trait MockAppConfig extends MockFactory {
 
     def featureSwitches: CallHandler[Configuration] = (() => mockAppConfig.featureSwitches: Configuration).expects()
 
-    def desBaseUrl: CallHandler[String] = {
-      (() => mockAppConfig.desBaseUrl)
-        .expects()
-    }
-
-    def desEnv: CallHandler[String] = {
-      (() => mockAppConfig.desEnv)
-        .expects()
-    }
-
-    def desToken: CallHandler[String] = {
-      (() => mockAppConfig.desToken)
-        .expects()
-    }
-
-
-    def desEnvironmentHeaders: CallHandler[Option[Seq[String]]] = {
-      (() => mockAppConfig.desEnvironmentHeaders)
-        .expects()
-    }
-
     // IFS Config
-    def ifsBaseUrl: CallHandler[String] = {
-      (() => mockAppConfig.ifsBaseUrl)
-        .expects()
-    }
+    def ifsBaseUrl: CallHandler[String] = (() => mockAppConfig.ifsBaseUrl).expects()
 
-    def ifsEnv: CallHandler[String] = {
-      (() => mockAppConfig.ifsEnv)
-        .expects()
-    }
+    def ifsEnv: CallHandler[String] = (() => mockAppConfig.ifsEnv).expects()
 
-    def ifsToken: CallHandler[String] = {
-      (() => mockAppConfig.ifsToken)
-        .expects()
-    }
+    def ifsToken: CallHandler[String] = (() => mockAppConfig.ifsToken).expects()
 
+    def ifsEnvironmentHeaders: CallHandler[Option[Seq[String]]] = (() => mockAppConfig.ifsEnvironmentHeaders).expects()
 
-    def ifsEnvironmentHeaders: CallHandler[Option[Seq[String]]] = {
-      (() => mockAppConfig.ifsEnvironmentHeaders)
-        .expects()
-    }
+    // HIP Config
+    def hipBaseUrl: CallHandler[String] = (() => mockAppConfig.hipBaseUrl).expects()
 
+    def hipEnv: CallHandler[String] = (() => mockAppConfig.hipEnv).expects()
+
+    def hipClientId: CallHandler[String] = (() => mockAppConfig.hipClientId).expects()
+
+    def hipClientSecret: CallHandler[String] = (() => mockAppConfig.hipClientSecret).expects()
+
+    def hipEnvironmentHeaders: CallHandler[Option[Seq[String]]] = (() => mockAppConfig.hipEnvironmentHeaders).expects()
   }
-
 }
