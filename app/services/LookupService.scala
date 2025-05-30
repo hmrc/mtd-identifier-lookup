@@ -55,7 +55,7 @@ class LookupService @Inject() (connector: BusinessDetailsConnector,
           getMtdIdFromService(nino)
       }
     } else {
-      repository.dropCollection().flatMap(_ => getMtdIdFromService(nino))
+      getMtdIdFromService(nino)
     }
 
   private def getMtdIdFromService(nino: String)(implicit

@@ -107,15 +107,4 @@ class LookupRepositoryISpec extends IntegrationBaseSpec {
       }
     }
   }
-
-  "calling .dropCollection" should {
-    "drop the collection and return count 0" in {
-      await(target.save(mtdIdCached))
-
-      val count: Long = await(target.dropCollection())
-
-      count shouldBe 0L
-      await(target.getMtdReference(ninoHash)) shouldBe None
-    }
-  }
 }

@@ -38,8 +38,6 @@ trait LookupRepository extends Logging {
   def save(reference: MtdIdCached): Future[Boolean]
 
   def getMtdReference(ninoHash: String): Future[Option[MtdIdCached]]
-
-  def dropCollection(): Future[Long]
 }
 
 @Singleton
@@ -55,7 +53,7 @@ class LookupRepositoryImpl @Inject() (mongo: MongoComponent, timeProvider: TimeP
         IndexModel(ascending("ninoHash"), IndexOptions().name("ninoHashIndex").unique(true).background(true)),
         IndexModel(ascending("lastUpdated"), IndexOptions().name("ttl").expireAfter(appConfig.ttl.toMinutes, MINUTES))
       ),
-      replaceIndexes = true
+      replaceIndexes = false
     )
     with LookupRepository {
 
@@ -76,14 +74,6 @@ class LookupRepositoryImpl @Inject() (mongo: MongoComponent, timeProvider: TimeP
               logger.warn("Error saving reference to cache", e)
               false
           }
-    }
-
-  def dropCollection(): Future[Long] =
-    collection.drop().toFuture().flatMap { _ =>
-      collection.countDocuments().toFuture().map { count =>
-        logger.warn(s"Collection dropped. Document count: $count")
-        count
-      }
     }
 
   def removeAll(): Future[DeleteResult] = collection.deleteMany(new BasicDBObject()).toFuture()

@@ -34,7 +34,5 @@ trait MockLookupRepository extends MockFactory {
 
     def getMtdReference(ninoHash: String): CallHandler[Future[Option[MtdIdCached]]] =
       (mockLookupRepository.getMtdReference(_: String)).expects(ninoHash)
-
-    def dropCollection(): CallHandler[Future[Long]] = (() => mockLookupRepository.dropCollection()).expects()
   }
 }

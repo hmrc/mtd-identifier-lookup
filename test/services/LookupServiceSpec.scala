@@ -103,7 +103,6 @@ class LookupServiceSpec extends ServiceBaseSpec with MockAppConfig {
 
         MockNinoHasher.hash(PlainText(nino)).returns(Scrambled(ninoHash)).never()
         MockedLookupRepository.getMtdReference(ninoHash).never()
-        MockedLookupRepository.dropCollection().returns(Future.successful(0L))
         mockGetMtdIdFromHip(nino).returns(Future.successful(Right(ResponseWrapper(correlationId, hipReference))))
         MockedLookupRepository.save(cached).never()
         MockTimeProvider.now().returns(fixedInstant).never()
@@ -208,7 +207,6 @@ class LookupServiceSpec extends ServiceBaseSpec with MockAppConfig {
 
         MockNinoHasher.hash(PlainText(nino)).returns(Scrambled(ninoHash)).never()
         MockedLookupRepository.getMtdReference(ninoHash).never()
-        MockedLookupRepository.dropCollection().returns(Future.successful(0L))
         mockGetMtdIdFromIfs(nino).returns(Future.successful(Right(ResponseWrapper(correlationId, ifsReference))))
         MockedLookupRepository.save(cached).never()
         MockTimeProvider.now().returns(fixedInstant).never()
