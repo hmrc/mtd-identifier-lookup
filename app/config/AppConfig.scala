@@ -61,6 +61,8 @@ trait AppConfig {
   )
 
   def ttl: Duration
+
+  def ninoHashKey: String
 }
 
 @Singleton
@@ -87,4 +89,6 @@ class AppConfigImpl @Inject() (config: ServicesConfig, configuration: Configurat
   def featureSwitches: Configuration = configuration.getOptional[Configuration](s"feature-switch").getOrElse(Configuration.empty)
 
   def ttl: Duration = config.getDuration("mongodb.ttl")
+
+  def ninoHashKey: String = config.getString("mongodb.ninoHashKey")
 }

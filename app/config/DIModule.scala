@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 HM Revenue & Customs
+ * Copyright 2025 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,14 +16,26 @@
 
 package config
 
-import com.google.inject.AbstractModule
+import hasher.NinoHasher
+import play.api.{Configuration, Environment}
+import play.api.inject.{Binding, Module}
 import repositories.{LookupRepository, LookupRepositoryImpl}
+import uk.gov.hmrc.crypto.{Decrypter, Encrypter, Hasher, SymmetricCryptoFactory}
 
-class DIModule extends AbstractModule {
+class DIModule extends Module {
 
-  override def configure(): Unit = {
-    bind(classOf[AppConfig]).to(classOf[AppConfigImpl]).asEagerSingleton()
-    bind(classOf[LookupRepository]).to(classOf[LookupRepositoryImpl])
+  override def bindings(environment: Environment, configuration: Configuration): Seq[Binding[_]] = {
+    val cryptoInstance: Encrypter with Decrypter = SymmetricCryptoFactory.aesGcmCryptoFromConfig(
+      baseConfigKey = "mongodb.encryption",
+      config = configuration.underlying
+    )
+
+    Seq(
+      bind[AppConfig].to[AppConfigImpl].eagerly(),
+      bind[LookupRepository].to[LookupRepositoryImpl],
+      bind[Encrypter with Decrypter].toInstance(cryptoInstance),
+      bind[Hasher].to[NinoHasher]
+    )
   }
 
 }

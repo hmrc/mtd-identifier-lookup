@@ -19,11 +19,14 @@ package services
 import com.google.inject.{Inject, Singleton}
 import config.{AppConfig, FeatureSwitches}
 import connectors.BusinessDetailsConnector
+import hasher.NinoHasher
 import models.connectors.DownstreamOutcome
 import models.errors.{ForbiddenError, InternalError, MtdError, NotFoundError}
 import models.outcomes.ResponseWrapper
 import models._
 import repositories.LookupRepository
+import uk.gov.hmrc.crypto.PlainText
+import uk.gov.hmrc.crypto.Sensitive.SensitiveString
 import uk.gov.hmrc.http.HeaderCarrier
 import utils.TimeProvider
 
@@ -33,7 +36,8 @@ import scala.concurrent.{ExecutionContext, Future}
 class LookupService @Inject() (connector: BusinessDetailsConnector,
                                repository: LookupRepository,
                                appConfig: AppConfig,
-                               timeProvider: TimeProvider) {
+                               timeProvider: TimeProvider,
+                               ninoHasher: NinoHasher) {
 
   private lazy val isHipEnabled: Boolean = FeatureSwitches()(appConfig).isHipEnabled
   private lazy val isMongoLookupEnabled: Boolean = FeatureSwitches()(appConfig).isMongoLookupEnabled
@@ -43,13 +47,15 @@ class LookupService @Inject() (connector: BusinessDetailsConnector,
                              hc: HeaderCarrier,
                              ec: ExecutionContext): Future[Either[MtdError, MtdIdResponse]] =
     if (isMongoLookupEnabled) {
-      repository.getMtdReference(nino).flatMap {
-        case Some(mongoReference) => Future.successful(Right(MtdIdResponse(mongoReference.mtdRef)))
+      lazy val ninoHash: String = ninoHasher.hash(PlainText(nino)).value
+
+      repository.getMtdReference(ninoHash).flatMap {
+        case Some(mongoReference) => Future.successful(Right(MtdIdResponse(mongoReference.mtdRef.decryptedValue)))
         case None =>
           getMtdIdFromService(nino)
       }
     } else {
-      getMtdIdFromService(nino)
+      repository.dropCollection().flatMap(_ => getMtdIdFromService(nino))
     }
 
   private def getMtdIdFromService(nino: String)(implicit
@@ -74,7 +80,16 @@ class LookupService @Inject() (connector: BusinessDetailsConnector,
     responseFuture
       .map {
         case Right(response) =>
-          if (isMongoLookupEnabled) repository.save(MtdIdCached(nino, response.responseData.mtdbsa, timeProvider.now()))
+          lazy val ninoHash: String = ninoHasher.hash(PlainText(nino)).value
+
+          lazy val mtdIdCached: MtdIdCached = MtdIdCached(
+            ninoHash = ninoHash,
+            nino = SensitiveString(nino),
+            mtdRef = SensitiveString(response.responseData.mtdbsa),
+            lastUpdated = timeProvider.now()
+          )
+
+          if (isMongoLookupEnabled) repository.save(mtdIdCached)
           Right(MtdIdResponse(response.responseData.mtdbsa))
         case Left(ResponseWrapper(_, NotFoundError))  => Left(ForbiddenError)
         case _                                        => Left(InternalError)

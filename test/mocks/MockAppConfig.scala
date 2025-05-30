@@ -29,6 +29,8 @@ trait MockAppConfig extends MockFactory {
 
     def featureSwitches: CallHandler[Configuration] = (() => mockAppConfig.featureSwitches: Configuration).expects()
 
+    def ninoHashKey: CallHandler[String] = (() => mockAppConfig.ninoHashKey).expects()
+
     // IFS Config
     def ifsBaseUrl: CallHandler[String] = (() => mockAppConfig.ifsBaseUrl).expects()
 

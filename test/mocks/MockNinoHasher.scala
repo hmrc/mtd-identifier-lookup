@@ -16,25 +16,17 @@
 
 package mocks
 
-import models.MtdIdCached
+import hasher.NinoHasher
 import org.scalamock.handlers.CallHandler
 import org.scalamock.scalatest.MockFactory
-import repositories.LookupRepository
+import uk.gov.hmrc.crypto.{PlainText, Scrambled}
 
-import scala.concurrent.Future
+trait MockNinoHasher extends MockFactory {
 
-trait MockLookupRepository extends MockFactory {
+  val mockNinoHasher: NinoHasher = mock[NinoHasher]
 
-  val mockLookupRepository: LookupRepository = mock[LookupRepository]
+  object MockNinoHasher {
 
-  object MockedLookupRepository {
-
-    def save(reference: MtdIdCached): CallHandler[Future[Boolean]] =
-      (mockLookupRepository.save(_:MtdIdCached)).expects(reference)
-
-    def getMtdReference(ninoHash: String): CallHandler[Future[Option[MtdIdCached]]] =
-      (mockLookupRepository.getMtdReference(_: String)).expects(ninoHash)
-
-    def dropCollection(): CallHandler[Future[Long]] = (() => mockLookupRepository.dropCollection()).expects()
+    def hash(plain: PlainText): CallHandler[Scrambled] = (mockNinoHasher.hash(_: PlainText)).expects(plain)
   }
 }

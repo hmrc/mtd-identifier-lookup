@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 HM Revenue & Customs
+ * Copyright 2025 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,6 +25,7 @@ import org.mongodb.scala.model.Indexes.ascending
 import org.mongodb.scala.model.ReturnDocument.AFTER
 import org.mongodb.scala.model._
 import org.mongodb.scala.result.DeleteResult
+import uk.gov.hmrc.crypto.{Decrypter, Encrypter}
 import uk.gov.hmrc.mongo.MongoComponent
 import uk.gov.hmrc.mongo.play.json.PlayMongoRepository
 import utils.{Logging, TimeProvider}
@@ -36,26 +37,30 @@ import scala.concurrent.{ExecutionContext, Future}
 trait LookupRepository extends Logging {
   def save(reference: MtdIdCached): Future[Boolean]
 
-  def getMtdReference(nino: String): Future[Option[MtdIdCached]]
+  def getMtdReference(ninoHash: String): Future[Option[MtdIdCached]]
 
+  def dropCollection(): Future[Long]
 }
 
 @Singleton
-class LookupRepositoryImpl @Inject() (mongo: MongoComponent, timeProvider: TimeProvider)(implicit ec: ExecutionContext,  appConfig: AppConfig)
+class LookupRepositoryImpl @Inject() (mongo: MongoComponent, timeProvider: TimeProvider)(implicit
+                                                                                         ec: ExecutionContext,
+                                                                                         crypto: Encrypter with Decrypter,
+                                                                                         appConfig: AppConfig)
     extends PlayMongoRepository[MtdIdCached](
       collectionName = "mtdIdLookup",
       mongoComponent = mongo,
-      domainFormat = MtdIdCached.format,
+      domainFormat = MtdIdCached.encryptedFormat,
       indexes = Seq(
-        IndexModel(ascending("nino"), IndexOptions().name("mtd-nino").unique(true).background(true)),
+        IndexModel(ascending("ninoHash"), IndexOptions().name("ninoHashIndex").unique(true).background(true)),
         IndexModel(ascending("lastUpdated"), IndexOptions().name("ttl").expireAfter(appConfig.ttl.toMinutes, MINUTES))
       ),
       replaceIndexes = false
     )
     with LookupRepository {
 
-  def save(reference: MtdIdCached): Future[Boolean] = {
-    getMtdReference(reference.nino).flatMap {
+  def save(reference: MtdIdCached): Future[Boolean] =
+    getMtdReference(reference.ninoHash).flatMap {
       case Some(_) =>
         Future.successful(true)
       case None =>
@@ -72,14 +77,21 @@ class LookupRepositoryImpl @Inject() (mongo: MongoComponent, timeProvider: TimeP
               false
           }
     }
-  }
+
+  def dropCollection(): Future[Long] =
+    collection.drop().toFuture().flatMap { _ =>
+      collection.countDocuments().toFuture().map { count =>
+        logger.warn(s"Collection dropped. Document count: $count")
+        count
+      }
+    }
 
   def removeAll(): Future[DeleteResult] = collection.deleteMany(new BasicDBObject()).toFuture()
 
-  def getMtdReference(nino: String): Future[Option[MtdIdCached]] =
+  def getMtdReference(ninoHash: String): Future[Option[MtdIdCached]] =
     collection
       .findOneAndUpdate(
-        filter = equal("nino", nino),
+        filter = equal("ninoHash", ninoHash),
         update = Updates.set("lastUpdated", timeProvider.now()),
         FindOneAndUpdateOptions()
           .upsert(false)
