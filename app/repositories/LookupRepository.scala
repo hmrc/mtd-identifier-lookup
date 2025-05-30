@@ -55,7 +55,7 @@ class LookupRepositoryImpl @Inject() (mongo: MongoComponent, timeProvider: TimeP
         IndexModel(ascending("ninoHash"), IndexOptions().name("ninoHashIndex").unique(true).background(true)),
         IndexModel(ascending("lastUpdated"), IndexOptions().name("ttl").expireAfter(appConfig.ttl.toMinutes, MINUTES))
       ),
-      replaceIndexes = false
+      replaceIndexes = true
     )
     with LookupRepository {
 
