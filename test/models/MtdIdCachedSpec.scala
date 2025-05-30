@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 HM Revenue & Customs
+ * Copyright 2025 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,36 +16,41 @@
 
 package models
 
-import play.api.libs.json.Json
+import play.api.libs.json.{JsValue, Json, OFormat}
 import support.UnitSpec
+import uk.gov.hmrc.crypto.{Decrypter, Encrypter, SymmetricCryptoFactory}
+import uk.gov.hmrc.crypto.Sensitive.SensitiveString
 
 import java.time.Instant
 
 class MtdIdCachedSpec extends UnitSpec {
 
-  private val nino: String = "NS123456A"
-  private val mtdRef: String = "1234567890"
+  private val ninoHash: String = "hashed-nino-value"
+  private val nino: SensitiveString = SensitiveString("NS123456A")
+  private val mtdRef: SensitiveString = SensitiveString("1234567890")
   private val fixedInstant: Instant  = Instant.parse("2025-01-02T00:00:00.000Z")
-  private val reference: MtdIdCached = MtdIdCached(nino, mtdRef, fixedInstant)
-  private val cachedJson = Json.parse(s"""
-      |{
-      |   "nino":"$nino",
-      |   "mtdRef":"$mtdRef",
-      |   "lastUpdated": { "$$date": { "$$numberLong": "${fixedInstant.toEpochMilli}" } }
-      |}
-    """.stripMargin)
+  private val mtdIdCached: MtdIdCached = MtdIdCached(
+    ninoHash = ninoHash,
+    nino = nino,
+    mtdRef = mtdRef,
+    lastUpdated = fixedInstant
+  )
+
+  implicit val crypto: Encrypter with Decrypter = SymmetricCryptoFactory.aesGcmCrypto(
+    "fKcVxQ8QFg2U802wmvJlxfWK0dvtaqv7DYiKBH7fzZM="
+  )
+
+  implicit val format: OFormat[MtdIdCached] = MtdIdCached.encryptedFormat
 
   "MtdIdCached" should {
-    "return the correct MtdId" in {
-      reference.mtdRef shouldBe mtdRef
-      reference.nino shouldBe nino
-      reference.lastUpdated shouldBe fixedInstant
-    }
-    "reads" should {
-        "return the correct model in " in {
-           cachedJson.as[MtdIdCached] shouldBe reference
-        }
+    "serialise and deserialise correctly" in {
+      val json: JsValue = Json.toJson(mtdIdCached)
+      val model: MtdIdCached = json.as[MtdIdCached]
+
+      model.ninoHash shouldBe mtdIdCached.ninoHash
+      model.nino.decryptedValue shouldBe mtdIdCached.nino.decryptedValue
+      model.mtdRef.decryptedValue shouldBe mtdIdCached.mtdRef.decryptedValue
+      model.lastUpdated shouldBe mtdIdCached.lastUpdated
     }
   }
-
 }

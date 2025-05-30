@@ -27,7 +27,8 @@ object AppDependencies {
     ws,
     "uk.gov.hmrc"                  %% "bootstrap-backend-play-30" % bootstrap_30_version,
     "com.fasterxml.jackson.module" %% "jackson-module-scala"      % "2.16.1",
-    "uk.gov.hmrc.mongo"            %% "hmrc-mongo-play-30"        % mongoPlayVersion
+    "uk.gov.hmrc.mongo"            %% "hmrc-mongo-play-30"        % mongoPlayVersion,
+    "uk.gov.hmrc"                  %% "crypto-json-play-30"       % "8.2.0"
   )
 
   def test(scope: String = "test, it"): Seq[sbt.ModuleID] = Seq(
