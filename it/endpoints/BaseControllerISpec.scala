@@ -99,7 +99,6 @@ trait BaseControllerISpec extends IntegrationBaseSpec {
     s"the user is authorised but downstream returns a code $downstreamCode error and status $downstreamStatus" should {
       s"return the expected status $expectedStatus and error $expectedBody according to spec" in {
         AuthStub.authorised()
-        repository.removeAll()
         DownstreamStub.onError(DownstreamStub.GET, downstreamUrl, downstreamQueryParam, downstreamStatus, errorBody)
 
         val response: WSResponse = await(request(nino).get())

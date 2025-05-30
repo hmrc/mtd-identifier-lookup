@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 HM Revenue & Customs
+ * Copyright 2025 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,8 +32,5 @@ object MtdError {
     )(unlift(MtdError.unapply))
 
   def unapply(e: MtdError): Option[(String, String, Option[Seq[String]])] = Some((e.code, e.message, e.paths))
-
-  implicit def genericWrites[T <: MtdError]: OWrites[T] =
-    writes.contramap[T](c => c: MtdError)
 
 }
