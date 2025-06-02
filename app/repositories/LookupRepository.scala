@@ -52,10 +52,10 @@ class LookupRepositoryImpl @Inject() (mongo: MongoComponent, timeProvider: TimeP
       mongoComponent = mongo,
       domainFormat = MtdIdCached.encryptedFormat,
       indexes = Seq(
-        IndexModel(ascending("ninoHash"), IndexOptions().name("ninoHashIndex").unique(false).background(true)),
+        IndexModel(ascending("ninoHash"), IndexOptions().name("ninoHashIndex").unique(true).background(true)),
         IndexModel(ascending("lastUpdated"), IndexOptions().name("ttl").expireAfter(appConfig.ttl.toMinutes, MINUTES))
       ),
-      replaceIndexes = true
+      replaceIndexes = false
     )
     with LookupRepository {
 
