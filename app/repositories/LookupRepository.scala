@@ -55,28 +55,27 @@ class LookupRepositoryImpl @Inject() (mongo: MongoComponent, timeProvider: TimeP
         IndexModel(ascending("ninoHash"), IndexOptions().name("ninoHashIndex").unique(true).background(true)),
         IndexModel(ascending("lastUpdated"), IndexOptions().name("ttl").expireAfter(appConfig.ttl.toMinutes, MINUTES))
       ),
-      replaceIndexes = true
+      replaceIndexes = false
     )
     with LookupRepository {
 
   def save(reference: MtdIdCached): Future[Boolean] =
-    getMtdReference(reference.ninoHash).flatMap {
-      case Some(_) =>
-        Future.successful(true)
-      case None =>
-        collection
-          .insertOne(reference)
-          .toFuture()
-          .map(_ => true)
-          .recover {
-            case e: DuplicateKeyException =>
-              logger.warn("Duplicate key error, document already inserted", e)
-              true
-            case e =>
-              logger.warn("Error saving reference to cache", e)
-              false
-          }
-    }
+    collection
+      .replaceOne(
+        filter = equal("ninoHash", reference.ninoHash),
+        replacement = reference,
+        options = ReplaceOptions().upsert(true)
+      )
+      .toFuture()
+      .map(_ => true)
+      .recover {
+        case e: DuplicateKeyException =>
+          logger.warn("Duplicate key error, document already inserted", e)
+          true
+        case e =>
+          logger.warn("Error saving reference to cache", e)
+          false
+      }
 
   def dropCollection(): Future[Long] =
     collection.drop().toFuture().flatMap { _ =>
