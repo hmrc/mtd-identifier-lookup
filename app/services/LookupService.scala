@@ -51,8 +51,7 @@ class LookupService @Inject() (connector: BusinessDetailsConnector,
 
       repository.getMtdReference(ninoHash).flatMap {
         case Some(mongoReference) => Future.successful(Right(MtdIdResponse(mongoReference.mtdRef.decryptedValue)))
-        case None =>
-          getMtdIdFromService(nino)
+        case None => getMtdIdFromService(nino)
       }
     } else {
       repository.dropCollection().flatMap(_ => getMtdIdFromService(nino))
@@ -80,16 +79,19 @@ class LookupService @Inject() (connector: BusinessDetailsConnector,
     responseFuture
       .map {
         case Right(response) =>
-          lazy val ninoHash: String = ninoHasher.hash(PlainText(nino)).value
+          if (isMongoLookupEnabled) {
+            lazy val ninoHash: String = ninoHasher.hash(PlainText(nino)).value
 
-          lazy val mtdIdCached: MtdIdCached = MtdIdCached(
-            ninoHash = ninoHash,
-            nino = SensitiveString(nino),
-            mtdRef = SensitiveString(response.responseData.mtdbsa),
-            lastUpdated = timeProvider.now()
-          )
+            lazy val mtdIdCached: MtdIdCached = MtdIdCached(
+              ninoHash = ninoHash,
+              nino = SensitiveString(nino),
+              mtdRef = SensitiveString(response.responseData.mtdbsa),
+              lastUpdated = timeProvider.now()
+            )
 
-          if (isMongoLookupEnabled) repository.save(mtdIdCached)
+            repository.save(mtdIdCached)
+          }
+
           Right(MtdIdResponse(response.responseData.mtdbsa))
         case Left(ResponseWrapper(_, NotFoundError))  => Left(ForbiddenError)
         case _                                        => Left(InternalError)
