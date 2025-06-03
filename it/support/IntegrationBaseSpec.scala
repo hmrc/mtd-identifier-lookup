@@ -64,7 +64,7 @@ trait IntegrationBaseSpec
 
   override def beforeEach(): Unit = {
     super.beforeEach()
-    await(repository.removeAll())
+    await(repository.collection.drop().toFuture())
   }
 
   override def beforeAll(): Unit = {

@@ -16,7 +16,6 @@
 
 package repositories
 
-import com.mongodb.BasicDBObject
 import config.AppConfig
 import models.MtdIdCached
 import org.mongodb.scala.DuplicateKeyException
@@ -24,7 +23,6 @@ import org.mongodb.scala.model.Filters.equal
 import org.mongodb.scala.model.Indexes.ascending
 import org.mongodb.scala.model.ReturnDocument.AFTER
 import org.mongodb.scala.model._
-import org.mongodb.scala.result.DeleteResult
 import uk.gov.hmrc.crypto.{Decrypter, Encrypter}
 import uk.gov.hmrc.mongo.MongoComponent
 import uk.gov.hmrc.mongo.play.json.PlayMongoRepository
@@ -38,8 +36,6 @@ trait LookupRepository extends Logging {
   def save(reference: MtdIdCached): Future[Boolean]
 
   def getMtdReference(ninoHash: String): Future[Option[MtdIdCached]]
-
-  def dropCollection(): Future[Long]
 }
 
 @Singleton
@@ -76,16 +72,6 @@ class LookupRepositoryImpl @Inject() (mongo: MongoComponent, timeProvider: TimeP
           logger.warn("Error saving reference to cache", e)
           false
       }
-
-  def dropCollection(): Future[Long] =
-    collection.drop().toFuture().flatMap { _ =>
-      collection.countDocuments().toFuture().map { count =>
-        logger.warn(s"Collection dropped. Document count: $count")
-        count
-      }
-    }
-
-  def removeAll(): Future[DeleteResult] = collection.deleteMany(new BasicDBObject()).toFuture()
 
   def getMtdReference(ninoHash: String): Future[Option[MtdIdCached]] =
     collection
