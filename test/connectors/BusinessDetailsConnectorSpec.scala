@@ -18,6 +18,7 @@ package connectors
 
 import models.{MtdIdHipReference, MtdIdIfsReference}
 import play.api.Configuration
+import uk.gov.hmrc.http.StringContextOps
 
 import scala.concurrent.Future
 
@@ -34,7 +35,7 @@ class BusinessDetailsConnectorSpec extends ConnectorBaseSpec {
       val outcome: Right[Nothing, MtdIdIfsReference] = Right(MtdIdIfsReference(expectedId))
       MockedAppConfig.featureSwitches.returns(config(false))
 
-      willGet(s"$baseUrl/registration/business-details/nino/$nino").returns(Future.successful(outcome))
+      willGet(url"$baseUrl/registration/business-details/nino/$nino").returns(Future.successful(outcome))
 
       await(target.getMtdIdFromIfs(nino)) shouldBe outcome
     }
@@ -45,7 +46,7 @@ class BusinessDetailsConnectorSpec extends ConnectorBaseSpec {
       val outcome: Right[Nothing, MtdIdHipReference] = Right(MtdIdHipReference(expectedId))
       MockedAppConfig.featureSwitches.returns(config(true))
 
-      willGet(s"$baseUrl/etmp/RESTAdapter/itsa/taxpayer/business-details?nino=$nino").returns(Future.successful(outcome))
+      willGet(url"$baseUrl/etmp/RESTAdapter/itsa/taxpayer/business-details?nino=$nino").returns(Future.successful(outcome))
 
       await(target.getMtdIdFromHip(nino)) shouldBe outcome
     }

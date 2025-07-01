@@ -18,12 +18,14 @@ package connectors
 
 import config.{AppConfig, FeatureSwitches}
 import models.connectors.DownstreamOutcome
-import uk.gov.hmrc.http.{HeaderCarrier, HttpClient, HttpReads}
+import uk.gov.hmrc.http.client.HttpClientV2
+import uk.gov.hmrc.http.{HeaderCarrier, HttpReads, StringContextOps}
+import utils.UrlUtils
 
 import scala.concurrent.{ExecutionContext, Future}
 
 trait BaseDownstreamConnector {
-  val http: HttpClient
+  val http: HttpClientV2
   val appConfig: AppConfig
 
   // This is to provide an implicit AppConfig in existing connector implementations (which
@@ -40,8 +42,10 @@ trait BaseDownstreamConnector {
 
     val strategy: DownstreamStrategy = uri.strategy
 
-    def doGet(implicit hc: HeaderCarrier): Future[DownstreamOutcome[Resp]] =
-      http.GET(s"${strategy.baseUrl}/${uri.path}", queryParams)
+    def doGet(implicit hc: HeaderCarrier): Future[DownstreamOutcome[Resp]] = {
+      val fullUrl = UrlUtils.appendQueryParams(s"${strategy.baseUrl}/${uri.path}", queryParams)
+      http.get(url"$fullUrl").execute
+    }
 
     for {
       headers <- getBackendHeaders(strategy)

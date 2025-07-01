@@ -23,6 +23,7 @@ import play.api.http.{HeaderNames, MimeTypes, Status}
 import support.UnitSpec
 import uk.gov.hmrc.http.HeaderCarrier
 
+import java.net.URL
 import java.util.Base64
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -65,7 +66,7 @@ trait ConnectorBaseSpec extends UnitSpec with Status with MimeTypes with HeaderN
 
     protected def excludedHeaders: Seq[(String, String)] = Seq("AnotherHeader" -> "HeaderValue")
 
-    protected def willGet[T](url: String, parameters: Seq[(String, String)] = Nil): CallHandler[Future[T]] = {
+    protected def willGet[T](url: URL, parameters: Seq[(String, String)] = Nil): CallHandler[Future[T]] = {
       MockHttpClient
         .get(
           url = url,

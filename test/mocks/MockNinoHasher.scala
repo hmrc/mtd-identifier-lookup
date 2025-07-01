@@ -19,9 +19,10 @@ package mocks
 import hasher.NinoHasher
 import org.scalamock.handlers.CallHandler
 import org.scalamock.scalatest.MockFactory
+import org.scalatest.TestSuite
 import uk.gov.hmrc.crypto.{PlainText, Scrambled}
 
-trait MockNinoHasher extends MockFactory {
+trait MockNinoHasher extends TestSuite with MockFactory {
 
   val mockNinoHasher: NinoHasher = mock[NinoHasher]
 

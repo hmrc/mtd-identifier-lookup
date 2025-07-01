@@ -17,8 +17,8 @@
 package stubs
 
 import com.github.tomakehurst.wiremock.stubbing.StubMapping
-import support.WireMockMethods
 import play.api.libs.json.JsValue
+import support.WireMockMethods
 
 object BusinessDetailsStub extends WireMockMethods {
 

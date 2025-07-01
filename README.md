@@ -75,7 +75,7 @@ sbt 'run 9769'
 
 To test the application fully (Unit Tests, Component Tests *(integration)*, Scala Style Checker and Scala Coverage report) execute:
 ```
-sbt clean scalastyle coverage test it:test coverageOff coverageReport
+sbt clean scalastyle coverage test it/test coverageOff coverageReport
 ```
 *(To run only a subset of the tests ommit the desired sbt options accordingly)*
 
