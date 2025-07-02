@@ -19,15 +19,16 @@ package connectors
 import config.AppConfig
 import connectors.DownstreamUri.{HipUri, IfsUri}
 import connectors.httpParsers.StandardDownstreamHttpParser._
-import models.{MtdIdHipReference, MtdIdIfsReference}
 import models.connectors.DownstreamOutcome
-import uk.gov.hmrc.http.{HeaderCarrier, HttpClient}
+import models.{MtdIdHipReference, MtdIdIfsReference}
+import uk.gov.hmrc.http.HeaderCarrier
+import uk.gov.hmrc.http.client.HttpClientV2
 
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
-class BusinessDetailsConnector @Inject() (val http: HttpClient, val appConfig: AppConfig) extends BaseDownstreamConnector {
+class BusinessDetailsConnector @Inject() (val http: HttpClientV2, val appConfig: AppConfig) extends BaseDownstreamConnector {
 
   def getMtdIdFromIfs(nino: String)(implicit
                                     hc: HeaderCarrier,

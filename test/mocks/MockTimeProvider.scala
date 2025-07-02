@@ -18,11 +18,12 @@ package mocks
 
 import org.scalamock.handlers.CallHandler
 import org.scalamock.scalatest.MockFactory
+import org.scalatest.TestSuite
 import utils.TimeProvider
 
 import java.time.Instant
 
-trait MockTimeProvider extends MockFactory {
+trait MockTimeProvider extends TestSuite with MockFactory {
 
   val mockTimeProvider: TimeProvider = mock[TimeProvider]
 

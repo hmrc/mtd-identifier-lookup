@@ -21,11 +21,12 @@ import models.{MtdIdHipReference, MtdIdIfsReference}
 import models.connectors.DownstreamOutcome
 import org.scalamock.handlers.CallHandler
 import org.scalamock.scalatest.MockFactory
+import org.scalatest.TestSuite
 import uk.gov.hmrc.http.HeaderCarrier
 
 import scala.concurrent.{ExecutionContext, Future}
 
-trait MockBusinessDetailsConnector extends MockFactory {
+trait MockBusinessDetailsConnector extends TestSuite with MockFactory {
 
   val mockBusinessDetailsConnector: BusinessDetailsConnector = mock[BusinessDetailsConnector]
 

@@ -18,40 +18,40 @@ package mocks
 
 import org.scalamock.handlers.CallHandler
 import org.scalamock.scalatest.MockFactory
+import org.scalatest.TestSuite
 import org.scalatest.matchers.should.Matchers
+import uk.gov.hmrc.http.client.{HttpClientV2, RequestBuilder}
 import uk.gov.hmrc.http.{HeaderCarrier, HttpReads}
-import uk.gov.hmrc.http.HttpClient
+import utils.UrlUtils
 
+import java.net.URL
 import scala.concurrent.{ExecutionContext, Future}
 
-trait MockHttpClient extends MockFactory {
+trait MockHttpClient extends TestSuite with MockFactory {
 
-  val mockHttpClient: HttpClient = mock[HttpClient]
+  val mockHttpClient: HttpClientV2 = mock[HttpClientV2]
+  val mockRequestBuilder: RequestBuilder = mock[RequestBuilder]
 
   object MockHttpClient extends Matchers {
 
-    def get[T](url: String,
+    def get[T](url: URL,
                config: HeaderCarrier.Config,
                parameters: Seq[(String, String)] = Nil,
                requiredHeaders: Seq[(String, String)] = Nil,
                excludedHeaders: Seq[(String, String)] = Nil): CallHandler[Future[T]] = {
       (mockHttpClient
-        .GET(_: String, _: Seq[(String, String)], _: Seq[(String, String)])(_: HttpReads[T], _: HeaderCarrier, _: ExecutionContext))
-        .expects(assertArgs {
-          (actualUrl: String,
-           actualParams: Seq[(String, String)],
-           _: Seq[(String, String)],
-           _: HttpReads[T],
-           hc: HeaderCarrier,
-           _: ExecutionContext) =>
-            {
-              actualUrl shouldBe url
-              actualParams should contain theSameElementsAs parameters
+        .get(_: URL)(_: HeaderCarrier))
+        .expects(assertArgs { (actualUrl: URL, hc: HeaderCarrier) =>
+        {
+          val expectedURL = UrlUtils.appendQueryParams(url.toString, parameters)
+          actualUrl.toString shouldBe expectedURL
 
-              val headersForUrl = hc.headersForUrl(config)(actualUrl)
-              assertHeaders(headersForUrl, requiredHeaders, excludedHeaders)
-            }
+          val headersForUrl = hc.headersForUrl(config)(actualUrl.toString)
+          assertHeaders(headersForUrl, requiredHeaders, excludedHeaders)
+        }
         })
+        .returns(mockRequestBuilder)
+      (mockRequestBuilder.execute(_: HttpReads[T], _: ExecutionContext)).expects(*, *)
     }
 
     private def assertHeaders[T, I](actualHeaders: Seq[(String, String)],

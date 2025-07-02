@@ -19,11 +19,12 @@ package mocks
 import models.MtdIdCached
 import org.scalamock.handlers.CallHandler
 import org.scalamock.scalatest.MockFactory
+import org.scalatest.TestSuite
 import repositories.LookupRepository
 
 import scala.concurrent.Future
 
-trait MockLookupRepository extends MockFactory {
+trait MockLookupRepository extends TestSuite with MockFactory {
 
   val mockLookupRepository: LookupRepository = mock[LookupRepository]
 

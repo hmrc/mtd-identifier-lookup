@@ -14,31 +14,29 @@
  * limitations under the License.
  */
 
-import play.core.PlayVersion
-import play.sbt.PlayImport._
-import sbt._
+import sbt.*
 
 object AppDependencies {
 
-  val bootstrap_30_version = "8.6.0"
+  val bootstrapPlayVersion = "9.13.0"
   val mongoPlayVersion = "2.6.0"
 
   val compile: Seq[ModuleID] = Seq(
-    ws,
-    "uk.gov.hmrc"                  %% "bootstrap-backend-play-30" % bootstrap_30_version,
-    "com.fasterxml.jackson.module" %% "jackson-module-scala"      % "2.16.1",
+    "uk.gov.hmrc"                  %% "bootstrap-backend-play-30" % bootstrapPlayVersion,
     "uk.gov.hmrc.mongo"            %% "hmrc-mongo-play-30"        % mongoPlayVersion,
     "uk.gov.hmrc"                  %% "crypto-json-play-30"       % "8.2.0"
   )
 
-  def test(scope: String = "test, it"): Seq[sbt.ModuleID] = Seq(
-    "org.scalatest"       %% "scalatest"               % "3.2.18"             % scope,
-    "com.vladsch.flexmark" % "flexmark-all"            % "0.64.6"             % scope,
-    "org.playframework"   %% "play-test"               % PlayVersion.current  % scope,
-    "uk.gov.hmrc"         %% "bootstrap-test-play-30"  % bootstrap_30_version % scope,
-    "org.scalamock"       %% "scalamock"               % "5.2.0"              % scope,
-    "org.wiremock"         % "wiremock"                % "3.3.1"              % scope,
-    "uk.gov.hmrc.mongo"   %% "hmrc-mongo-test-play-30" % mongoPlayVersion     % scope
-  )
+  val test: Seq[sbt.ModuleID] = Seq(
+    "uk.gov.hmrc"         %% "bootstrap-test-play-30" % bootstrapPlayVersion,
+    "org.scalamock"       %% "scalamock"              % "7.3.3",
+    "org.scalatestplus"   %% "scalacheck-1-18"        % "3.2.19.0",
+    "uk.gov.hmrc.mongo"   %% "hmrc-mongo-test-play-30" % mongoPlayVersion
+  ).map(_ % Test)
+
+  val itDependencies: Seq[ModuleID] = Seq(
+    "io.swagger.parser.v3" % "swagger-parser-v3"      % "2.1.29",
+    "com.fasterxml.jackson.module" %% "jackson-module-scala" % "2.19.1"
+  ).map(_ % Test)
 
 }

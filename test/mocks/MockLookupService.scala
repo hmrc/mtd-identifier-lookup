@@ -20,12 +20,13 @@ import models.MtdIdResponse
 import models.errors.MtdError
 import org.scalamock.handlers.CallHandler
 import org.scalamock.scalatest.MockFactory
+import org.scalatest.TestSuite
 import services.LookupService
 import uk.gov.hmrc.http.HeaderCarrier
 
 import scala.concurrent.{ExecutionContext, Future}
 
-trait MockLookupService extends MockFactory {
+trait MockLookupService extends TestSuite with MockFactory {
 
   val mockLookupService: LookupService = mock[LookupService]
 
