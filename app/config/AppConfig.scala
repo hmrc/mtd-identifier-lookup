@@ -25,22 +25,6 @@ import scala.concurrent.duration.Duration
 trait AppConfig {
   def featureSwitches: Configuration
 
-  // IFS Config
-  def ifsBaseUrl: String
-
-  def ifsEnv: String
-
-  def ifsToken: String
-
-  def ifsEnvironmentHeaders: Option[Seq[String]]
-
-  lazy val ifsDownstreamConfig: DownstreamConfig = DownstreamConfig(
-    baseUrl = ifsBaseUrl,
-    env = ifsEnv,
-    token = ifsToken,
-    environmentHeaders = ifsEnvironmentHeaders
-  )
-
   // HIP Config
   def hipBaseUrl: String
 
@@ -67,14 +51,6 @@ trait AppConfig {
 
 @Singleton
 class AppConfigImpl @Inject() (config: ServicesConfig, configuration: Configuration) extends AppConfig {
-
-  def ifsBaseUrl: String = config.baseUrl("ifs")
-
-  def ifsEnv: String = config.getString("microservice.services.ifs.env")
-
-  def ifsToken: String = config.getString("microservice.services.ifs.token")
-
-  def ifsEnvironmentHeaders: Option[Seq[String]] = configuration.getOptional[Seq[String]]("microservice.services.ifs.environmentHeaders")
 
   def hipBaseUrl: String = config.baseUrl("hip")
 

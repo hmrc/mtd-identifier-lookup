@@ -17,10 +17,10 @@
 package connectors
 
 import config.AppConfig
-import connectors.DownstreamUri.{HipUri, IfsUri}
+import connectors.DownstreamUri.HipUri
 import connectors.httpParsers.StandardDownstreamHttpParser._
 import models.connectors.DownstreamOutcome
-import models.{MtdIdHipReference, MtdIdIfsReference}
+import models.MtdIdReference
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.http.client.HttpClientV2
 
@@ -30,15 +30,9 @@ import scala.concurrent.{ExecutionContext, Future}
 @Singleton
 class BusinessDetailsConnector @Inject() (val http: HttpClientV2, val appConfig: AppConfig) extends BaseDownstreamConnector {
 
-  def getMtdIdFromIfs(nino: String)(implicit
-                                    hc: HeaderCarrier,
-                                    ec: ExecutionContext,
-                                    correlationId: String): Future[DownstreamOutcome[MtdIdIfsReference]] =
-    get(IfsUri[MtdIdIfsReference](s"registration/business-details/nino/$nino"))
-
-  def getMtdIdFromHip(nino: String)(implicit
-                                    hc: HeaderCarrier,
-                                    ec: ExecutionContext,
-                                    correlationId: String): Future[DownstreamOutcome[MtdIdHipReference]] =
-    get(HipUri[MtdIdHipReference](s"etmp/RESTAdapter/itsa/taxpayer/business-details?nino=$nino"))
+  def getMtdId(nino: String)(implicit
+                             hc: HeaderCarrier,
+                             ec: ExecutionContext,
+                             correlationId: String): Future[DownstreamOutcome[MtdIdReference]] =
+    get(HipUri[MtdIdReference](s"etmp/RESTAdapter/itsa/taxpayer/business-details?nino=$nino"))
 }

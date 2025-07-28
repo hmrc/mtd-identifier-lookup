@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 HM Revenue & Customs
+ * Copyright 2025 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,20 +21,21 @@ import support.UnitSpec
 
 class FeatureSwitchesSpec  extends UnitSpec{
 
-  private val configuration = Configuration(
-    "feature-switch.enabled" -> true,
-    "ifs.enabled"        -> false
+  private val configuration: Configuration = Configuration(
+    "feature-switch1.enabled" -> true,
+    "feature-switch2.enabled" -> false
   )
 
-  private val featureSwitches = FeatureSwitches(configuration)
+  private val featureSwitches: FeatureSwitches = FeatureSwitches(configuration)
+
   "FeatureSwitches" should {
     "return the correct value" when {
       "the feature switch is set to true" in {
-        featureSwitches.featureSwitchConfig.getOptional[Boolean]("feature-switch.enabled") shouldBe Some(true)
+        featureSwitches.featureSwitchConfig.getOptional[Boolean]("feature-switch1.enabled") shouldBe Some(true)
       }
 
       "the feature switch is set to false" in {
-        featureSwitches.featureSwitchConfig.getOptional[Boolean]("ifs.enabled") shouldBe Some(false)
+        featureSwitches.featureSwitchConfig.getOptional[Boolean]("feature-switch2.enabled") shouldBe Some(false)
       }
 
     }

@@ -50,7 +50,6 @@ trait ConnectorBaseSpec extends UnitSpec with Status with MimeTypes with HeaderN
   val allowedBusinessDetailsHeaders: Seq[String] = Seq(
     "Accept",
     "Gov-Test-Scenario",
-    "Content-Type",
     "Location",
     "X-Request-Timestamp",
     "X-Session-Id"
@@ -78,20 +77,6 @@ trait ConnectorBaseSpec extends UnitSpec with Status with MimeTypes with HeaderN
     }
   }
 
-  protected trait IfsTest extends ConnectorTest {
-    protected lazy val requiredHeaders: Seq[(String, String)] = Seq(
-      "Authorization"     -> "Bearer ifs-token",
-      "Environment"       -> "ifs-environment",
-      "User-Agent"        -> "mtd-identifier-lookup",
-      "Gov-Test-Scenario" -> "DEFAULT"
-    )
-
-    MockedAppConfig.ifsBaseUrl returns baseUrl
-    MockedAppConfig.ifsToken returns "ifs-token"
-    MockedAppConfig.ifsEnv returns "ifs-environment"
-    MockedAppConfig.ifsEnvironmentHeaders returns Some(allowedBusinessDetailsHeaders)
-  }
-
   protected trait HipTest extends ConnectorTest {
     private val clientId: String = "clientId"
     private val clientSecret: String = "clientSecret"
@@ -102,7 +87,7 @@ trait ConnectorBaseSpec extends UnitSpec with Status with MimeTypes with HeaderN
     MockedAppConfig.hipEnv returns "hip-environment"
     MockedAppConfig.hipClientId returns clientId
     MockedAppConfig.hipClientSecret returns clientSecret
-    MockedAppConfig.hipEnvironmentHeaders returns Some(allowedBusinessDetailsHeaders.filterNot(_ == "Content-Type"))
+    MockedAppConfig.hipEnvironmentHeaders returns Some(allowedBusinessDetailsHeaders)
 
     protected lazy val requiredHeaders: Seq[(String, String)] = Seq(
       "Authorization"     -> s"Basic $token",

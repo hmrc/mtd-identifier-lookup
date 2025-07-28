@@ -21,9 +21,6 @@ import config.AppConfig
 case class DownstreamUri[+Resp](path: String, strategy: DownstreamStrategy)
 
 object DownstreamUri {
-  def IfsUri[Resp](path: String)(implicit appConfig: AppConfig): DownstreamUri[Resp] =
-    DownstreamUri(path, DownstreamStrategy.standardStrategy(appConfig.ifsDownstreamConfig))
-
   def HipUri[Resp](path: String)(implicit appConfig: AppConfig): DownstreamUri[Resp] =
     DownstreamUri(path, DownstreamStrategy.basicAuthStrategy(appConfig.hipDownstreamConfig))
 }

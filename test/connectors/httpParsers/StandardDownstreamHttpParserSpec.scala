@@ -17,10 +17,10 @@
 package connectors.httpParsers
 
 import models.connectors.DownstreamOutcome
-import models.errors.{ForbiddenError, InternalError, NotFoundError}
+import models.errors.{InternalError, NotFoundError}
 import models.outcomes.ResponseWrapper
 import play.api.http.Status._
-import play.api.libs.json.{JsValue, Json, Reads}
+import play.api.libs.json.{JsObject, JsValue, Json, Reads}
 import support.UnitSpec
 import uk.gov.hmrc.http.{HttpReads, HttpResponse}
 import uk.gov.hmrc.play.bootstrap.tools.LogCapturing
@@ -82,8 +82,6 @@ class StandardDownstreamHttpParserSpec extends UnitSpec with LogCapturing {
       }
     }
 
-    handleErrorsCorrectly(httpReads)
-    handleInternalErrorsCorrectly(httpReads)
     handleUnexpectedResponse(httpReads)
     handleHipErrorsCorrectly(httpReads)
   }
@@ -120,8 +118,6 @@ class StandardDownstreamHttpParserSpec extends UnitSpec with LogCapturing {
       }
     }
 
-    handleErrorsCorrectly(httpReads)
-    handleInternalErrorsCorrectly(httpReads)
     handleUnexpectedResponse(httpReads)
     handleHipErrorsCorrectly(httpReads)
   }
@@ -164,57 +160,17 @@ class StandardDownstreamHttpParserSpec extends UnitSpec with LogCapturing {
     }
   }
 
-  val singleErrorJson: JsValue = Json.parse(
-    """
-      |{
-      |   "code": "CODE",
-      |   "reason": "MESSAGE"
-      |}
-    """.stripMargin
-  )
-
-  private def handleErrorsCorrectly[A](httpReads: HttpReads[DownstreamOutcome[A]]): Unit =
-    Map(BAD_REQUEST -> InternalError, NOT_FOUND -> NotFoundError, FORBIDDEN -> ForbiddenError).foreach { responseCode =>
-      s"receiving a $responseCode response" should {
-        "be able to parse a single error" in {
-          val httpResponse: HttpResponse = HttpResponse(
-            responseCode._1, singleErrorJson, Map("CorrelationId" -> Seq(correlationId))
-          )
-
-          withCaptureOfLoggingFrom(StandardDownstreamHttpParser.logger) { events =>
-            httpReads.read(method, url, httpResponse) shouldBe Left(ResponseWrapper(correlationId, responseCode._2))
-
-            events.map(_.getMessage) should contain only expectedFailureLogMessage(httpResponse)
-          }
-        }
-      }
-    }
-
-  private def handleInternalErrorsCorrectly[A](httpReads: HttpReads[DownstreamOutcome[A]]): Unit =
-    Seq(INTERNAL_SERVER_ERROR, SERVICE_UNAVAILABLE).foreach { responseCode =>
-      s"receiving a $responseCode response" should {
-        "return an outbound error when the error returned matches the Error model" in {
-          val httpResponse: HttpResponse = HttpResponse(responseCode, singleErrorJson, Map("CorrelationId" -> Seq(correlationId)))
+  private def handleUnexpectedResponse[A](httpReads: HttpReads[DownstreamOutcome[A]]): Unit =
+    Seq(BAD_REQUEST, FORBIDDEN, NOT_FOUND, INTERNAL_SERVER_ERROR, SERVICE_UNAVAILABLE).foreach { responseCode =>
+      s"receiving an unexpected $responseCode response" should {
+        "return an outbound error for an incorrectly formatted error" in {
+          val httpResponse: HttpResponse = HttpResponse(responseCode, JsObject.empty, Map("CorrelationId" -> Seq(correlationId)))
 
           withCaptureOfLoggingFrom(StandardDownstreamHttpParser.logger) { events =>
             httpReads.read(method, url, httpResponse) shouldBe Left(ResponseWrapper(correlationId, InternalError))
 
             events.map(_.getMessage) should contain only expectedFailureLogMessage(httpResponse)
           }
-        }
-      }
-    }
-
-  private def handleUnexpectedResponse[A](httpReads: HttpReads[DownstreamOutcome[A]]): Unit =
-    "receiving an unexpected response" should {
-      val responseCode: Int = 499
-      "return an outbound error when the error returned matches the Error model" in {
-        val httpResponse: HttpResponse = HttpResponse(responseCode, singleErrorJson, Map("CorrelationId" -> Seq(correlationId)))
-
-        withCaptureOfLoggingFrom(StandardDownstreamHttpParser.logger) { events =>
-          httpReads.read(method, url, httpResponse) shouldBe Left(ResponseWrapper(correlationId, InternalError))
-
-          events.map(_.getMessage) should contain only expectedFailureLogMessage(httpResponse)
         }
       }
     }

@@ -19,7 +19,6 @@ package config
 import play.api.Configuration
 
 case class FeatureSwitches(featureSwitchConfig: Configuration) {
-  def isHipEnabled: Boolean           = isEnabled("ifs_hip_migration_1171")
   def isMongoLookupEnabled: Boolean   = isEnabled("mongo-lookup")
   def isEnabled(key: String): Boolean = featureSwitchConfig.getOptional[Boolean](key + ".enabled").getOrElse(true)
 }
