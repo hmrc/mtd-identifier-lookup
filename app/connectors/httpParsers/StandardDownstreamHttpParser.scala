@@ -17,7 +17,7 @@
 package connectors.httpParsers
 
 import models.connectors.DownstreamOutcome
-import models.errors.{ForbiddenError, InternalError, NotFoundError}
+import models.errors.{InternalError, MtdError, NotFoundError}
 import models.outcomes.ResponseWrapper
 import play.api.http.Status._
 import play.api.libs.json.{JsObject, Reads}
@@ -72,15 +72,16 @@ object StandardDownstreamHttpParser extends HttpParser {
       response.parseResult((jsonObject \ "errors" \ "code").validate[String])
     }
 
-  private def handleErrorResponse(correlationId: String, status: Int, response: HttpResponse): DownstreamOutcome[Nothing] =
-    status match {
+  private def handleErrorResponse(correlationId: String, status: Int, response: HttpResponse): DownstreamOutcome[Nothing] = {
+    val error: MtdError = status match {
       case UNPROCESSABLE_ENTITY =>
         extractErrorCode(response) match {
-          case Some("006") | Some("008") => Left(ResponseWrapper(correlationId, NotFoundError))
-          case _ => Left(ResponseWrapper(correlationId, InternalError))
+          case Some("006") | Some("008") => NotFoundError
+          case _ => InternalError
         }
-      case NOT_FOUND => Left(ResponseWrapper(correlationId, NotFoundError))
-      case FORBIDDEN => Left(ResponseWrapper(correlationId, ForbiddenError))
-      case _         => Left(ResponseWrapper(correlationId, InternalError))
+      case _ => InternalError
     }
+
+    Left(ResponseWrapper(correlationId, error))
+  }
 }

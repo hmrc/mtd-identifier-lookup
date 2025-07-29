@@ -43,8 +43,6 @@ trait BaseControllerISpec extends IntegrationBaseSpec {
   )
 
   def servicesConfig: Map[String, Any] = Map(
-    "microservice.services.ifs.host"  -> mockHost,
-    "microservice.services.ifs.port"  -> mockPort,
     "microservice.services.hip.host"  -> mockHost,
     "microservice.services.hip.port"  -> mockPort,
     "microservice.services.auth.host" -> mockHost,

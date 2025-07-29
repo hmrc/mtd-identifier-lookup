@@ -20,10 +20,7 @@ import models.errors.{ForbiddenError, InternalError}
 import play.api.libs.json.{JsValue, Json}
 import play.api.test.Helpers.{FORBIDDEN, INTERNAL_SERVER_ERROR, UNPROCESSABLE_ENTITY}
 
-class LookupControllerHipISpec extends BaseControllerISpec {
-
-  override def servicesConfig: Map[String, Any] =
-    Map("feature-switch.ifs_hip_migration_1171.enabled" -> true) ++ super.servicesConfig
+class LookupControllerISpec extends BaseControllerISpec {
 
   val downstreamUrl: String = "/etmp/RESTAdapter/itsa/taxpayer/business-details"
 

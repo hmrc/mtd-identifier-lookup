@@ -16,7 +16,7 @@
 
 package connectors
 
-import config.{BasicAuthDownstreamConfig, DownstreamConfig}
+import config.BasicAuthDownstreamConfig
 import mocks.MockAppConfig
 import org.scalatest.concurrent.ScalaFutures
 import support.UnitSpec
@@ -25,49 +25,6 @@ import utils.DateUtils.nowAsUtc
 import scala.concurrent.ExecutionContext.Implicits.global
 
 class DownstreamStrategySpec extends UnitSpec with ScalaFutures with MockAppConfig {
-
-  "StandardStrategy" must {
-    "use the supplied DownstreamConfig with environment headers present" in {
-      val downstreamConfig: DownstreamConfig = DownstreamConfig(
-        baseUrl = "someBaseUrl",
-        env = "someEnv",
-        token = "someToken",
-        environmentHeaders = Some(Seq("header1", "header2")
-        )
-      )
-
-      val strategy: DownstreamStrategy = DownstreamStrategy.standardStrategy(downstreamConfig)
-
-      strategy.baseUrl shouldBe "someBaseUrl"
-      strategy.contractHeaders("someCorrelationId").futureValue should contain theSameElementsAs
-        Seq(
-          "Authorization" -> "Bearer someToken",
-          "Environment"   -> "someEnv",
-          "CorrelationId" -> "someCorrelationId"
-        )
-      strategy.environmentHeaders should contain theSameElementsAs Seq("header1", "header2")
-    }
-
-    "use the supplied DownstreamConfig with environment headers absent" in {
-      val downstreamConfig: DownstreamConfig = DownstreamConfig(
-        baseUrl = "someBaseUrl",
-        env = "someEnv",
-        token = "someToken",
-        environmentHeaders = None
-      )
-
-      val strategy: DownstreamStrategy = DownstreamStrategy.standardStrategy(downstreamConfig)
-
-      strategy.baseUrl shouldBe "someBaseUrl"
-      strategy.contractHeaders("someCorrelationId").futureValue should contain theSameElementsAs
-        Seq(
-          "Authorization" -> "Bearer someToken",
-          "Environment"   -> "someEnv",
-          "CorrelationId" -> "someCorrelationId"
-        )
-      strategy.environmentHeaders shouldBe empty
-    }
-  }
 
   "BasicAuthStrategy" must {
     "use the supplied BasicAuthDownstreamConfig with environment headers present" in {

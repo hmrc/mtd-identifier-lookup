@@ -32,15 +32,6 @@ trait MockAppConfig extends TestSuite with MockFactory {
 
     def ninoHashKey: CallHandler[String] = (() => mockAppConfig.ninoHashKey).expects()
 
-    // IFS Config
-    def ifsBaseUrl: CallHandler[String] = (() => mockAppConfig.ifsBaseUrl).expects()
-
-    def ifsEnv: CallHandler[String] = (() => mockAppConfig.ifsEnv).expects()
-
-    def ifsToken: CallHandler[String] = (() => mockAppConfig.ifsToken).expects()
-
-    def ifsEnvironmentHeaders: CallHandler[Option[Seq[String]]] = (() => mockAppConfig.ifsEnvironmentHeaders).expects()
-
     // HIP Config
     def hipBaseUrl: CallHandler[String] = (() => mockAppConfig.hipBaseUrl).expects()
 

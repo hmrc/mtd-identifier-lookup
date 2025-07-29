@@ -17,7 +17,7 @@
 package connectors
 
 import com.google.common.base.Charsets
-import config.{BasicAuthDownstreamConfig, DownstreamConfig}
+import config.BasicAuthDownstreamConfig
 import utils.DateUtils.nowAsUtc
 
 import java.util.Base64
@@ -43,25 +43,6 @@ trait DownstreamStrategy {
 }
 
 object DownstreamStrategy {
-
-  /** Creates a strategy instance that uses a fixed token for each host/endpoint
-    * @param downstreamConfig
-    *   configuration for the downstream host & endpoint
-    */
-  def standardStrategy(downstreamConfig: DownstreamConfig): DownstreamStrategy = new DownstreamStrategy {
-    override def baseUrl: String = downstreamConfig.baseUrl
-
-    override def contractHeaders(correlationId: String)(implicit ec: ExecutionContext): Future[Seq[(String, String)]] = {
-      Future.successful(
-        List(
-          "Authorization" -> s"Bearer ${downstreamConfig.token}",
-          "Environment"   -> downstreamConfig.env,
-          "CorrelationId" -> correlationId
-        ))
-    }
-
-    override def environmentHeaders: Seq[String] = downstreamConfig.environmentHeaders.getOrElse(Nil)
-  }
 
   /** Creates a strategy instance that uses the OAuth client id and secret but as a base64-encoded Basic auth token.
     * @param downstreamConfig

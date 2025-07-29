@@ -16,8 +16,7 @@
 
 package connectors
 
-import models.{MtdIdHipReference, MtdIdIfsReference}
-import play.api.Configuration
+import models.MtdIdReference
 import uk.gov.hmrc.http.StringContextOps
 
 import scala.concurrent.Future
@@ -26,29 +25,14 @@ class BusinessDetailsConnectorSpec extends ConnectorBaseSpec {
 
   private val expectedId: String = "an expected Id"
   private val nino: String = "AA123456A"
-  private def config(isHipEnabled: Boolean): Configuration = Configuration(
-    "ifs_hip_migration_1171.enabled" -> isHipEnabled
-  )
 
-  "Calling getMtdIdFromIfs with a NINO" should {
-    "send a request and return the expected response when downstream is IFS" in new IfsTest {
-      val outcome: Right[Nothing, MtdIdIfsReference] = Right(MtdIdIfsReference(expectedId))
-      MockedAppConfig.featureSwitches.returns(config(false))
-
-      willGet(url"$baseUrl/registration/business-details/nino/$nino").returns(Future.successful(outcome))
-
-      await(target.getMtdIdFromIfs(nino)) shouldBe outcome
-    }
-  }
-
-  "Calling getMtdIdFromHip with a NINO" should {
-    "send a request and return the expected response when downstream is HIP" in new HipTest {
-      val outcome: Right[Nothing, MtdIdHipReference] = Right(MtdIdHipReference(expectedId))
-      MockedAppConfig.featureSwitches.returns(config(true))
+  "Calling getMtdId with a NINO" should {
+    "send a request and return the expected response" in new HipTest {
+      val outcome: Right[Nothing, MtdIdReference] = Right(MtdIdReference(expectedId))
 
       willGet(url"$baseUrl/etmp/RESTAdapter/itsa/taxpayer/business-details?nino=$nino").returns(Future.successful(outcome))
 
-      await(target.getMtdIdFromHip(nino)) shouldBe outcome
+      await(target.getMtdId(nino)) shouldBe outcome
     }
   }
 

@@ -39,7 +39,6 @@ class LookupService @Inject() (connector: BusinessDetailsConnector,
                                timeProvider: TimeProvider,
                                ninoHasher: NinoHasher) {
 
-  private lazy val isHipEnabled: Boolean = FeatureSwitches()(appConfig).isHipEnabled
   private lazy val isMongoLookupEnabled: Boolean = FeatureSwitches()(appConfig).isMongoLookupEnabled
 
   def getMtdId(nino: String)(implicit
@@ -60,19 +59,7 @@ class LookupService @Inject() (connector: BusinessDetailsConnector,
   private def getMtdIdFromService(nino: String)(implicit
                                                 correlationId: String,
                                                 hc: HeaderCarrier, ec: ExecutionContext): Future[Either[MtdError, MtdIdResponse]] =
-    if (isHipEnabled) getMtdIdFromHip(nino) else getMtdIdFromIfs(nino)
-
-  private def getMtdIdFromIfs(nino: String)(implicit
-                                            correlationId: String,
-                                            hc: HeaderCarrier,
-                                            ec: ExecutionContext): Future[Either[MtdError, MtdIdResponse]] =
-    processConnectorResponse[MtdIdIfsReference](connector.getMtdIdFromIfs(nino), nino)
-
-  private def getMtdIdFromHip(nino: String)(implicit
-                                            correlationId: String,
-                                            hc: HeaderCarrier,
-                                            ec: ExecutionContext): Future[Either[MtdError, MtdIdResponse]] =
-    processConnectorResponse[MtdIdHipReference](connector.getMtdIdFromHip(nino), nino)
+    processConnectorResponse[MtdIdReference](connector.getMtdId(nino), nino)
 
   private def processConnectorResponse[T <: MtdIdentifier](responseFuture: Future[DownstreamOutcome[T]],
                                                            nino: String)(implicit ec: ExecutionContext): Future[Either[MtdError, MtdIdResponse]] =

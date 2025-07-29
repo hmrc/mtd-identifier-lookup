@@ -14,13 +14,10 @@
  * limitations under the License.
  */
 
-package models
+package config
 
-import play.api.libs.json.{JsPath, Reads}
-
-case class MtdIdHipReference(mtdbsa: String) extends MtdIdentifier
-
-object MtdIdHipReference {
-  implicit val reads: Reads[MtdIdHipReference] =
-    (JsPath \ "success" \ "taxPayerDisplayResponse" \ "mtdId").read[String].map(MtdIdHipReference.apply)
-}
+case class BasicAuthDownstreamConfig(baseUrl: String,
+                                     env: String,
+                                     clientId: String,
+                                     clientSecret: String,
+                                     environmentHeaders: Option[Seq[String]])
