@@ -21,9 +21,9 @@ import uk.gov.hmrc.versioning.SbtGitVersioning.autoImport.majorVersion
 
 val appName = "mtd-identifier-lookup"
 
-ThisBuild / scalaVersion := "3.4.3"
+ThisBuild / scalaVersion := "3.5.2"
 ThisBuild / majorVersion := 0
-ThisBuild / scalacOptions ++= Seq("-Wconf:msg=Flag.*repeatedly:s")
+ThisBuild / scalacOptions ++= Seq("-Wconf:msg=Flag.*repeatedly:s", "-Werror")
 
 lazy val microservice = Project(appName, file("."))
   .enablePlugins(play.sbt.PlayScala, SbtDistributablesPlugin)

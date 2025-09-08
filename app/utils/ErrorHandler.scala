@@ -28,9 +28,8 @@ import uk.gov.hmrc.play.audit.http.connector.AuditConnector
 import uk.gov.hmrc.play.bootstrap.backend.http.JsonErrorHandler
 import uk.gov.hmrc.play.bootstrap.config.HttpAuditEvent
 
-import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
-import javax.inject._
+import javax.inject.*
 
 @Singleton
 class ErrorHandler @Inject() (

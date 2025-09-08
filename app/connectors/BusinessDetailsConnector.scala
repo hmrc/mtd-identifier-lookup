@@ -18,7 +18,7 @@ package connectors
 
 import config.AppConfig
 import connectors.DownstreamUri.HipUri
-import connectors.httpParsers.StandardDownstreamHttpParser._
+import connectors.httpParsers.StandardDownstreamHttpParser.*
 import models.connectors.DownstreamOutcome
 import models.MtdIdReference
 import uk.gov.hmrc.http.HeaderCarrier

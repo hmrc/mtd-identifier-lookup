@@ -23,7 +23,7 @@ import hasher.NinoHasher
 import models.connectors.DownstreamOutcome
 import models.errors.{ForbiddenError, InternalError, MtdError, NotFoundError}
 import models.outcomes.ResponseWrapper
-import models._
+import models.*
 import repositories.LookupRepository
 import uk.gov.hmrc.crypto.PlainText
 import uk.gov.hmrc.crypto.Sensitive.SensitiveString

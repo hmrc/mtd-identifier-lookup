@@ -19,7 +19,7 @@ package connectors.httpParsers
 import models.connectors.DownstreamOutcome
 import models.errors.{InternalError, NotFoundError}
 import models.outcomes.ResponseWrapper
-import play.api.http.Status._
+import play.api.http.Status.*
 import play.api.libs.json.{JsObject, JsValue, Json, Reads}
 import support.UnitSpec
 import uk.gov.hmrc.http.{HttpReads, HttpResponse}

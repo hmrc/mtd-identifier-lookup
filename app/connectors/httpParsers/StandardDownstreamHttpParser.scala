@@ -19,7 +19,7 @@ package connectors.httpParsers
 import models.connectors.DownstreamOutcome
 import models.errors.{InternalError, MtdError, NotFoundError}
 import models.outcomes.ResponseWrapper
-import play.api.http.Status.NO_CONTENT
+import play.api.http.Status.*
 import play.api.libs.json.{JsObject, Reads}
 import uk.gov.hmrc.http.{HttpReads, HttpResponse}
 
@@ -29,8 +29,6 @@ object StandardDownstreamHttpParser extends HttpParser {
 
   implicit def readsEmpty(implicit successCode: SuccessCode = SuccessCode(NO_CONTENT)): HttpReads[DownstreamOutcome[Unit]] =
     (_: String, url: String, response: HttpResponse) => doRead(url, response, () => Right(ResponseWrapper(retrieveCorrelationId(response), ())))
-
-  import play.api.http.Status._
 
   implicit def reads[A: Reads](implicit successCode: SuccessCode = SuccessCode(OK)): HttpReads[DownstreamOutcome[A]] =
     (_: String, url: String, response: HttpResponse) =>
@@ -77,11 +75,12 @@ object StandardDownstreamHttpParser extends HttpParser {
       case UNPROCESSABLE_ENTITY =>
         extractErrorCode(response) match {
           case Some("006") | Some("008") => NotFoundError
-          case _ => InternalError
+          case _                         => InternalError
         }
       case _ => InternalError
     }
 
     Left(ResponseWrapper(correlationId, error))
   }
+
 }

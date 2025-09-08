@@ -18,7 +18,7 @@ package controllers
 
 import mocks.{MockAuthService, MockLookupService}
 import models.MtdIdResponse
-import models.errors._
+import models.errors.*
 import play.api.libs.json.Json
 
 import scala.concurrent.Future
