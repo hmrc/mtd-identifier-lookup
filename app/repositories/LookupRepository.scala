@@ -18,7 +18,7 @@ package repositories
 
 import config.AppConfig
 import models.MtdIdCached
-import org.mongodb.scala.{DuplicateKeyException, SingleObservableFuture}
+import org.mongodb.scala.DuplicateKeyException
 import org.mongodb.scala.model.*
 import org.mongodb.scala.model.Filters.equal
 import org.mongodb.scala.model.Indexes.ascending
