@@ -16,6 +16,7 @@
 
 package support
 
+import org.mongodb.scala.SingleObservableFuture
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
 import org.scalatest.{BeforeAndAfterAll, BeforeAndAfterEach}
@@ -43,7 +44,7 @@ trait IntegrationBaseSpec
   val mockHost: String = WireMockHelper.host
   val mockPort: String = WireMockHelper.wireMockPort.toString
 
-  val fixedInstant: Instant  = Instant.parse("2025-01-02T00:00:00.000Z")
+  val fixedInstant: Instant = Instant.parse("2025-01-02T00:00:00.000Z")
 
   class FixedTimeProvider extends TimeProvider {
     override def now(): Instant = fixedInstant
