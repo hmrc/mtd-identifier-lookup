@@ -51,7 +51,7 @@ trait MockHttpClient extends TestSuite with MockFactory {
         }
         })
         .returns(mockRequestBuilder)
-      (mockRequestBuilder.execute(_: HttpReads[T], _: ExecutionContext)).expects(*, *)
+      (mockRequestBuilder.execute(using _: HttpReads[T], _: ExecutionContext)).expects(*, *)
     }
 
     private def assertHeaders[T, I](actualHeaders: Seq[(String, String)],

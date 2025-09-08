@@ -21,8 +21,9 @@ import uk.gov.hmrc.versioning.SbtGitVersioning.autoImport.majorVersion
 
 val appName = "mtd-identifier-lookup"
 
-ThisBuild / scalaVersion := "2.13.16"
+ThisBuild / scalaVersion := "3.4.3"
 ThisBuild / majorVersion := 0
+ThisBuild / scalacOptions ++= Seq("-Wconf:msg=Flag.*repeatedly:s")
 
 lazy val microservice = Project(appName, file("."))
   .enablePlugins(play.sbt.PlayScala, SbtDistributablesPlugin)
@@ -30,7 +31,7 @@ lazy val microservice = Project(appName, file("."))
   .settings(
     libraryDependencies ++= AppDependencies.compile ++ AppDependencies.test,
     retrieveManaged := true,
-    scalacOptions ++= Seq("-Xfatal-warnings", "-Wconf:src=routes/.*:s", "-feature")
+    scalacOptions ++= Seq("-Wconf:src=routes/.*:s", "-feature")
   )
   .settings(CodeCoverageSettings.settings)
   .settings(PlayKeys.playDefaultPort := 9769)

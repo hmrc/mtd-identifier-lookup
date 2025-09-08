@@ -18,11 +18,11 @@ package repositories
 
 import config.AppConfig
 import models.MtdIdCached
-import org.mongodb.scala.DuplicateKeyException
+import org.mongodb.scala.{DuplicateKeyException, SingleObservableFuture}
+import org.mongodb.scala.model.*
 import org.mongodb.scala.model.Filters.equal
 import org.mongodb.scala.model.Indexes.ascending
 import org.mongodb.scala.model.ReturnDocument.AFTER
-import org.mongodb.scala.model._
 import uk.gov.hmrc.crypto.{Decrypter, Encrypter}
 import uk.gov.hmrc.mongo.MongoComponent
 import uk.gov.hmrc.mongo.play.json.PlayMongoRepository
@@ -40,9 +40,9 @@ trait LookupRepository extends Logging {
 
 @Singleton
 class LookupRepositoryImpl @Inject() (mongo: MongoComponent, timeProvider: TimeProvider)(implicit
-                                                                                         ec: ExecutionContext,
-                                                                                         crypto: Encrypter with Decrypter,
-                                                                                         appConfig: AppConfig)
+    ec: ExecutionContext,
+    crypto: Encrypter & Decrypter,
+    appConfig: AppConfig)
     extends PlayMongoRepository[MtdIdCached](
       collectionName = "mtdIdLookup",
       mongoComponent = mongo,

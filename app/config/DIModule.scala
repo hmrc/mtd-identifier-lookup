@@ -24,8 +24,8 @@ import uk.gov.hmrc.crypto.{Decrypter, Encrypter, Hasher, SymmetricCryptoFactory}
 
 class DIModule extends Module {
 
-  override def bindings(environment: Environment, configuration: Configuration): Seq[Binding[_]] = {
-    val cryptoInstance: Encrypter with Decrypter = SymmetricCryptoFactory.aesGcmCryptoFromConfig(
+  override def bindings(environment: Environment, configuration: Configuration): Seq[Binding[?]] = {
+    val cryptoInstance: Encrypter & Decrypter = SymmetricCryptoFactory.aesGcmCryptoFromConfig(
       baseConfigKey = "mongodb.encryption",
       config = configuration.underlying
     )
@@ -33,7 +33,7 @@ class DIModule extends Module {
     Seq(
       bind[AppConfig].to[AppConfigImpl].eagerly(),
       bind[LookupRepository].to[LookupRepositoryImpl],
-      bind[Encrypter with Decrypter].toInstance(cryptoInstance),
+      bind[Encrypter & Decrypter].toInstance(cryptoInstance),
       bind[Hasher].to[NinoHasher]
     )
   }

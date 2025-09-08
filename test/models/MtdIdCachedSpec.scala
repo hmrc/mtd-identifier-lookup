@@ -36,7 +36,7 @@ class MtdIdCachedSpec extends UnitSpec {
     lastUpdated = fixedInstant
   )
 
-  implicit val crypto: Encrypter with Decrypter = SymmetricCryptoFactory.aesGcmCrypto(
+  implicit val crypto: Encrypter & Decrypter = SymmetricCryptoFactory.aesGcmCrypto(
     "fKcVxQ8QFg2U802wmvJlxfWK0dvtaqv7DYiKBH7fzZM="
   )
 
