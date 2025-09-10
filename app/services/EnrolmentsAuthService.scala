@@ -19,7 +19,7 @@ package services
 import javax.inject.{Inject, Singleton}
 import models.ServiceResponse
 import models.errors.AuthError
-import uk.gov.hmrc.auth.core._
+import uk.gov.hmrc.auth.core.*
 import uk.gov.hmrc.auth.core.authorise.Predicate
 import uk.gov.hmrc.http.HeaderCarrier
 

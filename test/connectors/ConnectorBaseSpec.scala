@@ -89,7 +89,7 @@ trait ConnectorBaseSpec extends UnitSpec with Status with MimeTypes with HeaderN
     MockedAppConfig.hipClientSecret returns clientSecret
     MockedAppConfig.hipEnvironmentHeaders returns Some(allowedBusinessDetailsHeaders)
 
-    protected lazy val requiredHeaders: Seq[(String, String)] = Seq(
+    protected val requiredHeaders: Seq[(String, String)] = Seq(
       "Authorization"     -> s"Basic $token",
       "Environment"       -> "hip-environment",
       "User-Agent"        -> "mtd-identifier-lookup",

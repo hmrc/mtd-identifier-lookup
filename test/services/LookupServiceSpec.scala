@@ -18,7 +18,7 @@ package services
 
 import mocks.{MockAppConfig, MockBusinessDetailsConnector, MockLookupRepository, MockNinoHasher, MockTimeProvider}
 import models.{MtdIdCached, MtdIdReference, MtdIdResponse}
-import models.errors._
+import models.errors.*
 import models.outcomes.ResponseWrapper
 import play.api.Configuration
 import uk.gov.hmrc.crypto.{PlainText, Scrambled}

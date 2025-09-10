@@ -18,7 +18,7 @@ package controllers
 
 import models.errors.AuthError
 import play.api.libs.json.Json
-import play.api.mvc._
+import play.api.mvc.*
 import services.EnrolmentsAuthService
 import uk.gov.hmrc.auth.core.authorise.{EmptyPredicate, Predicate}
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController

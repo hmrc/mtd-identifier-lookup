@@ -27,7 +27,7 @@ import java.time.Instant
 case class MtdIdCached(ninoHash: String, nino: SensitiveString, mtdRef: SensitiveString, lastUpdated: Instant)
 
 object MtdIdCached {
-  def encryptedFormat(implicit crypto: Encrypter with Decrypter): OFormat[MtdIdCached] = {
+  def encryptedFormat(implicit crypto: Encrypter & Decrypter): OFormat[MtdIdCached] = {
     implicit val sensitiveStringFormat: Format[SensitiveString] =
       JsonEncryption.sensitiveEncrypterDecrypter(SensitiveString.apply)
 

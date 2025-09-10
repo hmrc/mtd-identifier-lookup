@@ -16,7 +16,7 @@
 
 package models.errors
 
-import play.api.http.Status._
+import play.api.http.Status.*
 
 object NinoFormatError extends MtdError(code = "FORMAT_NINO", message = "The provided NINO is invalid", BAD_REQUEST)
 
