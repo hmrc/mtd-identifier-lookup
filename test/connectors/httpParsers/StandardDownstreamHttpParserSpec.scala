@@ -35,7 +35,7 @@ object SomeModel {
 class StandardDownstreamHttpParserSpec extends UnitSpec with LogCapturing {
 
   private val method: String = "GET"
-  private val url: String = "test-url"
+  private val url: String    = "test-url"
 
   private val correlationId: String = "a1e8057e-fbbc-47a8-a8b4-78d9f015c253"
 
@@ -43,14 +43,15 @@ class StandardDownstreamHttpParserSpec extends UnitSpec with LogCapturing {
 
   private val httpReads: HttpReads[DownstreamOutcome[Unit]] = implicitly
 
-  private val data: String = "someData"
+  private val data: String                    = "someData"
   private val downstreamExpectedJson: JsValue = Json.obj("data" -> data)
 
-  private val downstreamModel: SomeModel = SomeModel(data)
+  private val downstreamModel: SomeModel                     = SomeModel(data)
   private val downstreamResponse: ResponseWrapper[SomeModel] = ResponseWrapper(correlationId, downstreamModel)
 
   private val expectedSuccessLogMessage: String = s"[StandardDownstreamHttpParser][read] - " +
     s"Success response received with correlationId: $correlationId when calling $url"
+
   private def expectedFailureLogMessage(response: HttpResponse): String = s"[StandardDownstreamHttpParser][read] - " +
     s"Error response received with status: ${response.status} and body\n" +
     s"${response.body} and correlationId: $correlationId when calling $url"
@@ -70,8 +71,8 @@ class StandardDownstreamHttpParserSpec extends UnitSpec with LogCapturing {
       }
 
       "return an outbound error if a model object cannot be read from the response json" in {
-        val badFieldTypeJson: JsValue = Json.obj("incomeSourceId" -> 1234, "incomeSourceName" -> 1234)
-        val httpResponse: HttpResponse = HttpResponse(OK, badFieldTypeJson, Map("CorrelationId" -> Seq(correlationId)))
+        val badFieldTypeJson: JsValue                     = Json.obj("incomeSourceId" -> 1234, "incomeSourceName" -> 1234)
+        val httpResponse: HttpResponse                    = HttpResponse(OK, badFieldTypeJson, Map("CorrelationId" -> Seq(correlationId)))
         val expected: ResponseWrapper[InternalError.type] = ResponseWrapper(correlationId, InternalError)
 
         withCaptureOfLoggingFrom(StandardDownstreamHttpParser.logger) { events =>
@@ -128,7 +129,9 @@ class StandardDownstreamHttpParserSpec extends UnitSpec with LogCapturing {
     "the JSON is valid" should {
       "return the parsed model" in {
         val validJsonResponse: HttpResponse = HttpResponse(
-          OK, downstreamExpectedJson, Map("CorrelationId" -> Seq(correlationId))
+          OK,
+          downstreamExpectedJson,
+          Map("CorrelationId" -> Seq(correlationId))
         )
 
         val result: Option[SomeModel] = validJsonResponse.validateJson[SomeModel]
@@ -140,7 +143,9 @@ class StandardDownstreamHttpParserSpec extends UnitSpec with LogCapturing {
     "the JSON is invalid" should {
       "return None" in {
         val invalidJsonResponse: HttpResponse = HttpResponse(
-          OK, Json.obj("data" -> 1234), Map("CorrelationId" -> Seq(correlationId))
+          OK,
+          Json.obj("data"     -> 1234),
+          Map("CorrelationId" -> Seq(correlationId))
         )
 
         val result: Option[SomeModel] = invalidJsonResponse.validateJson[SomeModel]
@@ -211,4 +216,5 @@ class StandardDownstreamHttpParserSpec extends UnitSpec with LogCapturing {
       }
     }
   }
+
 }

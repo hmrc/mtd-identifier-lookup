@@ -24,7 +24,7 @@ import scala.concurrent.Future
 class BusinessDetailsConnectorSpec extends ConnectorBaseSpec {
 
   private val expectedId: String = "an expected Id"
-  private val nino: String = "AA123456A"
+  private val nino: String       = "AA123456A"
 
   "Calling getMtdId with a NINO" should {
     "send a request and return the expected response" in new HipTest {

@@ -22,7 +22,7 @@ import java.time.Instant
 
 class TimeProviderSpec extends UnitSpec {
 
-  val timeProvider     = new TimeProvider
+  val timeProvider = new TimeProvider
 
   "TimeProvider" should {
     "generate an instant" when {
@@ -31,4 +31,5 @@ class TimeProviderSpec extends UnitSpec {
       }
     }
   }
+
 }

@@ -30,4 +30,5 @@ trait MockNinoHasher extends TestSuite with MockFactory {
 
     def hash(plain: PlainText): CallHandler[Scrambled] = (mockNinoHasher.hash(_: PlainText)).expects(plain)
   }
+
 }

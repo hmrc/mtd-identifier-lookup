@@ -29,7 +29,7 @@ import scala.concurrent.{ExecutionContext, Future}
 
 trait MockHttpClient extends TestSuite with MockFactory {
 
-  val mockHttpClient: HttpClientV2 = mock[HttpClientV2]
+  val mockHttpClient: HttpClientV2       = mock[HttpClientV2]
   val mockRequestBuilder: RequestBuilder = mock[RequestBuilder]
 
   object MockHttpClient extends Matchers {
@@ -42,13 +42,13 @@ trait MockHttpClient extends TestSuite with MockFactory {
       (mockHttpClient
         .get(_: URL)(_: HeaderCarrier))
         .expects(assertArgs { (actualUrl: URL, hc: HeaderCarrier) =>
-        {
-          val expectedURL = UrlUtils.appendQueryParams(url.toString, parameters)
-          actualUrl.toString shouldBe expectedURL
+          {
+            val expectedURL = UrlUtils.appendQueryParams(url.toString, parameters)
+            actualUrl.toString shouldBe expectedURL
 
-          val headersForUrl = hc.headersForUrl(config)(actualUrl.toString)
-          assertHeaders(headersForUrl, requiredHeaders, excludedHeaders)
-        }
+            val headersForUrl = hc.headersForUrl(config)(actualUrl.toString)
+            assertHeaders(headersForUrl, requiredHeaders, excludedHeaders)
+          }
         })
         .returns(mockRequestBuilder)
       (mockRequestBuilder.execute(using _: HttpReads[T], _: ExecutionContext)).expects(*, *)

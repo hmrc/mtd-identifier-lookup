@@ -80,4 +80,5 @@ class DownstreamStrategySpec extends UnitSpec with ScalaFutures with MockAppConf
       strategy.environmentHeaders shouldBe empty
     }
   }
+
 }

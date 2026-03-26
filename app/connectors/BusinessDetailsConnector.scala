@@ -30,9 +30,7 @@ import scala.concurrent.{ExecutionContext, Future}
 @Singleton
 class BusinessDetailsConnector @Inject() (val http: HttpClientV2, val appConfig: AppConfig) extends BaseDownstreamConnector {
 
-  def getMtdId(nino: String)(implicit
-                             hc: HeaderCarrier,
-                             ec: ExecutionContext,
-                             correlationId: String): Future[DownstreamOutcome[MtdIdReference]] =
+  def getMtdId(nino: String)(implicit hc: HeaderCarrier, ec: ExecutionContext, correlationId: String): Future[DownstreamOutcome[MtdIdReference]] =
     get(HipUri[MtdIdReference](s"etmp/RESTAdapter/itsa/taxpayer/business-details?nino=$nino"))
+
 }

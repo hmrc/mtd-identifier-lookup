@@ -22,7 +22,7 @@ import uk.gov.hmrc.crypto.{Hasher, PlainText, Scrambled, Sha512Crypto}
 import javax.inject.{Inject, Singleton}
 
 @Singleton
-class NinoHasher @Inject()(appConfig: AppConfig) extends Hasher {
+class NinoHasher @Inject() (appConfig: AppConfig) extends Hasher {
   private lazy val ninoHasher: Sha512Crypto = new Sha512Crypto(appConfig.ninoHashKey)
 
   override def hash(plain: PlainText): Scrambled = ninoHasher.hash(plain)

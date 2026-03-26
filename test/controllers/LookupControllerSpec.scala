@@ -30,12 +30,10 @@ class LookupControllerSpec extends ControllerBaseSpec {
 
   }
 
-
   val nino: String                   = "AA123456A"
   val mtdId: String                  = "1234567890"
   val reference: MtdIdResponse       = MtdIdResponse(mtdId)
   implicit val correlationId: String = idGenerator.generateCorrelationId
-
 
   "Calling lookup with a known NINO" should {
     "return 200 (OK)" in new Test {
