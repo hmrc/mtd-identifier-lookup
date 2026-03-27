@@ -30,7 +30,8 @@ object BusinessDetailsStub extends WireMockMethods {
 }
 
 object DownstreamStub extends WireMockMethods {
- def onSuccess(method: HTTPMethod, uri: String, status: Int, body: JsValue): StubMapping = {
+
+  def onSuccess(method: HTTPMethod, uri: String, status: Int, body: JsValue): StubMapping = {
     when(method = method, uri = uri)
       .thenReturn(status = status, body)
   }
