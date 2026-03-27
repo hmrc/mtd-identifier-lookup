@@ -31,9 +31,11 @@ trait MockLookupRepository extends TestSuite with MockFactory {
   object MockedLookupRepository {
 
     def save(reference: MtdIdCached): CallHandler[Future[Boolean]] =
-      (mockLookupRepository.save(_:MtdIdCached)).expects(reference)
+      (mockLookupRepository.save(_: MtdIdCached)).expects(reference)
 
     def getMtdReference(ninoHash: String): CallHandler[Future[Option[MtdIdCached]]] =
       (mockLookupRepository.getMtdReference(_: String)).expects(ninoHash)
+
   }
+
 }

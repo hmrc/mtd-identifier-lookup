@@ -28,10 +28,8 @@ import scala.concurrent.ExecutionContext
 trait ControllerBaseSpec extends UnitSpec with Status with MimeTypes with HeaderNames with ResultExtractors {
 
   implicit lazy val fakeRequest: FakeRequest[AnyContentAsEmpty.type] = FakeRequest()
-  implicit val idGenerator:IdGenerator = new IdGenerator()
-  implicit val ec: ExecutionContext = scala.concurrent.ExecutionContext.global
-
-
+  implicit val idGenerator: IdGenerator                              = new IdGenerator()
+  implicit val ec: ExecutionContext                                  = scala.concurrent.ExecutionContext.global
 
   lazy val cc: ControllerComponents = stubControllerComponents()
 

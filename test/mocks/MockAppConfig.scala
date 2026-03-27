@@ -43,4 +43,5 @@ trait MockAppConfig extends TestSuite with MockFactory {
 
     def hipEnvironmentHeaders: CallHandler[Option[Seq[String]]] = (() => mockAppConfig.hipEnvironmentHeaders).expects()
   }
+
 }

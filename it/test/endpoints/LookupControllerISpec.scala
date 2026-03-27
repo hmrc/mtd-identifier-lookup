@@ -64,6 +64,7 @@ class LookupControllerISpec extends BaseControllerISpec {
   responseSuccessful()
   notLoggedIn()
   unauthorised()
+
   Seq(
     (UNPROCESSABLE_ENTITY, "001", INTERNAL_SERVER_ERROR, InternalError),
     (UNPROCESSABLE_ENTITY, "006", FORBIDDEN, ForbiddenError),
@@ -72,4 +73,5 @@ class LookupControllerISpec extends BaseControllerISpec {
   ).foreach { case (downstreamStatus, downstreamCode, expectedStatus, expectedBody) =>
     responseFailures(downstreamStatus, downstreamCode, errorBody(downstreamCode), expectedStatus, expectedBody)
   }
+
 }

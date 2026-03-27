@@ -41,28 +41,24 @@ class LookupService @Inject() (connector: BusinessDetailsConnector,
 
   private lazy val isMongoLookupEnabled: Boolean = FeatureSwitches()(appConfig).isMongoLookupEnabled
 
-  def getMtdId(nino: String)(implicit
-                             correlationId: String,
-                             hc: HeaderCarrier,
-                             ec: ExecutionContext): Future[Either[MtdError, MtdIdResponse]] =
+  def getMtdId(nino: String)(implicit correlationId: String, hc: HeaderCarrier, ec: ExecutionContext): Future[Either[MtdError, MtdIdResponse]] =
     if (isMongoLookupEnabled) {
       lazy val ninoHash: String = ninoHasher.hash(PlainText(nino)).value
 
       repository.getMtdReference(ninoHash).flatMap {
         case Some(mongoReference) => Future.successful(Right(MtdIdResponse(mongoReference.mtdRef.decryptedValue)))
-        case None => getMtdIdFromService(nino)
+        case None                 => getMtdIdFromService(nino)
       }
     } else {
       getMtdIdFromService(nino)
     }
 
-  private def getMtdIdFromService(nino: String)(implicit
-                                                correlationId: String,
-                                                hc: HeaderCarrier, ec: ExecutionContext): Future[Either[MtdError, MtdIdResponse]] =
+  private def getMtdIdFromService(
+      nino: String)(implicit correlationId: String, hc: HeaderCarrier, ec: ExecutionContext): Future[Either[MtdError, MtdIdResponse]] =
     processConnectorResponse[MtdIdReference](connector.getMtdId(nino), nino)
 
-  private def processConnectorResponse[T <: MtdIdentifier](responseFuture: Future[DownstreamOutcome[T]],
-                                                           nino: String)(implicit ec: ExecutionContext): Future[Either[MtdError, MtdIdResponse]] =
+  private def processConnectorResponse[T <: MtdIdentifier](responseFuture: Future[DownstreamOutcome[T]], nino: String)(implicit
+      ec: ExecutionContext): Future[Either[MtdError, MtdIdResponse]] =
     responseFuture
       .map {
         case Right(response) =>
@@ -80,7 +76,8 @@ class LookupService @Inject() (connector: BusinessDetailsConnector,
           }
 
           Right(MtdIdResponse(response.responseData.mtdbsa))
-        case Left(ResponseWrapper(_, NotFoundError))  => Left(ForbiddenError)
-        case _                                        => Left(InternalError)
+        case Left(ResponseWrapper(_, NotFoundError)) => Left(ForbiddenError)
+        case _                                       => Left(InternalError)
       }
+
 }

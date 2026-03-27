@@ -30,9 +30,10 @@ class LookupRepositoryISpec extends IntegrationBaseSpec {
   override def servicesConfig: Map[String, Any] = Map()
   val target: LookupRepositoryImpl              = repository
 
-  val ninoHash: String = "hashed-nino-value"
-  val nino: SensitiveString = SensitiveString("AA123456A")
+  val ninoHash: String        = "hashed-nino-value"
+  val nino: SensitiveString   = SensitiveString("AA123456A")
   val mtdRef: SensitiveString = SensitiveString("id")
+
   val mtdIdCached: MtdIdCached = MtdIdCached(
     ninoHash = ninoHash,
     nino = nino,
@@ -107,4 +108,5 @@ class LookupRepositoryISpec extends IntegrationBaseSpec {
       }
     }
   }
+
 }

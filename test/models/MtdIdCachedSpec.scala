@@ -25,10 +25,11 @@ import java.time.Instant
 
 class MtdIdCachedSpec extends UnitSpec {
 
-  private val ninoHash: String = "hashed-nino-value"
-  private val nino: SensitiveString = SensitiveString("NS123456A")
+  private val ninoHash: String        = "hashed-nino-value"
+  private val nino: SensitiveString   = SensitiveString("NS123456A")
   private val mtdRef: SensitiveString = SensitiveString("1234567890")
-  private val fixedInstant: Instant  = Instant.parse("2025-01-02T00:00:00.000Z")
+  private val fixedInstant: Instant   = Instant.parse("2025-01-02T00:00:00.000Z")
+
   private val mtdIdCached: MtdIdCached = MtdIdCached(
     ninoHash = ninoHash,
     nino = nino,
@@ -44,7 +45,7 @@ class MtdIdCachedSpec extends UnitSpec {
 
   "MtdIdCached" should {
     "serialise and deserialise correctly" in {
-      val json: JsValue = Json.toJson(mtdIdCached)
+      val json: JsValue      = Json.toJson(mtdIdCached)
       val model: MtdIdCached = json.as[MtdIdCached]
 
       model.ninoHash shouldBe mtdIdCached.ninoHash
@@ -53,4 +54,5 @@ class MtdIdCachedSpec extends UnitSpec {
       model.lastUpdated shouldBe mtdIdCached.lastUpdated
     }
   }
+
 }

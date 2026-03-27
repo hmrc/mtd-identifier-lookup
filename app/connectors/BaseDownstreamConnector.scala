@@ -35,10 +35,10 @@ trait BaseDownstreamConnector {
   implicit protected lazy val featureSwitches: FeatureSwitches = FeatureSwitches(appConfig.featureSwitches)
 
   def get[Resp](uri: DownstreamUri[Resp], queryParams: Seq[(String, String)] = Seq.empty)(implicit
-                                                                                          ec: ExecutionContext,
-                                                                                          hc: HeaderCarrier,
-                                                                                          httpReads: HttpReads[DownstreamOutcome[Resp]],
-                                                                                          correlationId: String): Future[DownstreamOutcome[Resp]] = {
+      ec: ExecutionContext,
+      hc: HeaderCarrier,
+      httpReads: HttpReads[DownstreamOutcome[Resp]],
+      correlationId: String): Future[DownstreamOutcome[Resp]] = {
 
     val strategy: DownstreamStrategy = uri.strategy
 
@@ -53,11 +53,10 @@ trait BaseDownstreamConnector {
     } yield result
   }
 
-  private def getBackendHeaders(strategy: DownstreamStrategy,
-                                additionalHeaders: Seq[(String, String)] = Seq.empty)(implicit
-                                                                                      ec: ExecutionContext,
-                                                                                      hc: HeaderCarrier,
-                                                                                      correlationId: String): Future[HeaderCarrier] = {
+  private def getBackendHeaders(strategy: DownstreamStrategy, additionalHeaders: Seq[(String, String)] = Seq.empty)(implicit
+      ec: ExecutionContext,
+      hc: HeaderCarrier,
+      correlationId: String): Future[HeaderCarrier] = {
 
     for {
       contractHeaders <- strategy.contractHeaders(correlationId)
@@ -71,4 +70,5 @@ trait BaseDownstreamConnector {
       HeaderCarrier(extraHeaders = apiHeaders ++ passThroughHeaders)
     }
   }
+
 }

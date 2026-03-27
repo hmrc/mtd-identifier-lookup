@@ -75,10 +75,11 @@ trait ConnectorBaseSpec extends UnitSpec with Status with MimeTypes with HeaderN
           excludedHeaders = excludedHeaders
         )
     }
+
   }
 
   protected trait HipTest extends ConnectorTest {
-    private val clientId: String = "clientId"
+    private val clientId: String     = "clientId"
     private val clientSecret: String = "clientSecret"
 
     private val token: String = Base64.getEncoder.encodeToString(s"$clientId:$clientSecret".getBytes(Charsets.UTF_8))
@@ -95,5 +96,7 @@ trait ConnectorBaseSpec extends UnitSpec with Status with MimeTypes with HeaderN
       "User-Agent"        -> "mtd-identifier-lookup",
       "Gov-Test-Scenario" -> "DEFAULT"
     )
+
   }
+
 }

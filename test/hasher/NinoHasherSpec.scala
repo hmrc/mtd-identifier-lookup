@@ -22,18 +22,18 @@ import uk.gov.hmrc.crypto.{PlainText, Scrambled, Sha512Crypto}
 
 class NinoHasherSpec extends UnitSpec with MockAppConfig {
 
-  private val ninoHashKey: String = "KXoSGiJguG+oxzClTjwBAqqjw7YKeUNmqkksJ6Jq37ELfiUmVZ/WlsqXC1QLEd5kMdGQPcDY9SFgTrFoXvDwiQ=="
+  private val ninoHashKey: String  = "KXoSGiJguG+oxzClTjwBAqqjw7YKeUNmqkksJ6Jq37ELfiUmVZ/WlsqXC1QLEd5kMdGQPcDY9SFgTrFoXvDwiQ=="
   private val plainText: PlainText = PlainText("some value")
 
   private val sha512Crypto: Sha512Crypto = new Sha512Crypto(ninoHashKey)
-  private val ninoHasher: NinoHasher = new NinoHasher(mockAppConfig)
+  private val ninoHasher: NinoHasher     = new NinoHasher(mockAppConfig)
 
   "NinoHasher" when {
     ".hash" should {
       "produce the same hash as Sha512Crypto using the configured ninoHashKey" in {
         MockedAppConfig.ninoHashKey.returns(ninoHashKey)
 
-        val actualResult: Scrambled = ninoHasher.hash(plainText)
+        val actualResult: Scrambled   = ninoHasher.hash(plainText)
         val expectedResult: Scrambled = sha512Crypto.hash(plainText)
 
         actualResult shouldBe expectedResult
@@ -41,4 +41,5 @@ class NinoHasherSpec extends UnitSpec with MockAppConfig {
       }
     }
   }
+
 }

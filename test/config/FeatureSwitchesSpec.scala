@@ -19,7 +19,7 @@ package config
 import play.api.Configuration
 import support.UnitSpec
 
-class FeatureSwitchesSpec  extends UnitSpec{
+class FeatureSwitchesSpec extends UnitSpec {
 
   private val configuration: Configuration = Configuration(
     "feature-switch1.enabled" -> true,

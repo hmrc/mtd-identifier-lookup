@@ -30,8 +30,8 @@ trait BaseControllerISpec extends IntegrationBaseSpec {
   val downstreamUrl: String
   val downstreamQueryParam: Map[String, String]
 
-  val nino: String = "AA123456A"
-  val mtdId: String = "1234567890"
+  val nino: String             = "AA123456A"
+  val mtdId: String            = "1234567890"
   val reference: MtdIdResponse = MtdIdResponse(mtdId)
 
   val responseJson: JsValue = Json.parse(
@@ -90,11 +90,7 @@ trait BaseControllerISpec extends IntegrationBaseSpec {
       }
     }
 
-  def responseFailures(downstreamStatus: Int,
-                       downstreamCode: String,
-                       errorBody: String,
-                       expectedStatus: Int,
-                       expectedBody: MtdError): Unit =
+  def responseFailures(downstreamStatus: Int, downstreamCode: String, errorBody: String, expectedStatus: Int, expectedBody: MtdError): Unit =
     s"the user is authorised but downstream returns a code $downstreamCode error and status $downstreamStatus" should {
       s"return the expected status $expectedStatus and error $expectedBody according to spec" in {
         AuthStub.authorised()
@@ -105,4 +101,5 @@ trait BaseControllerISpec extends IntegrationBaseSpec {
         response.json shouldBe Json.toJson(expectedBody)
       }
     }
+
 }

@@ -16,8 +16,4 @@
 
 package config
 
-case class BasicAuthDownstreamConfig(baseUrl: String,
-                                     env: String,
-                                     clientId: String,
-                                     clientSecret: String,
-                                     environmentHeaders: Option[Seq[String]])
+case class BasicAuthDownstreamConfig(baseUrl: String, env: String, clientId: String, clientSecret: String, environmentHeaders: Option[Seq[String]])

@@ -29,22 +29,25 @@ import scala.concurrent.Future
 
 class LookupServiceSpec extends ServiceBaseSpec with MockAppConfig {
 
-  val ninoHash: String = "hashed-nino-value"
-  val nino: String = "AA123456A"
-  val mtdId: String = "some id"
-  val reference: MtdIdReference = MtdIdReference(mtdId)
+  val ninoHash: String             = "hashed-nino-value"
+  val nino: String                 = "AA123456A"
+  val mtdId: String                = "some id"
+  val reference: MtdIdReference    = MtdIdReference(mtdId)
   val mtdIdResponse: MtdIdResponse = MtdIdResponse(mtdId)
-  val fixedInstant: Instant = Instant.parse("2025-01-02T00:00:00.000Z")
+  val fixedInstant: Instant        = Instant.parse("2025-01-02T00:00:00.000Z")
+
   val cached: MtdIdCached = MtdIdCached(
     ninoHash = ninoHash,
     nino = SensitiveString(nino),
     mtdRef = SensitiveString(mtdId),
     lastUpdated = fixedInstant
   )
+
   val lookupCacheResponse: Option[MtdIdCached] = None
-  val isCachedResponse: Boolean = true
+  val isCachedResponse: Boolean                = true
 
   trait Test extends MockBusinessDetailsConnector with MockLookupRepository with MockTimeProvider with MockNinoHasher {
+
     lazy val target = new LookupService(
       connector = mockBusinessDetailsConnector,
       repository = mockLookupRepository,
@@ -52,6 +55,7 @@ class LookupServiceSpec extends ServiceBaseSpec with MockAppConfig {
       timeProvider = mockTimeProvider,
       ninoHasher = mockNinoHasher
     )
+
   }
 
   "calling .getMtdId function" when {
@@ -75,7 +79,7 @@ class LookupServiceSpec extends ServiceBaseSpec with MockAppConfig {
 
     "a known MTD NINO is passed which is available in lookup cache" should {
       "return the mtdId from the lookup cache" in new Test {
-        val lookupCacheResponse: Option[MtdIdCached] = Some(cached)
+        val lookupCacheResponse: Option[MtdIdCached]       = Some(cached)
         val serviceResponse: Right[Nothing, MtdIdResponse] = Right(mtdIdResponse)
 
         MockedAppConfig.featureSwitches
@@ -115,7 +119,7 @@ class LookupServiceSpec extends ServiceBaseSpec with MockAppConfig {
     "a NotFoundError is returned" should {
       "transform the error into a forbidden error" in new Test {
         val serviceResponse: Left[ForbiddenError.type, Nothing] = Left(ForbiddenError)
-        val lookupRepositoryResponse: Option[Nothing] = None
+        val lookupRepositoryResponse: Option[Nothing]           = None
 
         MockedAppConfig.featureSwitches
           .returns(Configuration("mongo-lookup.enabled" -> true))
@@ -140,7 +144,7 @@ class LookupServiceSpec extends ServiceBaseSpec with MockAppConfig {
       s"a ${error.code} is returned" should {
         "transform the error into an internal server error" in new Test {
           val serviceResponse: Left[InternalError.type, Nothing] = Left(InternalError)
-          val lookupRepositoryResponse: Option[Nothing] = None
+          val lookupRepositoryResponse: Option[Nothing]          = None
 
           MockedAppConfig.featureSwitches
             .returns(Configuration("mongo-lookup.enabled" -> true))
@@ -157,4 +161,5 @@ class LookupServiceSpec extends ServiceBaseSpec with MockAppConfig {
       }
     }
   }
+
 }

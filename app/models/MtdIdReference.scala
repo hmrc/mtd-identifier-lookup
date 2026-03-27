@@ -21,6 +21,8 @@ import play.api.libs.json.{JsPath, Reads}
 case class MtdIdReference(mtdbsa: String) extends MtdIdentifier
 
 object MtdIdReference {
+
   implicit val reads: Reads[MtdIdReference] =
     (JsPath \ "success" \ "taxPayerDisplayResponse" \ "mtdId").read[String].map(MtdIdReference.apply)
+
 }

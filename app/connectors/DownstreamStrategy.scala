@@ -72,4 +72,5 @@ object DownstreamStrategy {
 
     override def environmentHeaders: Seq[String] = downstreamConfig.environmentHeaders.getOrElse(Nil)
   }
+
 }

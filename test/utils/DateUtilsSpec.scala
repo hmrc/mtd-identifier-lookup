@@ -31,4 +31,5 @@ class DateUtilsSpec extends UnitSpec {
       ZonedDateTime.parse(result).getOffset shouldBe ZoneOffset.UTC
     }
   }
+
 }
