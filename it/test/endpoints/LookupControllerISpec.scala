@@ -16,7 +16,7 @@
 
 package endpoints
 
-import models.errors.{ForbiddenError, InternalError}
+import models.errors.{ForbiddenError, InternalError, NotEnrolledError}
 import play.api.libs.json.{JsValue, Json}
 import play.api.test.Helpers.{FORBIDDEN, INTERNAL_SERVER_ERROR, UNPROCESSABLE_ENTITY}
 
@@ -72,6 +72,15 @@ class LookupControllerISpec extends BaseControllerISpec {
     (UNPROCESSABLE_ENTITY, "008", FORBIDDEN, ForbiddenError)
   ).foreach { case (downstreamStatus, downstreamCode, expectedStatus, expectedBody) =>
     responseFailures(downstreamStatus, downstreamCode, errorBody(downstreamCode), expectedStatus, expectedBody)
+  }
+
+  Seq(
+    (UNPROCESSABLE_ENTITY, "001", INTERNAL_SERVER_ERROR, InternalError),
+    (UNPROCESSABLE_ENTITY, "006", FORBIDDEN, NotEnrolledError),
+    (UNPROCESSABLE_ENTITY, "007", INTERNAL_SERVER_ERROR, InternalError),
+    (UNPROCESSABLE_ENTITY, "008", FORBIDDEN, ForbiddenError)
+  ).foreach { case (downstreamStatus, downstreamCode, expectedStatus, expectedBody) =>
+    responseFailuresNotEnrolledFlag(downstreamStatus, downstreamCode, errorBody(downstreamCode), expectedStatus, expectedBody)
   }
 
 }

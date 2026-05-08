@@ -17,7 +17,7 @@
 package connectors.httpParsers
 
 import models.connectors.DownstreamOutcome
-import models.errors.{InternalError, MtdError, NotFoundError}
+import models.errors.{InternalError, MtdError, NotEnrolledError, NotFoundError}
 import models.outcomes.ResponseWrapper
 import play.api.http.Status.*
 import play.api.libs.json.{JsObject, Reads}
@@ -74,8 +74,9 @@ object StandardDownstreamHttpParser extends HttpParser {
     val error: MtdError = status match {
       case UNPROCESSABLE_ENTITY =>
         extractErrorCode(response) match {
-          case Some("006") | Some("008") => NotFoundError
-          case _                         => InternalError
+          case Some("008") => NotFoundError
+          case Some("006") => NotEnrolledError
+          case _           => InternalError
         }
       case _ => InternalError
     }
