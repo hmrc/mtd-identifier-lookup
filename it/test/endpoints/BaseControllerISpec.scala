@@ -58,6 +58,15 @@ trait BaseControllerISpec extends IntegrationBaseSpec {
       )
   }
 
+  def requestNotEnrolledFlag(nino: String): WSRequest = {
+    buildRequest(s"/nino/$nino")
+      .withHttpHeaders(
+        (ACCEPT, "application/vnd.hmrc.1.0+json"),
+        (AUTHORIZATION, "Bearer 123")
+      )
+      .withQueryStringParameters("notEnrolledFlag" -> "true")
+  }
+
   def responseSuccessful(): Unit =
     "the user is authorised" should {
       "return 200" in {
@@ -97,6 +106,22 @@ trait BaseControllerISpec extends IntegrationBaseSpec {
         DownstreamStub.onError(DownstreamStub.GET, downstreamUrl, downstreamQueryParam, downstreamStatus, errorBody)
 
         val response: WSResponse = await(request(nino).get())
+        response.status shouldBe expectedStatus
+        response.json shouldBe Json.toJson(expectedBody)
+      }
+    }
+
+  def responseFailuresNotEnrolledFlag(downstreamStatus: Int,
+                                      downstreamCode: String,
+                                      errorBody: String,
+                                      expectedStatus: Int,
+                                      expectedBody: MtdError): Unit =
+    s"the user is authorised but downstream returns a code $downstreamCode error and status $downstreamStatus when NotEnrolledFlag is true" should {
+      s"return the expected status $expectedStatus and error $expectedBody according to spec" in {
+        AuthStub.authorised()
+        DownstreamStub.onError(DownstreamStub.GET, downstreamUrl, downstreamQueryParam, downstreamStatus, errorBody)
+
+        val response: WSResponse = await(requestNotEnrolledFlag(nino).get())
         response.status shouldBe expectedStatus
         response.json shouldBe Json.toJson(expectedBody)
       }

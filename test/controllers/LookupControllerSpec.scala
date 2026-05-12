@@ -39,8 +39,8 @@ class LookupControllerSpec extends ControllerBaseSpec {
     "return 200 (OK)" in new Test {
       authoriseUser()
 
-      MockLookupService.getMtdId(nino).returns(Future.successful(Right(reference)))
-      private val result = target.lookup(nino)(fakeRequest)
+      MockLookupService.getMtdId(nino, false).returns(Future.successful(Right(reference)))
+      private val result = target.lookup(nino, None)(fakeRequest)
       status(result) shouldBe OK
     }
 
@@ -55,8 +55,8 @@ class LookupControllerSpec extends ControllerBaseSpec {
           """.stripMargin
       )
 
-      MockLookupService.getMtdId(nino).returns(Future.successful(Right(reference)))
-      private val result = target.lookup(nino)(fakeRequest)
+      MockLookupService.getMtdId(nino, false).returns(Future.successful(Right(reference)))
+      private val result = target.lookup(nino, None)(fakeRequest)
       contentAsJson(result) shouldBe expectedResponse
     }
   }
@@ -65,8 +65,8 @@ class LookupControllerSpec extends ControllerBaseSpec {
     "return 403 (Forbidden)" in new Test {
       authoriseUser()
 
-      MockLookupService.getMtdId(nino).returns(Future.successful(Left(ForbiddenError)))
-      private val result = target.lookup(nino)(fakeRequest)
+      MockLookupService.getMtdId(nino, false).returns(Future.successful(Left(ForbiddenError)))
+      private val result = target.lookup(nino, None)(fakeRequest)
       status(result) shouldBe FORBIDDEN
     }
   }
@@ -75,8 +75,8 @@ class LookupControllerSpec extends ControllerBaseSpec {
     "return 500 (Internal server error)" in new Test {
       authoriseUser()
 
-      MockLookupService.getMtdId(nino).returns(Future.successful(Left(InternalError)))
-      private val result = target.lookup(nino)(fakeRequest)
+      MockLookupService.getMtdId(nino, false).returns(Future.successful(Left(InternalError)))
+      private val result = target.lookup(nino, None)(fakeRequest)
       status(result) shouldBe INTERNAL_SERVER_ERROR
     }
   }
@@ -84,7 +84,7 @@ class LookupControllerSpec extends ControllerBaseSpec {
   "Calling lookup with an invalid NINO" should {
     "return 400 (Bad Request)" in new Test {
       authoriseUser()
-      private val result = target.lookup("BOB")(fakeRequest)
+      private val result = target.lookup("BOB", None)(fakeRequest)
       status(result) shouldBe BAD_REQUEST
     }
   }

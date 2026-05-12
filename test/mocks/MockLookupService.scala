@@ -32,10 +32,10 @@ trait MockLookupService extends TestSuite with MockFactory {
 
   object MockLookupService {
 
-    def getMtdId(nino: String): CallHandler[Future[Either[MtdError, MtdIdResponse]]] = {
+    def getMtdId(nino: String, notEnrolledFlag: Boolean): CallHandler[Future[Either[MtdError, MtdIdResponse]]] = {
       (mockLookupService
-        .getMtdId(_: String)(_: String, _: HeaderCarrier, _: ExecutionContext))
-        .expects(nino, *, *, *)
+        .getMtdId(_: String, _: Boolean)(_: String, _: HeaderCarrier, _: ExecutionContext))
+        .expects(nino, *, *, *, *)
     }
 
   }

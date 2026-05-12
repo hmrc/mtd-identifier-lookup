@@ -71,7 +71,7 @@ class LookupServiceSpec extends ServiceBaseSpec with MockAppConfig {
         MockedLookupRepository.save(cached).returns(Future.successful(isCachedResponse))
         MockTimeProvider.now().returns(fixedInstant)
 
-        private val result: Either[MtdError, MtdIdResponse] = await(target.getMtdId(nino))
+        private val result: Either[MtdError, MtdIdResponse] = await(target.getMtdId(nino, false))
 
         result shouldBe Right(mtdIdResponse)
       }
@@ -90,7 +90,7 @@ class LookupServiceSpec extends ServiceBaseSpec with MockAppConfig {
         MockedLookupRepository.getMtdReference(ninoHash).returns(Future.successful(lookupCacheResponse))
         mockGetMtdId(nino).never()
 
-        private val result: Either[MtdError, MtdIdResponse] = await(target.getMtdId(nino))
+        private val result: Either[MtdError, MtdIdResponse] = await(target.getMtdId(nino, false))
 
         result shouldBe serviceResponse
       }
@@ -110,7 +110,7 @@ class LookupServiceSpec extends ServiceBaseSpec with MockAppConfig {
         MockedLookupRepository.save(cached).never()
         MockTimeProvider.now().returns(fixedInstant).never()
 
-        private val result: Either[MtdError, MtdIdResponse] = await(target.getMtdId(nino))
+        private val result: Either[MtdError, MtdIdResponse] = await(target.getMtdId(nino, false))
 
         result shouldBe serviceResponse
       }
@@ -129,7 +129,23 @@ class LookupServiceSpec extends ServiceBaseSpec with MockAppConfig {
         MockedLookupRepository.getMtdReference(ninoHash).returns(Future.successful(lookupRepositoryResponse))
         mockGetMtdId(nino).returns(Future.successful(Left(ResponseWrapper(correlationId, NotFoundError))))
 
-        private val result: Either[MtdError, MtdIdResponse] = await(target.getMtdId(nino))
+        private val result: Either[MtdError, MtdIdResponse] = await(target.getMtdId(nino, false))
+
+        result shouldBe serviceResponse
+      }
+      "transform the error into a Not Enrolled error" in new Test {
+        val serviceResponse: Left[NotEnrolledError.type, Nothing] = Left(NotEnrolledError)
+        val lookupRepositoryResponse: Option[Nothing]             = None
+
+        MockedAppConfig.featureSwitches
+          .returns(Configuration("mongo-lookup.enabled" -> true))
+          .anyNumberOfTimes()
+
+        MockNinoHasher.hash(PlainText(nino)).returns(Scrambled(ninoHash))
+        MockedLookupRepository.getMtdReference(ninoHash).returns(Future.successful(lookupRepositoryResponse))
+        mockGetMtdId(nino).returns(Future.successful(Left(ResponseWrapper(correlationId, NotEnrolledError))))
+
+        private val result: Either[MtdError, MtdIdResponse] = await(target.getMtdId(nino, true))
 
         result shouldBe serviceResponse
       }
@@ -154,7 +170,7 @@ class LookupServiceSpec extends ServiceBaseSpec with MockAppConfig {
           MockedLookupRepository.getMtdReference(ninoHash).returns(Future.successful(lookupRepositoryResponse))
           mockGetMtdId(nino).returns(Future.successful(Left(ResponseWrapper(correlationId, error))))
 
-          private val result: Either[MtdError, MtdIdResponse] = await(target.getMtdId(nino))
+          private val result: Either[MtdError, MtdIdResponse] = await(target.getMtdId(nino, false))
 
           result shouldBe serviceResponse
         }

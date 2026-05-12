@@ -21,7 +21,7 @@ import config.{AppConfig, FeatureSwitches}
 import connectors.BusinessDetailsConnector
 import hasher.NinoHasher
 import models.connectors.DownstreamOutcome
-import models.errors.{ForbiddenError, InternalError, MtdError, NotFoundError}
+import models.errors.{ForbiddenError, InternalError, MtdError, NotEnrolledError, NotFoundError}
 import models.outcomes.ResponseWrapper
 import models.*
 import repositories.LookupRepository
@@ -41,24 +41,31 @@ class LookupService @Inject() (connector: BusinessDetailsConnector,
 
   private lazy val isMongoLookupEnabled: Boolean = FeatureSwitches()(appConfig).isMongoLookupEnabled
 
-  def getMtdId(nino: String)(implicit correlationId: String, hc: HeaderCarrier, ec: ExecutionContext): Future[Either[MtdError, MtdIdResponse]] =
+  def getMtdId(nino: String, notEnrolledFlag: Boolean)(implicit
+      correlationId: String,
+      hc: HeaderCarrier,
+      ec: ExecutionContext): Future[Either[MtdError, MtdIdResponse]] = {
+    println(s"nino: $nino, notEnrolledFlag: $notEnrolledFlag")
     if (isMongoLookupEnabled) {
       lazy val ninoHash: String = ninoHasher.hash(PlainText(nino)).value
 
       repository.getMtdReference(ninoHash).flatMap {
         case Some(mongoReference) => Future.successful(Right(MtdIdResponse(mongoReference.mtdRef.decryptedValue)))
-        case None                 => getMtdIdFromService(nino)
+        case None                 => getMtdIdFromService(nino, notEnrolledFlag)
       }
     } else {
-      getMtdIdFromService(nino)
+      getMtdIdFromService(nino, notEnrolledFlag)
     }
+  }
 
-  private def getMtdIdFromService(
-      nino: String)(implicit correlationId: String, hc: HeaderCarrier, ec: ExecutionContext): Future[Either[MtdError, MtdIdResponse]] =
-    processConnectorResponse[MtdIdReference](connector.getMtdId(nino), nino)
-
-  private def processConnectorResponse[T <: MtdIdentifier](responseFuture: Future[DownstreamOutcome[T]], nino: String)(implicit
+  private def getMtdIdFromService(nino: String, notEnrolledFlag: Boolean)(implicit
+      correlationId: String,
+      hc: HeaderCarrier,
       ec: ExecutionContext): Future[Either[MtdError, MtdIdResponse]] =
+    processConnectorResponse[MtdIdReference](connector.getMtdId(nino), nino, notEnrolledFlag)
+
+  private def processConnectorResponse[T <: MtdIdentifier](responseFuture: Future[DownstreamOutcome[T]], nino: String, notEnrolledFlag: Boolean)(
+      implicit ec: ExecutionContext): Future[Either[MtdError, MtdIdResponse]] =
     responseFuture
       .map {
         case Right(response) =>
@@ -77,7 +84,13 @@ class LookupService @Inject() (connector: BusinessDetailsConnector,
 
           Right(MtdIdResponse(response.responseData.mtdbsa))
         case Left(ResponseWrapper(_, NotFoundError)) => Left(ForbiddenError)
-        case _                                       => Left(InternalError)
+        case Left(ResponseWrapper(_, NotEnrolledError)) =>
+          if (notEnrolledFlag) {
+            Left(NotEnrolledError)
+          } else {
+            Left(ForbiddenError)
+          }
+        case _ => Left(InternalError)
       }
 
 }

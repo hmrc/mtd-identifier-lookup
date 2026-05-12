@@ -18,7 +18,7 @@ package controllers
 
 import javax.inject.{Inject, Singleton}
 import models.domain.Nino
-import models.errors.{ForbiddenError, NinoFormatError, InternalError}
+import models.errors.{ForbiddenError, InternalError, NinoFormatError, NotEnrolledError}
 import play.api.libs.json.Json
 import play.api.mvc.{Action, AnyContent, ControllerComponents}
 import services.{EnrolmentsAuthService, LookupService}
@@ -33,14 +33,16 @@ class LookupController @Inject() (val authService: EnrolmentsAuthService, lookup
     extends AuthorisedController(cc) {
   implicit val correlationId: String = idGenerator.generateCorrelationId
 
-  def lookup(nino: String): Action[AnyContent] = authorisedAction() { implicit request =>
+  def lookup(nino: String, notEnrolledFlag: Option[Boolean]): Action[AnyContent] = authorisedAction() { implicit request =>
     if (Nino.isValid(nino)) {
+      val notEnrolledFlagValue: Boolean = if (notEnrolledFlag.isEmpty) false else notEnrolledFlag.get
       val result = lookupService
-        .getMtdId(nino)
+        .getMtdId(nino, notEnrolledFlagValue)
       result.map {
-        case Right(reference)     => Ok(Json.toJson(reference))
-        case Left(ForbiddenError) => Forbidden(ForbiddenError.asJson)
-        case Left(_)              => InternalServerError(InternalError.asJson)
+        case Right(reference)       => Ok(Json.toJson(reference))
+        case Left(ForbiddenError)   => Forbidden(ForbiddenError.asJson)
+        case Left(NotEnrolledError) => UnprocessableEntity(NotEnrolledError.asJson)
+        case Left(_)                => InternalServerError(InternalError.asJson)
       }
     } else {
       Future.successful(BadRequest(NinoFormatError.asJson))
