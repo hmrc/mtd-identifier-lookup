@@ -18,7 +18,7 @@ package endpoints
 
 import models.errors.{ForbiddenError, InternalError, NotEnrolledError}
 import play.api.libs.json.{JsValue, Json}
-import play.api.test.Helpers.{FORBIDDEN, INTERNAL_SERVER_ERROR, UNAUTHORIZED, UNPROCESSABLE_ENTITY}
+import play.api.test.Helpers.{FORBIDDEN, INTERNAL_SERVER_ERROR, UNPROCESSABLE_ENTITY}
 
 class LookupControllerISpec extends BaseControllerISpec {
 
