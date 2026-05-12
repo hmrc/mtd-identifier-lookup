@@ -44,7 +44,8 @@ class LookupService @Inject() (connector: BusinessDetailsConnector,
   def getMtdId(nino: String, notEnrolledFlag: Boolean)(implicit
       correlationId: String,
       hc: HeaderCarrier,
-      ec: ExecutionContext): Future[Either[MtdError, MtdIdResponse]] =
+      ec: ExecutionContext): Future[Either[MtdError, MtdIdResponse]] = {
+    println(s"nino: $nino, notEnrolledFlag: $notEnrolledFlag")
     if (isMongoLookupEnabled) {
       lazy val ninoHash: String = ninoHasher.hash(PlainText(nino)).value
 
@@ -55,6 +56,7 @@ class LookupService @Inject() (connector: BusinessDetailsConnector,
     } else {
       getMtdIdFromService(nino, notEnrolledFlag)
     }
+  }
 
   private def getMtdIdFromService(nino: String, notEnrolledFlag: Boolean)(implicit
       correlationId: String,

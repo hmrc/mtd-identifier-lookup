@@ -59,11 +59,12 @@ trait BaseControllerISpec extends IntegrationBaseSpec {
   }
 
   def requestNotEnrolledFlag(nino: String): WSRequest = {
-    buildRequest(s"/nino/$nino?notEnrolledFlag=true")
+    buildRequest(s"/nino/$nino")
       .withHttpHeaders(
         (ACCEPT, "application/vnd.hmrc.1.0+json"),
         (AUTHORIZATION, "Bearer 123")
       )
+      .withQueryStringParameters("notEnrolledFlag" -> "true")
   }
 
   def responseSuccessful(): Unit =

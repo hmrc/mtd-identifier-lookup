@@ -17,7 +17,7 @@
 package connectors.httpParsers
 
 import models.connectors.DownstreamOutcome
-import models.errors.{InternalError, NotFoundError}
+import models.errors.{InternalError, NotEnrolledError, NotFoundError}
 import models.outcomes.ResponseWrapper
 import play.api.http.Status.*
 import play.api.libs.json.{JsObject, JsValue, Json, Reads}
@@ -195,7 +195,7 @@ class StandardDownstreamHttpParserSpec extends UnitSpec with LogCapturing {
   private def handleHipErrorsCorrectly[A](httpReads: HttpReads[DownstreamOutcome[A]]): Unit = {
     Seq(
       ("001", InternalError),
-      ("006", NotFoundError),
+      ("006", NotEnrolledError),
       ("007", InternalError),
       ("008", NotFoundError)
     ).foreach { case (code, expectedError) =>

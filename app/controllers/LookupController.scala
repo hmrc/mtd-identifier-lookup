@@ -33,14 +33,15 @@ class LookupController @Inject() (val authService: EnrolmentsAuthService, lookup
     extends AuthorisedController(cc) {
   implicit val correlationId: String = idGenerator.generateCorrelationId
 
-  def lookup(nino: String, notEnrolledFlag: Boolean = false): Action[AnyContent] = authorisedAction() { implicit request =>
+  def lookup(nino: String, notEnrolledFlag: Option[Boolean]): Action[AnyContent] = authorisedAction() { implicit request =>
     if (Nino.isValid(nino)) {
+      val notEnrolledFlagValue: Boolean = if (notEnrolledFlag.isEmpty) false else notEnrolledFlag.get
       val result = lookupService
-        .getMtdId(nino, notEnrolledFlag)
+        .getMtdId(nino, notEnrolledFlagValue)
       result.map {
         case Right(reference)       => Ok(Json.toJson(reference))
         case Left(ForbiddenError)   => Forbidden(ForbiddenError.asJson)
-        case Left(NotEnrolledError) => Forbidden(NotEnrolledError.asJson)
+        case Left(NotEnrolledError) => UnprocessableEntity(NotEnrolledError.asJson)
         case Left(_)                => InternalServerError(InternalError.asJson)
       }
     } else {

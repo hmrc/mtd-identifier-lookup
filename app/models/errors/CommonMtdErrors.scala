@@ -36,7 +36,7 @@ object InternalError
 
 object ForbiddenError extends MtdError(code = "FORBIDDEN", message = "The client and/or agent is not authorised", FORBIDDEN)
 
-object NotEnrolledError extends MtdError(code = "CLIENT_NOT_MTD_ENROLLED", message = "The client does not have an active MTD enrolment", FORBIDDEN)
+object NotEnrolledError extends MtdError(code = "CLIENT_NOT_MTD_ENROLLED", message = "The client does not have an active MTD enrolment", UNPROCESSABLE_ENTITY)
 
 object UnAuthorisedError
     extends MtdError(
