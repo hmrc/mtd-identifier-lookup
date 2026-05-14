@@ -41,12 +41,11 @@ class LookupService @Inject() (connector: BusinessDetailsConnector,
 
   private lazy val isMongoLookupEnabled: Boolean = FeatureSwitches()(appConfig).isMongoLookupEnabled
 
-  def getMtdId(nino: String, notEnrolledFlag: Boolean)(implicit
+  def getMtdId(nino: String, notEnrolledFlag: Boolean, notEnroledHeader: Boolean)(implicit
       correlationId: String,
       hc: HeaderCarrier,
       ec: ExecutionContext): Future[Either[MtdError, MtdIdResponse]] = {
-    println(s"nino: $nino, notEnrolledFlag: $notEnrolledFlag")
-    if (isMongoLookupEnabled) {
+    if (isMongoLookupEnabled && !notEnroledHeader) {
       lazy val ninoHash: String = ninoHasher.hash(PlainText(nino)).value
 
       repository.getMtdReference(ninoHash).flatMap {

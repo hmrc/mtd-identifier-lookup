@@ -36,8 +36,9 @@ class LookupController @Inject() (val authService: EnrolmentsAuthService, lookup
   def lookup(nino: String, notEnrolledFlag: Option[Boolean]): Action[AnyContent] = authorisedAction() { implicit request =>
     if (Nino.isValid(nino)) {
       val notEnrolledFlagValue: Boolean = if (notEnrolledFlag.isEmpty) false else notEnrolledFlag.get
+      val notEnroledHeader: Boolean     = request.headers.get("Gov-Test-Scenario").contains("NOT_ENROLLED")
       val result = lookupService
-        .getMtdId(nino, notEnrolledFlagValue)
+        .getMtdId(nino, notEnrolledFlag = notEnrolledFlagValue, notEnroledHeader = notEnroledHeader)
       result.map {
         case Right(reference)       => Ok(Json.toJson(reference))
         case Left(ForbiddenError)   => Forbidden(ForbiddenError.asJson)
