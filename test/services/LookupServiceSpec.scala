@@ -71,7 +71,7 @@ class LookupServiceSpec extends ServiceBaseSpec with MockAppConfig {
         MockedLookupRepository.save(cached).returns(Future.successful(isCachedResponse))
         MockTimeProvider.now().returns(fixedInstant)
 
-        private val result: Either[MtdError, MtdIdResponse] = await(target.getMtdId(nino, false, false))
+        private val result: Either[MtdError, MtdIdResponse] = await(target.getMtdId(nino, false))
 
         result shouldBe Right(mtdIdResponse)
       }
@@ -90,7 +90,7 @@ class LookupServiceSpec extends ServiceBaseSpec with MockAppConfig {
         MockedLookupRepository.getMtdReference(ninoHash).returns(Future.successful(lookupCacheResponse))
         mockGetMtdId(nino).never()
 
-        private val result: Either[MtdError, MtdIdResponse] = await(target.getMtdId(nino, false, false))
+        private val result: Either[MtdError, MtdIdResponse] = await(target.getMtdId(nino, false))
 
         result shouldBe serviceResponse
       }
@@ -110,7 +110,7 @@ class LookupServiceSpec extends ServiceBaseSpec with MockAppConfig {
         MockedLookupRepository.save(cached).never()
         MockTimeProvider.now().returns(fixedInstant).never()
 
-        private val result: Either[MtdError, MtdIdResponse] = await(target.getMtdId(nino, false, false))
+        private val result: Either[MtdError, MtdIdResponse] = await(target.getMtdId(nino, false))
 
         result shouldBe serviceResponse
       }
@@ -129,7 +129,7 @@ class LookupServiceSpec extends ServiceBaseSpec with MockAppConfig {
         MockedLookupRepository.getMtdReference(ninoHash).returns(Future.successful(lookupRepositoryResponse))
         mockGetMtdId(nino).returns(Future.successful(Left(ResponseWrapper(correlationId, NotFoundError))))
 
-        private val result: Either[MtdError, MtdIdResponse] = await(target.getMtdId(nino, false, false))
+        private val result: Either[MtdError, MtdIdResponse] = await(target.getMtdId(nino, false))
 
         result shouldBe serviceResponse
       }
@@ -145,7 +145,7 @@ class LookupServiceSpec extends ServiceBaseSpec with MockAppConfig {
         MockedLookupRepository.getMtdReference(ninoHash).returns(Future.successful(lookupRepositoryResponse))
         mockGetMtdId(nino).returns(Future.successful(Left(ResponseWrapper(correlationId, NotEnrolledError))))
 
-        private val result: Either[MtdError, MtdIdResponse] = await(target.getMtdId(nino, true, true))
+        private val result: Either[MtdError, MtdIdResponse] = await(target.getMtdId(nino, true))
 
         result shouldBe serviceResponse
       }
@@ -170,7 +170,7 @@ class LookupServiceSpec extends ServiceBaseSpec with MockAppConfig {
           MockedLookupRepository.getMtdReference(ninoHash).returns(Future.successful(lookupRepositoryResponse))
           mockGetMtdId(nino).returns(Future.successful(Left(ResponseWrapper(correlationId, error))))
 
-          private val result: Either[MtdError, MtdIdResponse] = await(target.getMtdId(nino, false, false))
+          private val result: Either[MtdError, MtdIdResponse] = await(target.getMtdId(nino, false))
 
           result shouldBe serviceResponse
         }

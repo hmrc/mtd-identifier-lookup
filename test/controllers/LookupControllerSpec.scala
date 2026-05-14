@@ -39,7 +39,7 @@ class LookupControllerSpec extends ControllerBaseSpec {
     "return 200 (OK)" in new Test {
       authoriseUser()
 
-      MockLookupService.getMtdId(nino, false, false).returns(Future.successful(Right(reference)))
+      MockLookupService.getMtdId(nino, false).returns(Future.successful(Right(reference)))
       private val result = target.lookup(nino, None)(fakeRequest)
       status(result) shouldBe OK
     }
@@ -55,7 +55,7 @@ class LookupControllerSpec extends ControllerBaseSpec {
           """.stripMargin
       )
 
-      MockLookupService.getMtdId(nino, false, false).returns(Future.successful(Right(reference)))
+      MockLookupService.getMtdId(nino, false).returns(Future.successful(Right(reference)))
       private val result = target.lookup(nino, None)(fakeRequest)
       contentAsJson(result) shouldBe expectedResponse
     }
@@ -65,7 +65,7 @@ class LookupControllerSpec extends ControllerBaseSpec {
     "return 403 (Forbidden)" in new Test {
       authoriseUser()
 
-      MockLookupService.getMtdId(nino, false, false).returns(Future.successful(Left(ForbiddenError)))
+      MockLookupService.getMtdId(nino, false).returns(Future.successful(Left(ForbiddenError)))
       private val result = target.lookup(nino, None)(fakeRequest)
       status(result) shouldBe FORBIDDEN
     }
@@ -75,7 +75,7 @@ class LookupControllerSpec extends ControllerBaseSpec {
     "return 500 (Internal server error)" in new Test {
       authoriseUser()
 
-      MockLookupService.getMtdId(nino, false, false).returns(Future.successful(Left(InternalError)))
+      MockLookupService.getMtdId(nino, false).returns(Future.successful(Left(InternalError)))
       private val result = target.lookup(nino, None)(fakeRequest)
       status(result) shouldBe INTERNAL_SERVER_ERROR
     }
