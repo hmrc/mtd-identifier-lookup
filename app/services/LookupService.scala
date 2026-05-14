@@ -45,7 +45,6 @@ class LookupService @Inject() (connector: BusinessDetailsConnector,
       correlationId: String,
       hc: HeaderCarrier,
       ec: ExecutionContext): Future[Either[MtdError, MtdIdResponse]] = {
-    println(s"nino: $nino, notEnrolledFlag: $notEnrolledFlag")
     if (isMongoLookupEnabled) {
       lazy val ninoHash: String = ninoHasher.hash(PlainText(nino)).value
 
