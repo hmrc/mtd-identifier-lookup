@@ -33,10 +33,16 @@ abstract class AuthorisedController(cc: ControllerComponents)(implicit ec: Execu
   def authorisedAction(predicate: Predicate = EmptyPredicate)(block: Request[AnyContent] => Future[Result]): Action[AnyContent] = Action.async {
     implicit request =>
 
-      request.headers.get("Content-Type") match {
-        case None                                                                   => logger.info("Content-Type header is missing from the request")
-        case Some(contentType) if !contentType.equalsIgnoreCase("application/json") => logger.info(s"Unexpected Content-Type header: $contentType")
-        case _                                                                      =>
+      val contentTypeMethods: Set[String] = Set("POST", "PUT")
+      val userAgent: String               = request.headers.get("User-Agent").getOrElse("<none>")
+
+      (request.method, request.contentType) match {
+        case (method, None) if contentTypeMethods.contains(method) =>
+          logger.info(s"Content-Type header is missing from the request for user agent: $userAgent")
+
+        case (method, Some(contentType)) if contentTypeMethods.contains(method) && !contentType.equalsIgnoreCase("application/json") =>
+          logger.info(s"Unexpected Content-Type header: $contentType for user agent: $userAgent")
+        case _ =>
       }
 
       authService.authorised(predicate) flatMap {
