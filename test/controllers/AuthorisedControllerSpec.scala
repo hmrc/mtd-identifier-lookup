@@ -38,6 +38,8 @@ class AuthorisedControllerSpec extends ControllerBaseSpec with MockEnrolmentsAut
 
   val testController = new TestAuthorisedController(enrollmentAuthService)
 
+  val contentTypeMethods: Set[String] = Set("POST", "PUT")
+
   "AuthorisedController" should {
     "return 200 OK when authorised successfully" in {
       (enrollmentAuthService
@@ -59,7 +61,7 @@ class AuthorisedControllerSpec extends ControllerBaseSpec with MockEnrolmentsAut
       (enrollmentAuthService
         .authorised(_: Predicate)(_: HeaderCarrier, _: ExecutionContext))
         .expects(*, *, *)
-        .returning(Future.successful(Left(AuthError(false))))
+        .returning(Future.successful(Left(AuthError())))
 
       val result: Future[Result] = testController.authorisedAction() { request =>
         Future.successful(Ok(Json.obj("message" -> "Success")))
@@ -83,63 +85,78 @@ class AuthorisedControllerSpec extends ControllerBaseSpec with MockEnrolmentsAut
       contentAsJson(result) shouldBe Json.obj()
     }
 
-    "should not log when Content-Type is application/json" in {
-      (enrollmentAuthService
-        .authorised(_: Predicate)(_: HeaderCarrier, _: ExecutionContext))
-        .expects(*, *, *)
-        .returning(Future.successful(Right(true)))
+    contentTypeMethods.foreach { method =>
+      s"should not log when Content-Type is application/json for $method request" in {
+        (enrollmentAuthService
+          .authorised(_: Predicate)(_: HeaderCarrier, _: ExecutionContext))
+          .expects(*, *, *)
+          .returning(Future.successful(Right(true)))
 
-      val request = fakeGetRequest.withHeaders("Content-Type" -> "application/json")
+        val request = fakeGetRequest
+          .withMethod(method)
+          .withHeaders(
+            "Content-Type" -> "application/json",
+            "User-Agent"   -> "test-user-agent"
+          )
 
-      withCaptureOfLoggingFrom(testController.logger) { events =>
-        val result: Future[Result] = testController.authorisedAction() { request =>
-          Future.successful(Ok(Json.obj("message" -> "Success")))
-        }(request)
+        withCaptureOfLoggingFrom(testController.logger) { events =>
+          val result: Future[Result] = testController.authorisedAction() { request =>
+            Future.successful(Ok(Json.obj("message" -> "Success")))
+          }(request)
 
-        status(result) shouldBe 200
-        contentAsJson(result) shouldBe Json.obj("message" -> "Success")
+          status(result) shouldBe 200
+          contentAsJson(result) shouldBe Json.obj("message" -> "Success")
 
-        events.map(_.getMessage) shouldBe empty
+          events.map(_.getMessage) shouldBe empty
+        }
+      }
+
+      s"should log when Content-Type is not application/json for $method request" in {
+        (enrollmentAuthService
+          .authorised(_: Predicate)(_: HeaderCarrier, _: ExecutionContext))
+          .expects(*, *, *)
+          .returning(Future.successful(Right(true)))
+
+        val request = fakeGetRequest
+          .withMethod(method)
+          .withHeaders(
+            "Content-Type" -> "text/plain",
+            "User-Agent"   -> "test-user-agent"
+          )
+
+        withCaptureOfLoggingFrom(testController.logger) { events =>
+          val result: Future[Result] = testController.authorisedAction() { request =>
+            Future.successful(Ok(Json.obj("message" -> "Success")))
+          }(request)
+
+          status(result) shouldBe 200
+          contentAsJson(result) shouldBe Json.obj("message" -> "Success")
+
+          events.map(_.getMessage) should contain("Unexpected Content-Type header: text/plain for user agent: test-user-agent")
+        }
+      }
+
+      s"should log when Content-Type is missing for $method request" in {
+        (enrollmentAuthService
+          .authorised(_: Predicate)(_: HeaderCarrier, _: ExecutionContext))
+          .expects(*, *, *)
+          .returning(Future.successful(Right(true)))
+
+        val request = fakeGetRequest.withMethod(method).withHeaders("User-Agent" -> "test-user-agent")
+
+        withCaptureOfLoggingFrom(testController.logger) { events =>
+          val result: Future[Result] = testController.authorisedAction() { request =>
+            Future.successful(Ok(Json.obj("message" -> "Success")))
+          }(request)
+
+          status(result) shouldBe 200
+          contentAsJson(result) shouldBe Json.obj("message" -> "Success")
+
+          events.map(_.getMessage) should contain("Content-Type header is missing from the request for user agent: test-user-agent")
+        }
       }
     }
 
-    "should log when Content-Type is not application/json" in {
-      (enrollmentAuthService
-        .authorised(_: Predicate)(_: HeaderCarrier, _: ExecutionContext))
-        .expects(*, *, *)
-        .returning(Future.successful(Right(true)))
-
-      val request = fakeGetRequest.withHeaders("Content-Type" -> "text/plain")
-
-      withCaptureOfLoggingFrom(testController.logger) { events =>
-        val result: Future[Result] = testController.authorisedAction() { request =>
-          Future.successful(Ok(Json.obj("message" -> "Success")))
-        }(request)
-
-        status(result) shouldBe 200
-        contentAsJson(result) shouldBe Json.obj("message" -> "Success")
-
-        events.map(_.getMessage) should contain("Unexpected Content-Type header: text/plain")
-      }
-    }
-
-    "should log when Content-Type is missing" in {
-      (enrollmentAuthService
-        .authorised(_: Predicate)(_: HeaderCarrier, _: ExecutionContext))
-        .expects(*, *, *)
-        .returning(Future.successful(Right(true)))
-
-      withCaptureOfLoggingFrom(testController.logger) { events =>
-        val result: Future[Result] = testController.authorisedAction() { request =>
-          Future.successful(Ok(Json.obj("message" -> "Success")))
-        }(fakeGetRequest)
-
-        status(result) shouldBe 200
-        contentAsJson(result) shouldBe Json.obj("message" -> "Success")
-
-        events.map(_.getMessage) should contain("Content-Type header is missing from the request")
-      }
-    }
   }
 
 }
