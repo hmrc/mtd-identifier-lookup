@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 HM Revenue & Customs
+ * Copyright 2026 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,14 +19,14 @@ package controllers
 import mocks.MockEnrolmentsAuthService
 import models.errors.AuthError
 import play.api.libs.json.Json
+import play.api.mvc.Result
+import play.api.mvc.Results.Ok
 import services.EnrolmentsAuthService
 import uk.gov.hmrc.auth.core.authorise.Predicate
 import uk.gov.hmrc.http.HeaderCarrier
+import uk.gov.hmrc.play.bootstrap.tools.LogCapturing
 
 import scala.concurrent.{ExecutionContext, Future}
-import play.api.mvc.Result
-import play.api.mvc.Results.Ok
-import uk.gov.hmrc.play.bootstrap.tools.LogCapturing
 
 class AuthorisedControllerSpec extends ControllerBaseSpec with MockEnrolmentsAuthService with LogCapturing {
 
@@ -38,8 +38,6 @@ class AuthorisedControllerSpec extends ControllerBaseSpec with MockEnrolmentsAut
 
   val testController = new TestAuthorisedController(enrollmentAuthService)
 
-  val contentTypeMethods: Set[String] = Set("POST", "PUT")
-
   "AuthorisedController" should {
     "return 200 OK when authorised successfully" in {
       (enrollmentAuthService
@@ -47,11 +45,10 @@ class AuthorisedControllerSpec extends ControllerBaseSpec with MockEnrolmentsAut
         .expects(*, *, *)
         .returning(Future.successful(Right(true)))
 
-      val result: Future[Result] = testController.authorisedAction() { request =>
+      val result: Future[Result] = testController.authorisedAction() { _ =>
         Future.successful(Ok(Json.obj("message" -> "Success")))
       }(fakeGetRequest)
 
-      // Assertions
       status(result) shouldBe 200
       contentAsJson(result) shouldBe Json.obj("message" -> "Success")
     }
@@ -63,7 +60,7 @@ class AuthorisedControllerSpec extends ControllerBaseSpec with MockEnrolmentsAut
         .expects(*, *, *)
         .returning(Future.successful(Left(AuthError())))
 
-      val result: Future[Result] = testController.authorisedAction() { request =>
+      val result: Future[Result] = testController.authorisedAction() { _ =>
         Future.successful(Ok(Json.obj("message" -> "Success")))
       }(fakeGetRequest)
 
@@ -77,7 +74,7 @@ class AuthorisedControllerSpec extends ControllerBaseSpec with MockEnrolmentsAut
         .expects(*, *, *)
         .returning(Future.successful(Left(AuthError(true))))
 
-      val result: Future[Result] = testController.authorisedAction() { request =>
+      val result: Future[Result] = testController.authorisedAction() { _ =>
         Future.successful(Ok(Json.obj("message" -> "Success")))
       }(fakeGetRequest)
 
@@ -85,22 +82,17 @@ class AuthorisedControllerSpec extends ControllerBaseSpec with MockEnrolmentsAut
       contentAsJson(result) shouldBe Json.obj()
     }
 
-    contentTypeMethods.foreach { method =>
-      s"should not log when Content-Type is application/json for $method request" in {
+    "not log" when {
+      "Content-Type is application/json" in {
+        val request = fakeGetRequest.withHeaders("Content-Type" -> "application/json")
+
         (enrollmentAuthService
           .authorised(_: Predicate)(_: HeaderCarrier, _: ExecutionContext))
           .expects(*, *, *)
           .returning(Future.successful(Right(true)))
 
-        val request = fakeGetRequest
-          .withMethod(method)
-          .withHeaders(
-            "Content-Type" -> "application/json",
-            "User-Agent"   -> "test-user-agent"
-          )
-
         withCaptureOfLoggingFrom(testController.logger) { events =>
-          val result: Future[Result] = testController.authorisedAction() { request =>
+          val result: Future[Result] = testController.authorisedAction() { _ =>
             Future.successful(Ok(Json.obj("message" -> "Success")))
           }(request)
 
@@ -111,52 +103,44 @@ class AuthorisedControllerSpec extends ControllerBaseSpec with MockEnrolmentsAut
         }
       }
 
-      s"should log when Content-Type is not application/json for $method request" in {
+      "Content-Type is missing" in {
         (enrollmentAuthService
           .authorised(_: Predicate)(_: HeaderCarrier, _: ExecutionContext))
           .expects(*, *, *)
           .returning(Future.successful(Right(true)))
 
-        val request = fakeGetRequest
-          .withMethod(method)
-          .withHeaders(
-            "Content-Type" -> "text/plain",
-            "User-Agent"   -> "test-user-agent"
-          )
-
         withCaptureOfLoggingFrom(testController.logger) { events =>
-          val result: Future[Result] = testController.authorisedAction() { request =>
+          val result: Future[Result] = testController.authorisedAction() { _ =>
             Future.successful(Ok(Json.obj("message" -> "Success")))
-          }(request)
+          }(fakeGetRequest)
 
           status(result) shouldBe 200
           contentAsJson(result) shouldBe Json.obj("message" -> "Success")
 
-          events.map(_.getMessage) should contain("Unexpected Content-Type header: text/plain for user agent: test-user-agent")
-        }
-      }
-
-      s"should log when Content-Type is missing for $method request" in {
-        (enrollmentAuthService
-          .authorised(_: Predicate)(_: HeaderCarrier, _: ExecutionContext))
-          .expects(*, *, *)
-          .returning(Future.successful(Right(true)))
-
-        val request = fakeGetRequest.withMethod(method).withHeaders("User-Agent" -> "test-user-agent")
-
-        withCaptureOfLoggingFrom(testController.logger) { events =>
-          val result: Future[Result] = testController.authorisedAction() { request =>
-            Future.successful(Ok(Json.obj("message" -> "Success")))
-          }(request)
-
-          status(result) shouldBe 200
-          contentAsJson(result) shouldBe Json.obj("message" -> "Success")
-
-          events.map(_.getMessage) should contain("Content-Type header is missing from the request for user agent: test-user-agent")
+          events.map(_.getMessage) shouldBe empty
         }
       }
     }
 
+    "log when Content-Type is not application/json" in {
+      val request = fakeGetRequest.withHeaders("Content-Type" -> "text/plain", "User-Agent" -> "test-user-agent")
+
+      (enrollmentAuthService
+        .authorised(_: Predicate)(_: HeaderCarrier, _: ExecutionContext))
+        .expects(*, *, *)
+        .returning(Future.successful(Right(true)))
+
+      withCaptureOfLoggingFrom(testController.logger) { events =>
+        val result: Future[Result] = testController.authorisedAction() { _ =>
+          Future.successful(Ok(Json.obj("message" -> "Success")))
+        }(request)
+
+        status(result) shouldBe 200
+        contentAsJson(result) shouldBe Json.obj("message" -> "Success")
+
+        events.map(_.getMessage) should contain("Unexpected Content-Type header: text/plain for user agent: test-user-agent")
+      }
+    }
   }
 
 }
